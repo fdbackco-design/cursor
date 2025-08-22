@@ -80,44 +80,6 @@ pnpm --filter @repo/api dev      # API 서버 (포트 3001)
 pnpm --filter @repo/web dev      # 웹 앱 (포트 3000)
 ```
 
-## 🔧 환경 변수
-
-### 루트 .env
-```env
-# 데이터베이스
-DATABASE_URL="postgresql://username:password@localhost:5432/ecommerce_dev"
-
-# Redis
-REDIS_URL="redis://localhost:6379"
-
-# 세션
-SESSION_SECRET="your-super-secret-key"
-
-# 카카오 OAuth
-KAKAO_CLIENT_ID="your-kakao-client-id"
-KAKAO_CLIENT_SECRET="your-kakao-client-secret"
-KAKAO_CALLBACK_URL="http://localhost:3001/api/v1/auth/kakao/callback"
-
-# AWS S3
-AWS_ACCESS_KEY_ID="your-aws-access-key"
-AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
-AWS_REGION="ap-northeast-2"
-AWS_S3_BUCKET="your-s3-bucket-name"
-
-# CloudFront
-CLOUDFRONT_DOMAIN="your-cloudfront-domain"
-
-# 결제 (카카오페이)
-KAKAO_PAY_ADMIN_KEY="your-kakao-pay-admin-key"
-KAKAO_PAY_PARTNER_ID="your-kakao-pay-partner-id"
-
-# 프론트엔드 URL
-FRONTEND_URL="http://localhost:3000"
-
-# 환경
-NODE_ENV="development"
-```
-
 ## 📚 주요 기능
 
 ### 🔐 인증 시스템

@@ -30,3 +30,5 @@ export type {
 
 // Re-export commonly used types
 export type { Prisma } from "@prisma/client";
+
+export * from '@prisma/client';

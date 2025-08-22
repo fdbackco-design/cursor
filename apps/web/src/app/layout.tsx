@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,19 +20,21 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={inter.className}>
-        {/* 전역 레이아웃: Header + Main Content + Footer */}
-        <div className="min-h-screen flex flex-col">
-          {/* 상단 헤더 */}
-          <Header />
-          
-          {/* 메인 콘텐츠 영역 */}
-          <main className="flex-1">
-            {children}
-          </main>
-          
-          {/* 하단 푸터 */}
-          <Footer />
-        </div>
+        <AuthProvider>
+          {/* 전역 레이아웃: Header + Main Content + Footer */}
+          <div className="min-h-screen flex flex-col">
+            {/* 상단 헤더 */}
+            <Header />
+            
+            {/* 메인 콘텐츠 영역 */}
+            <main className="flex-1">
+              {children}
+            </main>
+            
+            {/* 하단 푸터 */}
+            <Footer />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

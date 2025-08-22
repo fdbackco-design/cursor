@@ -10,7 +10,7 @@
 
 ### 기술 스택
 - **프론트엔드**: Next.js 14 (App Router) + Tailwind CSS + shadcn/ui
-- **백엔드**: NestJS + Prisma + PostgreSQL
+- **백엔드**: NestJS + Prisma + MySQL
 - **인증**: 카카오 OAuth + HttpOnly 세션 쿠키
 - **결제**: 카카오페이 (stub 클라이언트)
 - **캐시/세션**: Redis (Upstash)
@@ -37,7 +37,7 @@
 ### 사전 요구사항
 - Node.js 18+ 
 - pnpm 8.15.4+
-- PostgreSQL
+- MySQL
 - Redis
 - Docker (선택사항)
 
@@ -60,7 +60,7 @@ cp .env.example .env
 
 ### 4. 데이터베이스 설정
 ```bash
-# PostgreSQL 데이터베이스 생성
+# MySQL 데이터베이스 생성
 createdb ecommerce_dev
 
 # Prisma 마이그레이션 실행
@@ -190,14 +190,6 @@ railway up
 
 ### 일반적인 문제들
 
-#### 데이터베이스 연결 실패
-```bash
-# PostgreSQL 서비스 상태 확인
-sudo systemctl status postgresql
-
-# 데이터베이스 생성
-createdb ecommerce_dev
-```
 
 #### Redis 연결 실패
 ```bash

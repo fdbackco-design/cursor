@@ -78,11 +78,6 @@ GRANT ALL PRIVILEGES ON ecommerce_dev.* TO 'appuser'@'%';
 FLUSH PRIVILEGES;
 ```
 
-`.env` 파일에서 다음 항목을 수정하세요:
-
-```env
-DATABASE_URL="mysql://appuser:password@localhost:3306/ecommerce_dev"
-```
 
 ### 5. Prisma 마이그레이션 & 시드
 

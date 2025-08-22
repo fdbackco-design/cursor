@@ -1,0 +1,435 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+////////////////////////////////////////////////////
+// Enums
+////////////////////////////////////////////////////
+enum UserGroupCode { B2B B2C }
+enum Provider { kakao naver google }
+enum OrderStatus { INIT PENDING PAID CANCELLED REFUNDED }
+enum PayStatus { PENDING PAID FAILED CANCELLED }
+enum PayMethod { KAKAO_PAY }
+enum AddrRole { shipping billing }
+
+////////////////////////////////////////////////////
+// Tables
+////////////////////////////////////////////////////
+model user_groups {
+  id    BigInt  @id @default(autoincrement())
+  code  UserGroupCode @unique
+  name  String  @db.VarChar(50)
+
+  users users[]
+  @@map("user_groups")
+}
+
+model sellers {
+  id        BigInt @id @default(autoincrement())
+  name      String @db.VarChar(120)
+  contact   String? @db.VarChar(120)
+  phone     String? @db.VarChar(20)
+  email     String? @db.VarChar(190)
+  default_shipping_profile_id BigInt?
+  created_at DateTime @default(now())
+
+  referral_codes referral_codes[]
+  products       products[]
+  shipping_profiles shipping_profiles[] @relation("SellerDefaultShippingProfile")
+
+  @@index([name], name: "idx_sellers_name")
+  @@map("sellers")
+}
+
+model users {
+  id            BigInt @id @default(autoincrement())
+  phone_number  String @unique @db.VarChar(20)
+  name          String? @db.VarChar(100)
+  user_group_id BigInt
+  referral_code_id BigInt?
+  referral_code_snapshot String? @db.VarChar(32)
+  agree_email   Boolean @default(false)
+  agree_sms     Boolean @default(false)
+  agree_kakao   Boolean @default(false)
+  created_at    DateTime @default(now())
+
+  group   user_groups @relation(fields: [user_group_id], references: [id], name: "fk_users_group")
+  referral_codes referral_codes? @relation(fields: [referral_code_id], references: [id], name: "fk_users_referral")
+  auths   user_auth[]
+  addresses addresses[]
+  cart_items cart_items[]
+  orders  orders[]
+  wallet_ledger wallet_ledger[]
+
+  @@index([user_group_id], name: "idx_users_group")
+  @@index([referral_code_id], name: "idx_users_referral_code_id")
+  @@index([referral_code_snapshot], name: "idx_users_referral_code_snapshot")
+  @@map("users")
+}
+
+model user_auth {
+  id               BigInt @id @default(autoincrement())
+  user_id          BigInt
+  provider         Provider
+  provider_user_id String @db.VarChar(190)
+  created_at       DateTime @default(now())
+
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([provider, provider_user_id], name: "uq_provider_user")
+  @@index([user_id], name: "idx_ua_user")
+  @@map("user_auth")
+}
+
+model referral_codes {
+  id         BigInt @id @default(autoincrement())
+  seller_id  BigInt
+  code       String @unique @db.VarChar(32)
+  expires_at DateTime?
+  max_uses   Int?
+  used_count Int @default(0)
+  is_active  Boolean @default(true)
+  created_at DateTime @default(now())
+
+  seller sellers @relation(fields: [seller_id], references: [id])
+  users  users[]
+
+  @@index([seller_id], name: "idx_ref_seller")
+  @@map("referral_codes")
+}
+
+model products {
+  id         BigInt @id @default(autoincrement())
+  name       String @db.VarChar(200)
+  slug       String @unique @db.VarChar(200)
+  brand      String? @db.VarChar(100)
+  seller_id  BigInt?
+  is_active  Boolean @default(true)
+  categories Json?
+  images     Json?
+  attrs      Json?
+  created_at DateTime @default(now())
+
+  seller   sellers? @relation(fields: [seller_id], references: [id])
+  prices   product_prices[]
+  variants product_variants[]
+  inventories inventories[]
+  detail_images product_detail_images[]
+  product_shipping product_shipping[]
+  order_items order_items[]
+
+  @@index([is_active], name: "idx_prod_active")
+  @@index([brand], name: "idx_prod_brand")
+  @@map("products")
+}
+
+model product_prices {
+  id         BigInt @id @default(autoincrement())
+  product_id BigInt
+  group_code UserGroupCode
+  price      Decimal @db.Decimal(12, 2)
+  created_at DateTime @default(now())
+
+  product products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([product_id, group_code], name: "uq_product_group")
+  @@index([product_id, group_code, price], name: "idx_pp_product")
+  @@map("product_prices")
+}
+
+model product_variants {
+  id          BigInt @id @default(autoincrement())
+  product_id  BigInt
+  sku         String @unique @db.VarChar(64)
+  attrs       Json?
+  price_delta Decimal @default(0) @db.Decimal(12, 2)
+  is_active   Boolean @default(true)
+  created_at  DateTime @default(now())
+
+  product products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  inventories inventories[]
+  cart_items  cart_items[]
+  order_items order_items[]
+  product_shipping product_shipping[]
+
+  @@index([product_id, is_active], name: "idx_variants_product")
+  @@map("product_variants")
+}
+
+model inventories {
+  product_id BigInt
+  variant_id BigInt?      // Prisma에서는 0 센티널 대신 NULL 권장
+  stock      Int @default(0)
+  updated_at DateTime @default(now()) @updatedAt
+
+  product products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  variant product_variants? @relation(fields: [variant_id], references: [id])
+
+  @@id([product_id, variant_id])
+  @@map("inventories")
+}
+
+model cart_items {
+  id                  BigInt @id @default(autoincrement())
+  user_id             BigInt?
+  session_id          String? @db.VarChar(64)
+  product_id          BigInt
+  variant_id          BigInt?
+  qty                 Int
+  unit_price_snapshot Decimal @db.Decimal(12, 2)
+  added_at            DateTime @default(now())
+
+  user    users?  @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  product products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  variant product_variants? @relation(fields: [variant_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id], name: "idx_cart_user")
+  @@index([session_id], name: "idx_cart_session")
+  @@index([product_id], name: "idx_cart_prod")
+  @@map("cart_items")
+}
+
+model addresses {
+  id          BigInt @id @default(autoincrement())
+  user_id     BigInt
+  name        String? @db.VarChar(100)
+  phone       String? @db.VarChar(20)
+  postal_code String? @db.VarChar(20)
+  addr1       String? @db.VarChar(200)
+  addr2       String? @db.VarChar(200)
+  city        String? @db.VarChar(100)
+  state       String? @db.VarChar(100)
+  country     String? @db.VarChar(2) @default("KR")
+  is_default  Boolean @default(false)
+  created_at  DateTime @default(now())
+
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, is_default], name: "idx_addr_user")
+  @@map("addresses")
+}
+
+model orders {
+  id            BigInt @id @default(autoincrement())
+  user_id       BigInt
+  status        OrderStatus
+  total_amount  Decimal @db.Decimal(12, 2)
+  final_amount  Decimal @db.Decimal(12, 2)
+  shipping_amount Decimal @default(0) @db.Decimal(12, 2)
+  shipping_breakdown Json?
+  referral_code String? @db.VarChar(32)
+  coupon_id     BigInt?
+  returns       Json?
+  inquiries     Json?
+  created_at    DateTime @default(now())
+
+  user   users   @relation(fields: [user_id], references: [id])
+  coupon coupons? @relation(fields: [coupon_id], references: [id])
+  order_addresses order_addresses[]
+  items  order_items[]
+  payments payments[]
+  order_coupons order_coupons[]
+
+  @@index([user_id, created_at], name: "idx_orders_user")
+  @@index([status, created_at], name: "idx_orders_status")
+  @@index([referral_code], name: "idx_orders_ref")
+  @@map("orders")
+}
+
+model order_addresses {
+  order_id BigInt
+  role     AddrRole
+  name        String? @db.VarChar(100)
+  phone       String? @db.VarChar(20)
+  postal_code String? @db.VarChar(20)
+  addr1       String? @db.VarChar(200)
+  addr2       String? @db.VarChar(200)
+  city        String? @db.VarChar(100)
+  state       String? @db.VarChar(100)
+  country     String? @db.VarChar(2) @default("KR")
+
+  order orders @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@id([order_id, role])
+  @@map("order_addresses")
+}
+
+model order_items {
+  id             BigInt @id @default(autoincrement())
+  order_id       BigInt
+  product_id     BigInt
+  variant_id     BigInt?
+  qty            Int
+  unit_price     Decimal @db.Decimal(12, 2)
+  discount       Decimal @default(0) @db.Decimal(12, 2)
+  shipping_fee_snapshot Decimal @default(0) @db.Decimal(12, 2)
+  shipping_profile_snapshot String? @db.VarChar(120)
+  name_snapshot  String? @db.VarChar(220)
+  brand_snapshot String? @db.VarChar(120)
+
+  order   orders @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product products @relation(fields: [product_id], references: [id])
+  variant product_variants? @relation(fields: [variant_id], references: [id])
+
+  @@index([order_id], name: "idx_oit_order")
+  @@map("order_items")
+}
+
+model coupons {
+  id           BigInt @id @default(autoincrement())
+  code         String @unique @db.VarChar(64)
+  type         String @db.Enum("AMOUNT","PERCENT") // MySQL enum 그대로 쓰려면 아래 방식 대신 enum 모델을 추가해도 됩니다.
+  value        Decimal @db.Decimal(12, 2)
+  min_amount   Decimal? @db.Decimal(12, 2)
+  max_discount Decimal? @db.Decimal(12, 2)
+  starts_at    DateTime?
+  expires_at   DateTime?
+  per_user_limit Int?
+  is_active    Boolean @default(true)
+  created_at   DateTime @default(now())
+
+  orders orders[]
+  order_coupons order_coupons[]
+
+  @@index([is_active, expires_at], name: "idx_coupons_active")
+  @@map("coupons")
+}
+
+model order_coupons {
+  order_id  BigInt
+  coupon_id BigInt
+
+  order  orders  @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  coupon coupons @relation(fields: [coupon_id], references: [id])
+
+  @@id([order_id, coupon_id])
+  @@map("order_coupons")
+}
+
+model payments {
+  id              BigInt @id @default(autoincrement())
+  order_id        BigInt
+  status          PayStatus
+  method          PayMethod
+  amount          Decimal @db.Decimal(12, 2)
+  idempotency_key String? @unique @db.VarChar(64)
+  pg_tid          String? @db.VarChar(64)
+  pg_tmnid        String? @db.VarChar(64)
+  pg_app_no       String? @db.VarChar(20)
+  pg_app_dtm      DateTime?
+  webhook_sig     String? @db.VarChar(128)
+  raw_request     Json?
+  raw_response    Json?
+  refunds         Json?
+  created_at      DateTime @default(now())
+
+  order orders @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@index([order_id], name: "idx_pay_order")
+  @@index([pg_tid], name: "idx_pay_tid")
+  @@index([created_at], name: "idx_pay_created")
+  @@map("payments")
+}
+
+model wallet_ledger {
+  id        BigInt @id @default(autoincrement())
+  user_id   BigInt
+  delta     Int
+  reason    String @db.Enum("SIGNUP","ORDER_USE","ORDER_REFUND","ADMIN")
+  order_id  BigInt?
+  created_at DateTime @default(now())
+
+  user  users  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  order orders? @relation(fields: [order_id], references: [id])
+
+  @@index([user_id, created_at], name: "idx_wallet_user")
+  @@map("wallet_ledger")
+}
+
+model referral_sales_daily {
+  dt            DateTime @db.Date
+  referral_code String   @db.VarChar(32)
+  orders_cnt    Int  @default(0)
+  new_users_cnt Int  @default(0)
+  gross_sales   Decimal @default(0) @db.Decimal(12, 2)
+
+  @@id([dt, referral_code])
+  @@index([referral_code], name: "idx_rsd_code")
+  @@map("referral_sales_daily")
+}
+
+model product_detail_images {
+  id         BigInt @id @default(autoincrement())
+  product_id BigInt
+  sort_order Int @default(0)
+  object_key String? @db.VarChar(500)
+  role       String  @db.Enum("thumbnail","detail") @default("detail")
+  variant    String  @db.Enum("s","m","l","xl") @default("xl")
+  width      Int?
+  height     Int?
+  bytes      Int?
+  alt_text   String? @db.VarChar(300)
+  caption    String? @db.VarChar(500)
+  locale     String? @db.VarChar(10) @default("ko")
+  is_active  Boolean @default(true)
+  created_at DateTime @default(now())
+
+  product products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([product_id, is_active, sort_order], name: "idx_pdi_product")
+  @@index([product_id, role, sort_order], name: "idx_pdi_product_role")
+  @@map("product_detail_images")
+}
+
+model shipping_profiles {
+  id             BigInt @id @default(autoincrement())
+  name           String @db.VarChar(120)
+  description    String? @db.VarChar(500)
+  flat_fee       Decimal @default(0) @db.Decimal(12, 2)
+  free_threshold Decimal? @db.Decimal(12, 2)
+  extra_fee_remote Decimal? @db.Decimal(12, 2)
+  is_active      Boolean @default(true)
+  created_at     DateTime @default(now())
+
+  regions shipping_profile_regions[]
+  product_shipping product_shipping[]
+
+  // optional reverse relation for sellers.default_shipping_profile_id
+  sellers sellers[] @relation("SellerDefaultShippingProfile")
+
+  @@map("shipping_profiles")
+}
+
+model shipping_profile_regions {
+  id                 BigInt @id @default(autoincrement())
+  shipping_profile_id BigInt
+  region_code        String @db.VarChar(20)
+  extra_fee          Decimal @default(0) @db.Decimal(12, 2)
+
+  profile shipping_profiles @relation(fields: [shipping_profile_id], references: [id], onDelete: Cascade)
+
+  @@index([shipping_profile_id, region_code], name: "idx_spr_profile_region")
+  @@map("shipping_profile_regions")
+}
+
+model product_shipping {
+  id                 BigInt @id @default(autoincrement())
+  product_id         BigInt
+  variant_id         BigInt?
+  shipping_profile_id BigInt
+  is_active          Boolean @default(true)
+  created_at         DateTime @default(now())
+
+  product products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  variant product_variants? @relation(fields: [variant_id], references: [id], onDelete: Cascade)
+  profile shipping_profiles @relation(fields: [shipping_profile_id], references: [id])
+
+  @@unique([product_id, variant_id], name: "uq_product_variant")
+  @@index([product_id, variant_id, shipping_profile_id], name: "idx_ps_product")
+  @@map("product_shipping")
+}

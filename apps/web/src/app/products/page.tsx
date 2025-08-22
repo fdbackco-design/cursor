@@ -1,0 +1,54 @@
+import { ProductCard } from '@/components/products/product-card';
+
+// Mock data for demonstration
+const mockProducts = [
+  {
+    id: '1',
+    name: '스마트폰',
+    description: '최신 기술이 적용된 스마트폰입니다',
+    priceB2B: 800000,
+    priceB2C: 1000000,
+    images: ['/images/phone.jpg'],
+    category: '전자제품',
+    isActive: true,
+  },
+  {
+    id: '2',
+    name: '기본 티셔츠',
+    description: '편안하고 스타일리시한 기본 티셔츠입니다',
+    priceB2B: 15000,
+    priceB2C: 25000,
+    images: ['/images/tshirt.jpg'],
+    category: '의류',
+    isActive: true,
+  },
+  {
+    id: '3',
+    name: '노트북',
+    description: '업무와 학습에 최적화된 노트북입니다',
+    priceB2B: 1200000,
+    priceB2C: 1500000,
+    images: ['/images/laptop.jpg'],
+    category: '전자제품',
+    isActive: true,
+  },
+];
+
+export default function ProductsPage() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">상품 목록</h1>
+        <p className="text-muted-foreground">
+          다양한 상품을 둘러보고 최적의 가격으로 구매하세요
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {mockProducts.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+    </div>
+  );
+}

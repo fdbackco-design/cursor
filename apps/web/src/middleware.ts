@@ -27,15 +27,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // 관리자 페이지 가드
-  if (pathname.startsWith('/admin')) {
-    const session = request.cookies.get('session');
-    const userRole = request.cookies.get('user_role');
+
+  // // 관리자 페이지 가드 (임시로 비활성화 - 테스트 목적)
+  // if (pathname.startsWith('/admin')) {
+  //   const session = request.cookies.get('session');
+  //   const userRole = request.cookies.get('user_role');
     
-    if (!session || userRole?.value !== 'BIZ') {
-      return NextResponse.redirect(new URL('/signin', request.url));
-    }
-  }
+  //   if (!session || userRole?.value !== 'BIZ') {
+  //     return NextResponse.redirect(new URL('/signin', request.url));
+  //   }
+  // }
 
   return NextResponse.next();
 }

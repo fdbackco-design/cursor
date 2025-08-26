@@ -403,3 +403,12 @@ ALTER TABLE `audit_logs` ADD CONSTRAINT `audit_logs_orderId_fkey` FOREIGN KEY (`
 
 -- AddForeignKey
 ALTER TABLE `audit_logs` ADD CONSTRAINT `audit_logs_paymentId_fkey` FOREIGN KEY (`paymentId`) REFERENCES `payments`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- 1) 컬럼 추가 (nullable)
+ALTER TABLE `products` ADD COLUMN `descriptionImages` JSON NULL;
+
+-- 2) 기존 행 백필 (빈 배열)
+UPDATE `products` SET `descriptionImages` = JSON_ARRAY() WHERE `descriptionImages` IS NULL;
+
+-- 3) NOT NULL 로 승격
+ALTER TABLE `products` MODIFY `descriptionImages` JSON NOT NULL;

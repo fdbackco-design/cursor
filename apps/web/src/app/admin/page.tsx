@@ -11,6 +11,7 @@ import {
   Ticket, 
   MessageSquare, 
   BarChart3,
+  Clock,
   Plus,
   Edit,
   Trash2,
@@ -85,6 +86,14 @@ const AdminPage = () => {
       icon: BarChart3,
       color: 'bg-teal-500',
       href: '/admin/analytics'
+    },
+    {
+      id: 'users',
+      title: '사용자 승인',
+      description: '신규 사용자 승인 및 관리',
+      icon: Clock,
+      color: 'bg-red-500',
+      href: '/admin/users'
     }
   ];
 
@@ -97,15 +106,32 @@ const AdminPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* 테스트용 안내 메시지 */}
+      <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm">
+              <strong>테스트 모드:</strong> 현재 로그인 없이 관리자 페이지에 접근할 수 있습니다. 
+              실제 운영 환경에서는 반드시 인증을 활성화해야 합니다.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <h1 className="text-2xl font-bold text-gray-900">관리자 대시보드</h1>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">관리자님 환영합니다</span>
-              <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
-                로그아웃
+              <span className="text-sm text-gray-500">테스트 모드 - 인증 없음</span>
+              <button className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                테스트 모드
               </button>
             </div>
           </div>

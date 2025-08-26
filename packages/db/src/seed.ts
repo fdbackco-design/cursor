@@ -14,7 +14,8 @@ async function main() {
     create: {
       email: "example@naver.com",
       name: "관리자",
-      role: UserRole.BIZ,
+      approve: true,
+      role: UserRole.ADMIN,
       isActive: true,
     },
   });
@@ -23,19 +24,14 @@ async function main() {
 
   // Create seller
   const seller = await prisma.seller.upsert({
-    where: { userId: adminUser.id },
+    where: { phone: "02-1234-5678" },
     update: {},
     create: {
       userId: adminUser.id,
-      companyName: "샘플 셀러",
-      businessNumber: "123-45-67890",
+      companyName: "송도",
       representativeName: "홍길동",
       phone: "02-1234-5678",
       address: "서울시 강남구 테헤란로 123",
-      addressDetail: "456동 789호",
-      postalCode: "06123",
-      city: "서울시",
-      country: "KR",
       isVerified: true,
       isActive: true,
     },
@@ -49,8 +45,6 @@ async function main() {
     update: {},
     create: {
       code: "WELCOME10",
-      discountPercent: 10,
-      maxUses: 1000,
       currentUses: 0,
       isActive: true,
       sellerId: seller.id,
@@ -84,29 +78,70 @@ async function main() {
 
   console.log("✅ Categories created");
 
+  // 발주처 생성
+  const vendor = await prisma.vendor.upsert({
+    where: { code: "KLJ" },
+    update: { name: "KLJ", isActive: true },
+    create: { code: "KLJ", name: "KLJ" },
+  });
+
   // Create products
   const product1 = await prisma.product.upsert({
     where: { sku: "ELEC-001" },
-    update: {},
-    create: {
-      name: "스마트폰",
-      description: "최신 기술이 적용된 스마트폰입니다",
-      shortDescription: "최신 스마트폰",
+    update: {
+      name: "호이드 무선청소기",
+      description: "최신 기술이 적용된 가전제품입니다.",
+      shortDescription: "최신 가전제품",
       priceB2B: 800000,
       priceB2C: 1000000,
       comparePrice: 1200000,
-      sku: "ELEC-001",
-      barcode: "8801234567890",
       weight: 180,
       length: 15,
       width: 7.5,
       height: 0.8,
       images: [
-        "https://example.com/images/phone1.jpg",
-        "https://example.com/images/phone2.jpg",
+        "http://localhost:3000/products/back1.jpg",
+        "http://localhost:3000/products/back2.jpg",
+        "http://localhost:3000/products/back3.jpg",
+      ],
+      descriptionImages: [
+        "http://localhost:3000/products/01.jpg",
+        "http://localhost:3000/products/02.gif",
+        "http://localhost:3000/products/03.jpg",
       ],
       categoryId: electronicsCategory.id,
-      sellerId: seller.id,
+      vendorId: vendor.id,
+      isActive: true,
+      isFeatured: true,
+      stockQuantity: 50,
+      lowStockThreshold: 10,
+      tags: ["스마트폰", "전자제품", "모바일"],
+      updatedAt: new Date(),
+    },
+    create: {
+      name: "호이드 무선청소기",
+      description: "최신 기술이 적용된 가전제품입니다.",
+      shortDescription: "최신 가전제품",
+      priceB2B: 800000,
+      priceB2C: 1000000,
+      comparePrice: 1200000,
+      sku: "ELEC-001",
+      weight: 180,
+      length: 15,
+      width: 7.5,
+      height: 0.8,
+      images: [
+        "http://localhost:3000/products/back1.jpg",
+        "http://localhost:3000/products/back2.jpg",
+        "http://localhost:3000/products/back3.jpg"
+      ],
+      descriptionImages: [
+        "http://localhost:3000/products/01.jpg", 
+        "http://localhost:3000/products/02.gif", 
+        "http://localhost:3000/products/03.jpg"
+      ],
+      categoryId: electronicsCategory.id,
+      vendorId: vendor.id,
       isActive: true,
       isFeatured: true,
       stockQuantity: 50,
@@ -115,35 +150,11 @@ async function main() {
     },
   });
 
-  const product2 = await prisma.product.upsert({
-    where: { sku: "CLOTH-001" },
-    update: {},
-    create: {
-      name: "기본 티셔츠",
-      description: "편안하고 스타일리시한 기본 티셔츠입니다",
-      shortDescription: "기본 티셔츠",
-      priceB2B: 15000,
-      priceB2C: 25000,
-      comparePrice: 35000,
-      sku: "CLOTH-001",
-      barcode: "8801234567891",
-      weight: 150,
-      length: 70,
-      width: 50,
-      height: 0.2,
-      images: [
-        "https://example.com/images/tshirt1.jpg",
-        "https://example.com/images/tshirt2.jpg",
-      ],
-      categoryId: clothingCategory.id,
-      sellerId: seller.id,
-      isActive: true,
-      isFeatured: false,
-      stockQuantity: 200,
-      lowStockThreshold: 20,
-      tags: ["의류", "티셔츠", "기본"],
-    },
-  });
+    // 상품에 발주처를 연결(옵션)
+    await prisma.product.update({
+      where: { sku: "ELEC-001" },
+      data: { vendorId: vendor.id }, // 또는 생략/NULL 가능
+    });
 
   console.log("✅ Products created");
 
@@ -188,7 +199,8 @@ async function main() {
     update: {},
     create: {
       email: "consumer@example.com",
-      name: "일반 사용자",
+      name: "이하하",
+      approve: true,
       role: UserRole.CONSUMER,
       referrerCodeUsed: referralCode.code,
       isActive: true,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
 import { Button } from '@repo/ui';
 import { 
@@ -13,77 +13,105 @@ import {
   Filter,
   ArrowUpDown,
   CheckCircle,
-  XCircle
+  XCircle,
+  RefreshCw,
+  Shield,
+  ShieldOff
 } from 'lucide-react';
 import Link from 'next/link';
+import { sellersApi } from '@/lib/api/sellers';
+import { Seller } from '@/types/seller';
 
 const SellersPage = () => {
-  const [sellers, setSellers] = useState([
-    {
-      id: 1,
-      name: '테크스토어',
-      email: 'tech@store.com',
-      phone: '02-1234-5678',
-      category: '전자제품',
-      status: 'active',
-      productsCount: 45,
-      totalSales: 12500000,
-      joinedAt: '2023-06-15',
-      verified: true
-    },
-    {
-      id: 2,
-      name: '홈키친',
-      email: 'home@kitchen.com',
-      phone: '02-2345-6789',
-      category: '주방용품',
-      status: 'active',
-      productsCount: 32,
-      totalSales: 8900000,
-      joinedAt: '2023-08-22',
-      verified: true
-    },
-    {
-      id: 3,
-      name: '헬스스토어',
-      email: 'health@store.com',
-      phone: '02-3456-7890',
-      category: '건강기능식품',
-      status: 'pending',
-      productsCount: 18,
-      totalSales: 3200000,
-      joinedAt: '2024-01-10',
-      verified: false
-    }
-  ]);
-
+  const [sellers, setSellers] = useState<Seller[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedVerification, setSelectedVerification] = useState('all');
 
-  const handleDelete = (id: number) => {
-    if (confirm('정말로 이 셀러를 삭제하시겠습니까?')) {
-      setSellers(sellers.filter(seller => seller.id !== id));
+  // 셀러 데이터 로드
+  const loadSellers = async () => {
+    try {
+      setLoading(true);
+      const data = await sellersApi.getAllSellers();
+      setSellers(data);
+    } catch (error) {
+      console.error('셀러 로드 실패:', error);
+      alert('셀러를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleStatusChange = (id: number, newStatus: string) => {
-    setSellers(sellers.map(seller => 
-      seller.id === id ? { ...seller, status: newStatus } : seller
-    ));
+  useEffect(() => {
+    loadSellers();
+  }, []);
+
+  // 셀러 삭제
+  const handleDelete = async (id: string) => {
+    if (confirm('정말로 이 셀러를 삭제하시겠습니까?')) {
+      try {
+        await sellersApi.deleteSeller(id);
+        alert('셀러가 성공적으로 삭제되었습니다.');
+        loadSellers(); // 목록 새로고침
+      } catch (error) {
+        console.error('셀러 삭제 실패:', error);
+        alert('셀러 삭제에 실패했습니다.');
+      }
+    }
   };
 
+  // 셀러 상태 토글
+  const handleStatusChange = async (id: string) => {
+    try {
+      await sellersApi.toggleSellerStatus(id);
+      alert('셀러 상태가 성공적으로 변경되었습니다.');
+      loadSellers(); // 목록 새로고침
+    } catch (error) {
+      console.error('셀러 상태 변경 실패:', error);
+      alert('셀러 상태 변경에 실패했습니다.');
+    }
+  };
+
+  // 셀러 인증 상태 토글
+  const handleVerificationChange = async (id: string) => {
+    try {
+      await sellersApi.toggleSellerVerification(id);
+      alert('셀러 인증 상태가 성공적으로 변경되었습니다.');
+      loadSellers(); // 목록 새로고침
+    } catch (error) {
+      console.error('셀러 인증 상태 변경 실패:', error);
+      alert('셀러 인증 상태 변경에 실패했습니다.');
+    }
+  };
+
+  // 필터링된 셀러 목록
   const filteredSellers = sellers.filter(seller => {
-    const matchesSearch = seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         seller.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || seller.category === selectedCategory;
-    const matchesStatus = selectedStatus === 'all' || seller.status === selectedStatus;
+    const matchesSearch = seller.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         seller.representativeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         seller.phone.includes(searchTerm) ||
+                         (seller.user?.email && seller.user.email.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus = selectedStatus === 'all' || 
+                         (selectedStatus === 'active' ? seller.isActive : !seller.isActive);
+    const matchesVerification = selectedVerification === 'all' || 
+                               (selectedVerification === 'verified' ? seller.isVerified : !seller.isVerified);
     
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesStatus && matchesVerification;
   });
 
-  const categories = ['전자제품', '주방용품', '건강기능식품', '패션', '도서'];
-  const statuses = ['active', 'pending', 'suspended'];
+  const statuses = ['all', 'active', 'inactive'];
+  const verifications = ['all', 'verified', 'unverified'];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">셀러를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -97,10 +125,22 @@ const SellersPage = () => {
               </Link>
               <h1 className="text-2xl font-bold text-gray-900">셀러 관리</h1>
             </div>
-            <Button className="bg-green-600 hover:bg-green-700">
-              <Plus className="h-4 w-4 mr-2" />
-              새 셀러 등록
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button 
+                variant="outline" 
+                onClick={loadSellers}
+                className="flex items-center"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                새로고침
+              </Button>
+              <Link href="/admin/sellers/new">
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  새 셀러 등록
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -114,33 +154,35 @@ const SellersPage = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="셀러명 또는 이메일 검색"
+                  placeholder="회사명, 대표자명, 전화번호, 이메일 검색"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               
               <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                <option value="all">전체 카테고리</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
-              
-              <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="all">전체 상태</option>
-                <option value="active">활성</option>
-                <option value="pending">승인 대기</option>
-                <option value="suspended">정지</option>
+                {statuses.map(status => (
+                  <option key={status} value={status}>
+                    {status === 'all' ? '전체 상태' : status === 'active' ? '활성' : '비활성'}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedVerification}
+                onChange={(e) => setSelectedVerification(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {verifications.map(verification => (
+                  <option key={verification} value={verification}>
+                    {verification === 'all' ? '전체 인증' : verification === 'verified' ? '인증됨' : '미인증'}
+                  </option>
+                ))}
               </select>
               
               <Button variant="outline" className="flex items-center justify-center">
@@ -168,12 +210,11 @@ const SellersPage = () => {
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-3 px-4 font-medium text-gray-900">셀러 정보</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">카테고리</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">상품 수</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">총 매출</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900">연락처</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900">추천 코드</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-900">상태</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-900">인증</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">가입일</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-900">등록일</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-900">작업</th>
                   </tr>
                 </thead>
@@ -182,67 +223,96 @@ const SellersPage = () => {
                     <tr key={seller.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                            <Users className="h-5 w-5 text-green-600" />
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Users className="h-5 w-5 text-blue-600" />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{seller.name}</p>
-                            <p className="text-sm text-gray-500">{seller.email}</p>
-                            <p className="text-sm text-gray-500">{seller.phone}</p>
+                            <p className="font-medium text-gray-900">{seller.companyName}</p>
+                            <p className="text-sm text-gray-500">대표: {seller.representativeName}</p>
+                            {seller.user && (
+                              <p className="text-xs text-gray-400">{seller.user.name} ({seller.user.email})</p>
+                            )}
                           </div>
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {seller.category}
-                        </span>
+                        <div className="space-y-1">
+                          <p className="text-sm text-gray-900">{seller.phone}</p>
+                          <p className="text-xs text-gray-500">{seller.address}</p>
+                        </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="font-medium text-gray-900">{seller.productsCount}개</span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="font-medium text-gray-900">
-                          {seller.totalSales.toLocaleString()}원
-                        </span>
+                        <div className="space-y-1">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            {seller.referralCodeCount || 0}개
+                          </span>
+                          <p className="text-xs text-gray-500">
+                            총 사용: {seller.totalReferralUses || 0}회
+                          </p>
+                        </div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-2">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            seller.status === 'active' ? 'bg-green-100 text-green-800' :
-                            seller.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
+                            seller.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}>
-                            {seller.status === 'active' ? '활성' : 
-                             seller.status === 'pending' ? '승인 대기' : '정지'}
+                            {seller.isActive ? '활성' : '비활성'}
                           </span>
-                          {seller.status === 'pending' && (
-                            <Button 
-                              size="sm" 
-                              className="bg-green-600 hover:bg-green-700 text-white"
-                              onClick={() => handleStatusChange(seller.id, 'active')}
-                            >
-                              승인
-                            </Button>
+                          {seller.isActive ? (
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-600" />
                           )}
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        {seller.verified ? (
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                        ) : (
-                          <XCircle className="h-5 w-5 text-red-600" />
-                        )}
+                        <div className="flex items-center space-x-2">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            seller.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {seller.isVerified ? '인증됨' : '미인증'}
+                          </span>
+                          {seller.isVerified ? (
+                            <Shield className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <ShieldOff className="h-4 w-4 text-yellow-600" />
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-sm text-gray-500">{seller.joinedAt}</span>
+                        <span className="text-sm text-gray-500">
+                          {new Date(seller.createdAt).toLocaleDateString('ko-KR')}
+                        </span>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
-                            <Eye className="h-4 w-4" />
+                          <Link href={`/admin/sellers/${seller.id}`}>
+                            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Link href={`/admin/sellers/${seller.id}/edit`}>
+                            <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-yellow-600 hover:text-yellow-700"
+                            onClick={() => handleStatusChange(seller.id)}
+                            title={seller.isActive ? '비활성화' : '활성화'}
+                          >
+                            {seller.isActive ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700">
-                            <Edit className="h-4 w-4" />
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-purple-600 hover:text-purple-700"
+                            onClick={() => handleVerificationChange(seller.id)}
+                            title={seller.isVerified ? '인증 해제' : '인증 승인'}
+                          >
+                            {seller.isVerified ? <ShieldOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
                           </Button>
                           <Button 
                             variant="ghost" 
@@ -259,6 +329,16 @@ const SellersPage = () => {
                 </tbody>
               </table>
             </div>
+            
+            {filteredSellers.length === 0 && (
+              <div className="text-center py-12">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">셀러가 없습니다.</p>
+                <Link href="/admin/sellers/new">
+                  <Button className="mt-4">첫 번째 셀러 등록하기</Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

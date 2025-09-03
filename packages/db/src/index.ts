@@ -22,7 +22,6 @@ export type {
   DiscountType,
   PointsType,
   OrderStatus,
-  PaymentMethod,
   PaymentStatus,
   ShipmentStatus,
   ReturnStatus,

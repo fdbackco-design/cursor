@@ -1,16 +1,20 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CartService } from './cart.service';
 import { AddToCartDto, UpdateCartItemDto } from './dto';
+import { Request } from 'express';
 
 @Controller('cart')
+@UseGuards(JwtAuthGuard)
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   // 사용자의 장바구니 조회
-  @Get(':userId')
-  async getCart(@Param('userId') userId: string) {
+  @Get()
+  async getCart(@Req() req: Request) {
     try {
-      const cart = await this.cartService.getCartByUserId(userId);
+      const user = req.user as any;
+      const cart = await this.cartService.getCartByUserId(user.id);
       return {
         success: true,
         message: '장바구니를 성공적으로 조회했습니다.',
@@ -28,9 +32,13 @@ export class CartController {
 
   // 장바구니에 상품 추가
   @Post('add')
-  async addToCart(@Body() addToCartDto: AddToCartDto) {
+  async addToCart(@Body() addToCartDto: Omit<AddToCartDto, 'userId'>, @Req() req: Request) {
     try {
-      const cartItem = await this.cartService.addToCart(addToCartDto);
+      const user = req.user as any;
+      const cartItem = await this.cartService.addToCart({
+        ...addToCartDto,
+        userId: user.id,
+      });
       return {
         success: true,
         message: '상품이 장바구니에 추가되었습니다.',
@@ -90,10 +98,11 @@ export class CartController {
   }
 
   // 장바구니 전체 비우기
-  @Delete(':userId/clear')
-  async clearCart(@Param('userId') userId: string) {
+  @Delete('clear')
+  async clearCart(@Req() req: Request) {
     try {
-      await this.cartService.clearCart(userId);
+      const user = req.user as any;
+      await this.cartService.clearCart(user.id);
       return {
         success: true,
         message: '장바구니가 비워졌습니다.',

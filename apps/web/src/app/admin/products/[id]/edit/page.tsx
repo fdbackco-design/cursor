@@ -8,14 +8,17 @@ import { ArrowLeft, Save, Upload, X, Plus, Trash2 } from 'lucide-react';
 import { productsApi, updateProduct } from '@/lib/api/products';
 import { Product } from '@/types/product';
 import { getImageUrl } from '@/lib/utils/image';
+import { useToast, toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-modal';
 
 const EditProductPage = () => {
   const params = useParams();
   const router = useRouter();
   const productId = params.id as string;
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   
-  console.log('EditProductPage - params:', params);
-  console.log('EditProductPage - productId:', productId);
+
   
   // 임시로 하드코딩된 상품 ID로 테스트
   const testProductId = 'cmerxdqvf00024q5ppjoeufkn';
@@ -82,7 +85,7 @@ const EditProductPage = () => {
         });
       } catch (error) {
         console.error('상품 로드 실패:', error);
-        alert('상품을 불러오는데 실패했습니다.');
+        showToast(toast.error('상품 로드 실패', '상품을 불러오는데 실패했습니다.'));
         router.push('/admin/products');
       } finally {
         setLoading(false);
@@ -151,11 +154,20 @@ const EditProductPage = () => {
       if (formData.name !== product.name) productData.name = formData.name;
       if (formData.description !== product.description) productData.description = formData.description;
       if (formData.shortDescription !== (product.shortDescription || '')) productData.shortDescription = formData.shortDescription || undefined;
-      if (parseFloat(formData.priceB2B) !== Number(product.priceB2B)) productData.priceB2B = parseFloat(formData.priceB2B);
-      if (parseFloat(formData.priceB2C) !== Number(product.priceB2C)) productData.priceB2C = parseFloat(formData.priceB2C);
-      if (formData.comparePrice !== (product.comparePrice ? product.comparePrice.toString() : '')) {
-        productData.comparePrice = formData.comparePrice ? parseFloat(formData.comparePrice) : undefined;
-      }
+      // 가격 필드 처리 - 디버깅 로그 추가
+      const currentPriceB2B = parseFloat(formData.priceB2B);
+      const currentPriceB2C = parseFloat(formData.priceB2C);
+      const currentComparePrice = formData.comparePrice ? parseFloat(formData.comparePrice) : null;
+      
+      console.log('가격 비교:', {
+        formData: { priceB2B: formData.priceB2B, priceB2C: formData.priceB2C, comparePrice: formData.comparePrice },
+        product: { priceB2B: product.priceB2B, priceB2C: product.priceB2C, comparePrice: product.comparePrice },
+        parsed: { priceB2B: currentPriceB2B, priceB2C: currentPriceB2C, comparePrice: currentComparePrice }
+      });
+      
+      if (currentPriceB2B !== Number(product.priceB2B)) productData.priceB2B = currentPriceB2B;
+      if (currentPriceB2C !== Number(product.priceB2C)) productData.priceB2C = currentPriceB2C;
+      if (currentComparePrice !== product.comparePrice) productData.comparePrice = currentComparePrice;
       if (formData.sku !== (product.sku || '')) productData.sku = formData.sku || undefined;
       if (formData.weight !== (product.weight ? product.weight.toString() : '')) {
         productData.weight = formData.weight ? parseFloat(formData.weight) : undefined;
@@ -184,12 +196,15 @@ const EditProductPage = () => {
       if (formData.images.length > 0) productData.images = formData.images;
       if (formData.descriptionImages.length > 0) productData.descriptionImages = formData.descriptionImages;
 
-      await updateProduct(testProductId, productData);
-      alert('상품이 성공적으로 수정되었습니다.');
+      // console.log('최종 전송 데이터:', productData);
+      // console.log('전송할 productId:', productId);
+      
+      await updateProduct(productId, productData);
+      showToast(toast.success('상품 수정 완료', '상품이 성공적으로 수정되었습니다.'));
       router.push('/admin/products');
     } catch (error) {
       console.error('상품 수정 실패:', error);
-      alert('상품 수정에 실패했습니다.');
+      showToast(toast.error('상품 수정 실패', '상품 수정에 실패했습니다.'));
     } finally {
       setSaving(false);
     }

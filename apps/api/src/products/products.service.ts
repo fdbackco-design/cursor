@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { AuditLogService } from '../audit-log/audit-log.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly auditLogService: AuditLogService
+  ) {}
 
   // 모든 상품 조회
   async getAllProducts() {
@@ -18,6 +22,72 @@ export class ProductsService {
         createdAt: 'desc',
       },
     });
+  }
+
+  // 상품 조회 (필터링 옵션 지원)
+  async getProducts(options: {
+    category?: string;
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) {
+    const { category, page = 1, limit = 20, search, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+    
+    // 필터 조건 구성
+    const where: any = { isActive: true };
+    
+    if (category) {
+      where.category = {
+        OR: [
+          { name: { contains: category } },
+          { slug: { contains: category } }
+        ]
+      };
+    }
+    
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { description: { contains: search } },
+        { category: { name: { contains: search } } }
+      ];
+    }
+
+    // 정렬 조건 구성
+    const orderBy: any = {};
+    orderBy[sortBy] = sortOrder;
+
+    // 페이지네이션 계산
+    const skip = (page - 1) * limit;
+
+    // 상품 조회 및 총 개수 조회
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        include: {
+          category: true,
+          vendor: true,
+        },
+        orderBy,
+        skip,
+        take: limit,
+      }),
+      this.prisma.product.count({ where })
+    ]);
+
+    return {
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1,
+      }
+    };
   }
 
   // 카테고리별 상품 조회
@@ -110,7 +180,7 @@ export class ProductsService {
     return `${vendorCode}-${base}-${seq}`;
   }
 
-  async createProduct(createProductDto: any) {
+  async createProduct(createProductDto: any, userId?: string) {
     const { 
       name, 
       description, 
@@ -220,11 +290,28 @@ export class ProductsService {
       },
     });
 
+    // 상품 생성 AuditLog 추가
+    if (userId) {
+      try {
+        await this.auditLogService.logProductCreation(userId, product.id, {
+          name: product.name,
+          priceB2C: product.priceB2C,
+          category: categoryRecord,
+          vendor: vendorRecord
+        });
+      } catch (error) {
+        console.error('상품 생성 AuditLog 추가 실패:', error);
+      }
+    }
+
     return product;
   }
 
   // 상품 수정
   async updateProduct(id: string, updateProductDto: any) {
+    // console.log('updateProduct - ID:', id);
+    // console.log('updateProduct - 받은 데이터:', updateProductDto);
+    
     const { 
       name, 
       description, 
@@ -255,6 +342,8 @@ export class ProductsService {
       include: { category: true, vendor: true }
     });
 
+    console.log('updateProduct - 조회된 상품:', existingProduct ? '상품 존재' : '상품 없음');
+    
     if (!existingProduct) {
       throw new Error('상품을 찾을 수 없습니다.');
     }

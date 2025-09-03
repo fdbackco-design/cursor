@@ -5,7 +5,7 @@ import { PrismaClient, UserRole, DiscountType } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Starting database seed...");
+  //console.log("🌱 Starting database seed...");
 
   // Create admin user
   const adminUser = await prisma.user.upsert({
@@ -17,10 +17,17 @@ async function main() {
       approve: true,
       role: UserRole.ADMIN,
       isActive: true,
+      phoneNumber: "010-1111-2222", 
+      shippingAddress: {   
+        recipient: "관리자",
+        address: "인천광역시 연수구 랜드마크로 20",
+        phone: "010-1111-2222",
+      },
+      talkMessageAgreed: true,           
     },
   });
 
-  console.log("✅ Admin user created:", adminUser.email);
+  //console.log("✅ Admin user created:", adminUser.email);
 
   // Create seller
   const seller = await prisma.seller.upsert({
@@ -37,7 +44,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Seller created:", seller.companyName);
+  //console.log("✅ Seller created:", seller.companyName);
 
   // Create referral code
   const referralCode = await prisma.referralCode.upsert({
@@ -51,7 +58,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Referral code created:", referralCode.code);
+  //console.log("✅ Referral code created:", referralCode.code);
 
   // Create categories
   const electronicsCategory = await prisma.category.upsert({
@@ -76,7 +83,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Categories created");
+  //console.log("✅ Categories created");
 
   // 발주처 생성
   const vendor = await prisma.vendor.upsert({
@@ -92,9 +99,9 @@ async function main() {
       name: "호이드 무선청소기",
       description: "최신 기술이 적용된 가전제품입니다.",
       shortDescription: "최신 가전제품",
-      priceB2B: 800000,
-      priceB2C: 1000000,
-      comparePrice: 1200000,
+      priceB2B: 1,
+      priceB2C: 2,
+      comparePrice: 3,
       weight: 180,
       length: 15,
       width: 7.5,
@@ -122,9 +129,9 @@ async function main() {
       name: "호이드 무선청소기",
       description: "최신 기술이 적용된 가전제품입니다.",
       shortDescription: "최신 가전제품",
-      priceB2B: 800000,
-      priceB2C: 1000000,
-      comparePrice: 1200000,
+      priceB2B: 3,
+      priceB2C: 2,
+      comparePrice: 4,
       sku: "ELEC-001",
       weight: 180,
       length: 15,
@@ -150,13 +157,12 @@ async function main() {
     },
   });
 
-    // 상품에 발주처를 연결(옵션)
-    await prisma.product.update({
-      where: { sku: "ELEC-001" },
-      data: { vendorId: vendor.id }, // 또는 생략/NULL 가능
-    });
+  await prisma.product.update({
+    where: { sku: "ELEC-001" },
+    data: { vendorId: vendor.id },
+  });
 
-  console.log("✅ Products created");
+  //console.log("✅ Products created");
 
   // Create coupons
   const coupon1 = await prisma.coupon.upsert({
@@ -191,7 +197,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Coupons created");
+  //console.log("✅ Coupons created");
 
   // Create sample consumer user
   const consumerUser = await prisma.user.upsert({
@@ -204,10 +210,17 @@ async function main() {
       role: UserRole.CONSUMER,
       referrerCodeUsed: referralCode.code,
       isActive: true,
+      phoneNumber: "010-3333-4444",             // ✅ 추가
+      shippingAddress: {                       // ✅ 추가 (JSON)
+        recipient: "이하하",
+        address: "서울특별시 서초구 서초대로 77",
+        phone: "010-3333-4444",
+      },
+      talkMessageAgreed: false,                // ✅ 기본값 false
     },
   });
 
-  console.log("✅ Consumer user created:", consumerUser.email);
+  //console.log("✅ Consumer user created:", consumerUser.email);
 
   // Create cart for consumer user
   await prisma.cart.upsert({
@@ -218,9 +231,68 @@ async function main() {
     },
   });
 
-  console.log("✅ Cart created for consumer user");
+  //console.log("✅ Cart created for consumer user");
 
-  console.log("🎉 Database seeding completed successfully!");
+  // 쿠폰 생성
+  const coupons = await Promise.all([
+    prisma.coupon.upsert({
+      where: { code: 'WELCOME10' },
+      update: {},
+      create: {
+        code: 'WELCOME10',
+        name: '신규가입 할인 쿠폰',
+        description: '신규 가입 고객을 위한 10% 할인 쿠폰입니다.',
+        discountType: 'PERCENTAGE',
+        discountValue: 10,
+        minAmount: 10000,
+        maxAmount: 5000,
+        startsAt: new Date(),
+        endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30일 후
+        isActive: true,
+        maxUses: 1000,
+        currentUses: 0,
+      },
+    }),
+    prisma.coupon.upsert({
+      where: { code: 'SAVE5000' },
+      update: {},
+      create: {
+        code: 'SAVE5000',
+        name: '5천원 할인 쿠폰',
+        description: '5천원 즉시 할인 쿠폰입니다.',
+        discountType: 'FIXED_AMOUNT',
+        discountValue: 5000,
+        minAmount: 20000,
+        startsAt: new Date(),
+        endsAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60일 후
+        isActive: true,
+        maxUses: 500,
+        currentUses: 0,
+      },
+    }),
+    prisma.coupon.upsert({
+      where: { code: 'SPECIAL20' },
+      update: {},
+      create: {
+        code: 'SPECIAL20',
+        name: '특별 할인 쿠폰',
+        description: '특별한 고객을 위한 20% 할인 쿠폰입니다.',
+        discountType: 'PERCENTAGE',
+        discountValue: 20,
+        minAmount: 30000,
+        maxAmount: 10000,
+        startsAt: new Date(),
+        endsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14일 후
+        isActive: true,
+        maxUses: 100,
+        currentUses: 0,
+      },
+    }),
+  ]);
+
+  //console.log("✅ Test coupons created");
+
+  //console.log("🎉 Database seeding completed successfully!");
 }
 
 main()

@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
+  // experimental: {
+  //   appDir: true,
+  // },
   transpilePackages: ['@repo/ui', '@repo/contracts'],
   images: {
     domains: ['example.com', 'localhost'],

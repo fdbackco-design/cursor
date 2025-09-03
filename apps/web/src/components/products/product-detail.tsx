@@ -1,10 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { ShoppingCart, Heart, Share2, Star, Image as ImageIcon } from 'lucide-react';
+import { ShoppingCart, Heart, Star, Image as ImageIcon, Check, X } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image';
+import { useAuth } from '@/contexts/AuthContext';
+import { cartApi } from '@/lib/api/cart';
+import { wishlistApi } from '@/lib/api/wishlist';
+import { reviewsApi, Review } from '@/lib/api/reviews';
+import { useToast, toast } from '@/components/ui/toast';
 
 import { Product } from '@/types/product';
 
@@ -13,10 +18,31 @@ interface ProductDetailProps {
 }
 
 export function ProductDetail({ product }: ProductDetailProps) {
+  const { user, isAuthenticated } = useAuth();
+  const { showToast } = useToast();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [addToCartStatus, setAddToCartStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  
+  // 리뷰 관련 상태
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
+  const [showReviews, setShowReviews] = useState(false);
+  const [reviewStats, setReviewStats] = useState<{
+    totalReviews: number;
+    averageRating: number;
+    ratingDistribution: Array<{
+      rating: number;
+      count: number;
+      percentage: number;
+    }>;
+  } | null>(null);
   
   // 이미지가 없거나 selectedImage가 범위를 벗어날 때 안전 처리
   const safeSelectedImage = product.images && product.images.length > 0 
@@ -41,10 +67,148 @@ export function ProductDetail({ product }: ProductDetailProps) {
     setImageError(true);
   };
 
+  // 찜하기 상태 확인
+  useEffect(() => {
+    if (isAuthenticated) {
+      checkWishlistStatus();
+    }
+  }, [isAuthenticated, product.id]);
+
+  const checkWishlistStatus = async () => {
+    try {
+      const status = await wishlistApi.checkWishlistStatus(product.id);
+      setIsWishlisted(status);
+    } catch (error) {
+      console.error('찜하기 상태 확인 실패:', error);
+    }
+  };
+
+  // 찜하기 토글
+  const toggleWishlist = async () => {
+    if (!isAuthenticated) {
+      showToast(toast.warning('로그인 필요', '로그인이 필요한 서비스입니다.'));
+      return;
+    }
+
+    setWishlistLoading(true);
+    try {
+      if (isWishlisted) {
+        await wishlistApi.removeFromWishlist({ productId: product.id });
+        setIsWishlisted(false);
+        showToast(toast.success('찜하기 해제', '상품을 찜목록에서 제거했습니다.'));
+      } else {
+        await wishlistApi.addToWishlist({ productId: product.id });
+        setIsWishlisted(true);
+        showToast(toast.success('찜하기 추가', '상품을 찜목록에 추가했습니다.'));
+      }
+    } catch (error) {
+      console.error('찜하기 토글 실패:', error);
+      showToast(toast.error('찜하기 실패', '찜하기 처리에 실패했습니다.'));
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  // 리뷰 로드 함수
+  const loadReviews = async () => {
+    try {
+      setReviewsLoading(true);
+      setReviewsError(null);
+      const response = await reviewsApi.getProductReviews(product.id, 1, 10);
+      
+      //console.log('리뷰 API 응답:', response);
+      
+      if (response.success && response.data) {
+        //console.log('리뷰 데이터:', response.data.reviews);
+        //console.log('리뷰 통계:', response.data.stats);
+        setReviews(response.data.reviews);
+        setReviewStats(response.data.stats);
+      } else {
+        console.error('리뷰 로드 실패:', response.error);
+        setReviewsError('리뷰를 불러올 수 없습니다.');
+      }
+    } catch (error) {
+      console.error('리뷰 로드 실패:', error);
+      setReviewsError('리뷰를 불러오는 중 오류가 발생했습니다.');
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  // 리뷰 섹션 토글
+  const toggleReviews = () => {
+    if (!showReviews && (!reviews || reviews.length === 0)) {
+      loadReviews();
+    }
+    setShowReviews(!showReviews);
+  };
+
+  // 컴포넌트 마운트 시 리뷰 통계 로드
+  React.useEffect(() => {
+    const loadReviewStats = async () => {
+      try {
+        const response = await reviewsApi.getProductReviews(product.id, 1, 1);
+        //console.log('통계 API 응답:', response);
+        
+        if (response.success && response.data) {
+          //console.log('통계 데이터:', response.data.stats);
+          setReviewStats(response.data.stats);
+        }
+      } catch (error) {
+        console.error('리뷰 통계 로드 실패:', error);
+      }
+    };
+
+    loadReviewStats();
+  }, [product.id]);
+
   const handleImageSelect = (index: number) => {
     setSelectedImage(index);
     setImageLoading(true);
     setImageError(false);
+  };
+
+  const handleAddToCart = async () => {
+    if (!isAuthenticated || !user) {
+      showToast(toast.warning('로그인 필요', '로그인이 필요한 서비스입니다.'));
+      window.location.href = '/signin';
+      return;
+    }
+
+    if (product.stockQuantity < quantity) {
+      showToast(toast.warning('재고 부족', `재고가 부족합니다. 현재 재고: ${product.stockQuantity}개`));
+      return;
+    }
+
+    setIsAddingToCart(true);
+    setAddToCartStatus('idle');
+
+    try {
+      const result = await cartApi.addToCart({
+        productId: product.id,
+        quantity: quantity,
+      });
+
+      if (result.success) {
+        setAddToCartStatus('success');
+        //console.log('장바구니 추가 성공:', result.message);
+        
+        // 3초 후 상태 초기화
+        setTimeout(() => {
+          setAddToCartStatus('idle');
+        }, 3000);
+      } else {
+        setAddToCartStatus('error');
+        console.error('장바구니 추가 실패:', result.message);
+        showToast(toast.error('장바구니 추가 실패', result.message || '장바구니 추가에 실패했습니다.'));
+      }
+    } catch (error) {
+      setAddToCartStatus('error');
+      console.error('장바구니 추가 오류:', error);
+      showToast(toast.error('장바구니 추가 오류', '장바구니 추가 중 오류가 발생했습니다.'));
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   return (
@@ -70,7 +234,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 </div>
               ) : (
                 <img
-                  src={getImageUrl(product.images[safeSelectedImage])}
+                  src={getImageUrl(product.images[safeSelectedImage] || '')}
                   alt={`${product.name} 이미지 ${safeSelectedImage + 1}`}
                   className={`w-full h-full object-cover transition-opacity duration-200 ${
                     imageLoading ? 'opacity-0' : 'opacity-100'
@@ -132,7 +296,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
             )}
           </div>
           
-          {product.comparePrice && (
+          {/* {product.comparePrice && (
             <p className="text-muted-foreground line-through">
               {product.comparePrice.toLocaleString()}원
             </p>
@@ -140,7 +304,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
           
           <p className="text-sm text-muted-foreground">
             {priceLabel} • 재고: {product.stockQuantity}개
-          </p>
+          </p> */}
         </div>
 
         {/* Quantity */}
@@ -167,16 +331,49 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
         {/* Actions */}
         <div className="flex gap-3">
-          <Button size="lg" className="flex-1">
-            <ShoppingCart className="h-5 w-5 mr-2" />
-            장바구니에 추가
+          <Button 
+            size="lg" 
+            className="flex-1"
+            onClick={handleAddToCart}
+            disabled={isAddingToCart || product.stockQuantity === 0}
+          >
+            {isAddingToCart ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                추가 중...
+              </>
+            ) : addToCartStatus === 'success' ? (
+              <>
+                <Check className="h-5 w-5 mr-2 text-green-600" />
+                추가 완료!
+              </>
+            ) : addToCartStatus === 'error' ? (
+              <>
+                <X className="h-5 w-5 mr-2 text-red-600" />
+                추가 실패
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                {product.stockQuantity === 0 ? '품절' : '장바구니에 추가'}
+              </>
+            )}
           </Button>
-          <Button variant="outline" size="lg">
-            <Heart className="h-5 w-5" />
+          <Button 
+            variant="outline" 
+            size="lg"
+            onClick={toggleWishlist}
+            disabled={wishlistLoading}
+            className={`transition-colors duration-200 ${
+              isWishlisted ? 'text-red-500 border-red-500 hover:bg-red-50' : 'hover:border-red-500'
+            }`}
+          >
+            <Heart 
+              className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} 
+            />
+            {wishlistLoading ? '처리중...' : (isWishlisted ? '찜됨' : '찜하기')}
           </Button>
-          <Button variant="outline" size="lg">
-            <Share2 className="h-5 w-5" />
-          </Button>
+
         </div>
 
         {/* Tags */}
@@ -230,6 +427,147 @@ export function ProductDetail({ product }: ProductDetailProps) {
           </Card>
         </div>
       )}
+
+      {/* Reviews Section */}
+      <div className="lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <span className="flex items-center">
+                  <Star className="h-5 w-5 mr-2 text-yellow-400" />
+                  상품 리뷰
+                </span>
+                {reviewStats && (
+                  <div className="flex items-center space-x-4 text-sm text-gray-600">
+                    <div className="flex items-center space-x-1">
+                      <span className="font-medium">{reviewStats.totalReviews}</span>
+                      <span>개 리뷰</span>
+                    </div>
+                    {reviewStats.averageRating > 0 ? (
+                      <div className="flex items-center space-x-1">
+                        <div className="flex items-center">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-4 w-4 ${
+                                star <= Math.round(reviewStats.averageRating)
+                                  ? 'text-yellow-400 fill-current'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-medium">{reviewStats.averageRating}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-1 text-gray-400">
+                        <div className="flex items-center">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className="h-4 w-4 text-gray-300"
+                            />
+                          ))}
+                        </div>
+                        <span>리뷰 없음</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleReviews}
+                className="flex items-center"
+              >
+                {showReviews ? '리뷰 숨기기' : '리뷰 보기'}
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          {showReviews && (
+            <CardContent>
+              {reviewsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <span className="ml-2 text-muted-foreground">리뷰를 불러오는 중...</span>
+                </div>
+              ) : reviewsError ? (
+                <div className="text-center py-8">
+                  <p className="text-red-500 mb-4">{reviewsError}</p>
+                  <Button variant="outline" onClick={loadReviews}>
+                    다시 시도
+                  </Button>
+                </div>
+              ) : !reviews || reviews.length === 0 ? (
+                <div className="text-center py-8">
+                  <Star className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-muted-foreground">아직 작성된 리뷰가 없습니다.</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    첫 번째 리뷰를 작성해보세요!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-gray-600">
+                              {review.user?.name?.charAt(0) || 'U'}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {review.user?.name || '익명'}
+                            </p>
+                            <div className="flex items-center space-x-2">
+                              <div className="flex items-center">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`h-4 w-4 ${
+                                      star <= review.rating
+                                        ? 'text-yellow-400 fill-current'
+                                        : 'text-gray-300'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-sm text-gray-500">
+                                {new Date(review.createdAt).toLocaleDateString('ko-KR')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        {review.isVerified && (
+                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                            구매확정
+                          </span>
+                        )}
+                      </div>
+                      
+                      {review.title && (
+                        <h4 className="font-medium text-gray-900 mb-2">{review.title}</h4>
+                      )}
+                      
+                      <p className="text-gray-700 leading-relaxed">{review.content}</p>
+                    </div>
+                  ))}
+                  
+                  <div className="text-center pt-4">
+                    <Button variant="outline" onClick={loadReviews}>
+                      더 많은 리뷰 보기
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

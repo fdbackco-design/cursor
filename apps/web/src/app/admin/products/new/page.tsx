@@ -16,9 +16,11 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createProduct } from '@/lib/api/products';
+import { useToast, toast } from '@/components/ui/toast';
 
 const NewProductPage = () => {
   const router = useRouter();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -134,14 +136,14 @@ const NewProductPage = () => {
 
     const result = await createProduct(productData);
     if (result.success) {
-      alert('상품이 성공적으로 등록되었습니다!');
+      showToast(toast.success('상품 등록 완료', '상품이 성공적으로 등록되었습니다!'));
       router.push('/admin/products');
     } else {
       throw new Error(result.message || '상품 등록에 실패했습니다.');
     }
   } catch (err) {
     console.error('상품 등록 실패:', err);
-    alert('상품 등록에 실패했습니다. 다시 시도해주세요.');
+    showToast(toast.error('상품 등록 실패', '상품 등록에 실패했습니다. 다시 시도해주세요.'));
   } finally {
     setIsSubmitting(false);
   }

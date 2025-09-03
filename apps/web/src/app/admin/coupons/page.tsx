@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { Plus, Search, Edit, Trash2, ToggleLeft, ToggleRight, Percent, DollarSign, Truck, Calendar, Users, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import { couponsApi, Coupon } from '@/lib/api/coupons';
+import { useToast, toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-modal';
 
 export default function CouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -13,6 +15,8 @@ export default function CouponsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
 
   useEffect(() => {
     loadCoupons();
@@ -25,7 +29,7 @@ export default function CouponsPage() {
       setCoupons(couponsData);
     } catch (error) {
       console.error('쿠폰 목록 조회 실패:', error);
-      alert('쿠폰 목록을 불러오는데 실패했습니다.');
+      showToast(toast.error('쿠폰 목록 조회 실패', '쿠폰 목록 조회에 실패했습니다.'));
     } finally {
       setLoading(false);
     }
@@ -34,26 +38,32 @@ export default function CouponsPage() {
   const handleToggleStatus = async (couponId: string) => {
     try {
       await couponsApi.toggleCouponStatus(couponId);
-      alert('쿠폰 상태가 변경되었습니다.');
+      showToast(toast.success('쿠폰 상태 변경', '쿠폰 상태가 변경되었습니다.'));
       await loadCoupons(); // 목록 새로고침
     } catch (error) {
       console.error('쿠폰 상태 변경 실패:', error);
-      alert('쿠폰 상태 변경에 실패했습니다.');
+      showToast(toast.error('쿠폰 상태 변경 실패', '쿠폰 상태 변경에 실패했습니다.'));
+      showToast(toast.error('쿠폰 목록 조회 실패', '쿠폰 목록 조회에 실패했습니다.'));
     }
   };
 
   const handleDeleteCoupon = async (couponId: string, couponName: string) => {
-    if (!confirm(`'${couponName}' 쿠폰을 삭제하시겠습니까?`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: '쿠폰 삭제',
+      message: `'${couponName}' 쿠폰을 삭제하시겠습니까?`,
+      confirmText: '삭제',
+      cancelText: '취소',
+      type: 'danger'
+    });
+    if (!confirmed) return;
 
     try {
       await couponsApi.deleteCoupon(couponId);
-      alert('쿠폰이 삭제되었습니다.');
+      showToast(toast.success('쿠폰 삭제 완료', '쿠폰이 삭제되었습니다.'));
       await loadCoupons(); // 목록 새로고침
     } catch (error) {
       console.error('쿠폰 삭제 실패:', error);
-      alert('쿠폰 삭제에 실패했습니다.');
+      showToast(toast.error('쿠폰 삭제 실패', '쿠폰 삭제에 실패했습니다.'));
     }
   };
 

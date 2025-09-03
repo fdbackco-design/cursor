@@ -1,3 +1,8 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { ProductCard } from '@/components/products/product-card';
 
 // Mock data for demonstration
@@ -35,6 +40,33 @@ const mockProducts = [
 ];
 
 export default function ProductsPage() {
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+    if (!isAuthenticated || !user) {
+      router.push('/signin');
+      return;
+    }
+    
+    // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
+    if (isAuthenticated && user && !user.approve) {
+      router.push('/approval-pending');
+      return;
+    }
+  }, [isAuthenticated, user, router]);
+
+  // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+  
+  // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
+  if (isAuthenticated && user && !user.approve) {
+    return null;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">

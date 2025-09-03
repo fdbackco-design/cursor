@@ -1,22 +1,42 @@
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Query, Body, UseGuards, UseInterceptors, UploadedFiles, Request } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateProductDto } from './dto/create-product.dto';
 import { uploadConfig } from '../common/middleware/upload.middleware';
+import { AuthService } from '../auth/auth.service';
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly authService: AuthService
+  ) {}
 
-  // 모든 상품 조회
+  // 모든 상품 조회 (필터링 옵션 지원)
   @Get()
-  async getAllProducts() {
-    const products = await this.productsService.getAllProducts();
+  async getAllProducts(
+    @Query('category') category?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string
+  ) {
+    const options = {
+      category,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 20,
+      search,
+      sortBy,
+      sortOrder: sortOrder as 'asc' | 'desc' || 'desc'
+    };
+
+    const result = await this.productsService.getProducts(options);
     return {
       success: true,
       message: '상품 목록을 성공적으로 불러왔습니다.',
-      data: products,
+      data: result,
     };
   }
 
@@ -76,7 +96,8 @@ export class ProductsController {
   ], uploadConfig))
   async createProduct(
     @Body() createProductDto: CreateProductDto,
-    @UploadedFiles() files?: { images?: Express.Multer.File[], descriptionImages?: Express.Multer.File[] }
+    @UploadedFiles() files?: { images?: Express.Multer.File[], descriptionImages?: Express.Multer.File[] },
+    @Request() req?: any
   ) {
     try {
       // 이미지 파일 처리 (files가 undefined일 수 있음)
@@ -97,7 +118,18 @@ export class ProductsController {
         descriptionImages: descriptionImageUrls
       };
 
-      const product = await this.productsService.createProduct(productData);
+      // 현재 사용자 정보 가져오기 (AuditLog용)
+      let userId: string | undefined;
+      if (req) {
+        try {
+          const currentUser = await this.authService.getCurrentUser(req);
+          userId = currentUser.isAuthenticated ? currentUser.id : undefined;
+        } catch (error) {
+          console.error('사용자 정보 가져오기 실패:', error);
+        }
+      }
+
+      const product = await this.productsService.createProduct(productData, userId);
       return {
         success: true,
         message: '상품이 성공적으로 등록되었습니다.',
@@ -125,6 +157,8 @@ export class ProductsController {
     @Body() updateProductDto: any,
     @UploadedFiles() files?: { images?: Express.Multer.File[], descriptionImages?: Express.Multer.File[] }
   ) {
+    // console.log('Controller - 받은 ID:', id);
+    // console.log('Controller - 받은 DTO:', updateProductDto);
     try {
       // 이미지 파일 처리 (files가 undefined일 수 있음)
       const imageUrls = files?.images ? files.images.map(file => file.filename) : undefined;

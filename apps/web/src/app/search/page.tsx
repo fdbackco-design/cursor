@@ -1,33 +1,61 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { ProductCard } from '@/components/products/product-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { Search, Filter, X } from 'lucide-react';
 import { productsApi } from '@/lib/api/products';
 import { Product } from '@/types/product';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SearchPage() {
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [filteredResults, setFilteredResults] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedBrand, setSelectedBrand] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+
+  // 인증 체크
+  useEffect(() => {
+    // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+    if (!isAuthenticated || !user) {
+      router.push('/signin');
+      return;
+    }
+    
+    // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
+    if (isAuthenticated && user && !user.approve) {
+      router.push('/approval-pending');
+      return;
+    }
+  }, [isAuthenticated, user, router]);
 
   // 모든 상품 로드
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const data = await productsApi.getAllProducts();
-        setAllProducts(data);
-        setSearchResults(data);
-        setFilteredResults(data);
+        const response = await productsApi.getProducts({ limit: 1000 }); // 모든 상품을 가져오기 위해 큰 limit 설정
+        if (response.success && response.data) {
+          const products = response.data.products || [];
+          setAllProducts(products);
+          setSearchResults(products);
+          setFilteredResults(products);
+        } else {
+          console.error('상품 로드 실패:', response.error);
+          setAllProducts([]);
+          setSearchResults([]);
+          setFilteredResults([]);
+        }
       } catch (error) {
         console.error('상품 로드 실패:', error);
+        setAllProducts([]);
+        setSearchResults([]);
+        setFilteredResults([]);
       } finally {
         setLoading(false);
       }
@@ -44,13 +72,20 @@ export default function SearchPage() {
       return;
     }
 
+    if (!Array.isArray(allProducts)) {
+      setSearchResults([]);
+      setFilteredResults([]);
+      return;
+    }
+
     const results = allProducts.filter(product => {
       const searchTerm = query.toLowerCase();
       return (
-        product.name.toLowerCase().includes(searchTerm) ||
-        product.brand.toLowerCase().includes(searchTerm) ||
-        product.description.toLowerCase().includes(searchTerm) ||
-        product.category?.name.toLowerCase().includes(searchTerm)
+        product.name?.toLowerCase().includes(searchTerm) ||
+        product.vendor?.name?.toLowerCase().includes(searchTerm) ||
+        product.description?.toLowerCase().includes(searchTerm) ||
+        product.category?.name?.toLowerCase().includes(searchTerm) ||
+        product.tags?.some(tag => tag?.toLowerCase().includes(searchTerm))
       );
     });
 
@@ -58,7 +93,7 @@ export default function SearchPage() {
     setFilteredResults(results);
   }, [query, allProducts]);
 
-  // 카테고리 및 브랜드 필터링
+  // 카테고리 필터링
   useEffect(() => {
     let results = searchResults;
 
@@ -66,20 +101,14 @@ export default function SearchPage() {
       results = results.filter(product => product.category?.slug === selectedCategory);
     }
 
-    if (selectedBrand !== 'all') {
-      results = results.filter(product => product.brand === selectedBrand);
-    }
-
     setFilteredResults(results);
-  }, [searchResults, selectedCategory, selectedBrand]);
+  }, [searchResults, selectedCategory]);
 
-  // 고유한 카테고리와 브랜드 목록
-  const categories = ['all', ...Array.from(new Set(allProducts.map(p => p.category?.slug).filter(Boolean)))];
-  const brands = ['all', ...Array.from(new Set(allProducts.map(p => p.brand)))];
+  // 고유한 카테고리 목록
+  const categories = ['all', ...Array.from(new Set((Array.isArray(allProducts) ? allProducts : []).map(p => p.category?.slug).filter(Boolean)))];
 
   const clearFilters = () => {
     setSelectedCategory('all');
-    setSelectedBrand('all');
   };
 
   // 검색어가 없을 때의 UI
@@ -138,6 +167,16 @@ export default function SearchPage() {
     );
   }
 
+  // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+  
+  // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
+  if (isAuthenticated && user && !user.approve) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -175,44 +214,24 @@ export default function SearchPage() {
                   <h3 className="font-medium text-gray-900 mb-3">카테고리</h3>
                   <div className="space-y-2">
                     {categories.map((category) => (
-                      <label key={category} className="flex items-center">
+                      <label key={category || 'empty-category'} className="flex items-center">
                         <input
                           type="radio"
                           name="category"
-                          value={category}
+                          value={category || ''}
                           checked={selectedCategory === category}
                           onChange={(e) => setSelectedCategory(e.target.value)}
                           className="mr-2"
                         />
                         <span className="text-sm text-gray-700">
-                          {category === 'all' ? '전체' : category}
+                          {category === 'all' ? '전체' : category || '미지정'}
                         </span>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                {/* 브랜드 필터 */}
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-3">브랜드</h3>
-                  <div className="space-y-2">
-                    {brands.map((brand) => (
-                      <label key={brand} className="flex items-center">
-                        <input
-                          type="radio"
-                          name="brand"
-                          value={brand}
-                          checked={selectedBrand === brand}
-                          onChange={(e) => setSelectedBrand(e.target.value)}
-                          className="mr-2"
-                        />
-                        <span className="text-sm text-gray-700">
-                          {brand === 'all' ? '전체' : brand}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+
               </CardContent>
             </Card>
           </div>

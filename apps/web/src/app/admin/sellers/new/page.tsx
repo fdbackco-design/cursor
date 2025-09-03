@@ -7,11 +7,13 @@ import { Button } from '@repo/ui';
 import { ArrowLeft, Save, Users, User, Plus, X, Tag } from 'lucide-react';
 import { sellersApi } from '@/lib/api/sellers';
 import { usersApi, User as UserType } from '@/lib/api/users';
+import { useToast, toast } from '@/components/ui/toast';
 
 
 
 const NewSellerPage = () => {
   const router = useRouter();
+  const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
   const [users, setUsers] = useState<UserType[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -38,7 +40,7 @@ const NewSellerPage = () => {
         setUsers(availableUsers);
       } catch (error) {
         console.error('사용자 목록 로드 실패:', error);
-        alert('사용자 목록을 불러오는데 실패했습니다.');
+        showToast(toast.error('사용자 목록 로드 실패', '사용자 목록을 불러오는데 실패했습니다.'));
       } finally {
         setLoadingUsers(false);
       }
@@ -87,11 +89,11 @@ const NewSellerPage = () => {
       };
 
       await sellersApi.createSeller(sellerData);
-      alert('셀러가 성공적으로 생성되었습니다.');
+      showToast(toast.success('셀러 생성 완료', '셀러가 성공적으로 생성되었습니다.'));
       router.push('/admin/sellers');
     } catch (error) {
       console.error('셀러 생성 실패:', error);
-      alert('셀러 생성에 실패했습니다.');
+      showToast(toast.error('셀러 생성 실패', '셀러 생성에 실패했습니다.'));
     } finally {
       setSaving(false);
     }

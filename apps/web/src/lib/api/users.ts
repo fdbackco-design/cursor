@@ -6,6 +6,9 @@ export interface User {
   email?: string;
   role: string;
   createdAt?: string;
+  phoneNumber?: string;
+  shippingAddress?: any;
+  talkMessageAgreed?: boolean;
   seller?: {
     id: string;
     companyName: string;

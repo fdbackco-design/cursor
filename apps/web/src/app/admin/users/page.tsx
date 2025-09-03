@@ -16,6 +16,9 @@ interface User {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  phoneNumber?: string;
+  shippingAddress?: any;
+  talkMessageAgreed?: boolean;
 }
 
 const UsersPage = () => {

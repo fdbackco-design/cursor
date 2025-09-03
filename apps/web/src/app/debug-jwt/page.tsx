@@ -47,7 +47,7 @@ export default function DebugJwtPage() {
       
       if (response.ok) {
         const userData = await response.json();
-        console.log('새로운 사용자 데이터:', userData);
+        //console.log('새로운 사용자 데이터:', userData);
         
         // 쿠키 새로고침
         const newCookies = document.cookie;

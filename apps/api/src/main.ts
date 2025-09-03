@@ -33,11 +33,11 @@ async function bootstrap() {
   
   // 쿠키 파싱 디버깅을 위한 미들웨어
   app.use((req, res, next) => {
-    console.log('=== 쿠키 파서 미들웨어 ===');
-    console.log('요청 URL:', req.url);
-    console.log('요청 메서드:', req.method);
-    console.log('요청 쿠키 (parsed):', req.headers.cookie);
-    console.log('요청 헤더 전체:', req.headers);
+    // console.log('=== 쿠키 파서 미들웨어 ===');
+    // console.log('요청 URL:', req.url);
+    // console.log('요청 메서드:', req.method);
+    // console.log('요청 쿠키 (parsed):', req.headers.cookie);
+    // console.log('요청 헤더 전체:', req.headers);
     next();
   });
 
@@ -74,8 +74,8 @@ async function bootstrap() {
   const port = configService.get('PORT', 3001);
   await app.listen(port);
 
-  console.log(`🚀 Application is running on: http://localhost:${port}`);
-  console.log(`📚 Swagger documentation: http://localhost:${port}/docs`);
+  // console.log(`🚀 Application is running on: http://localhost:${port}`);
+  // console.log(`📚 Swagger documentation: http://localhost:${port}/docs`);
 }
 
 bootstrap();

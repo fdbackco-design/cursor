@@ -4,9 +4,9 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   
-  // 추천인 코드 처리
+  // 추천인 코드 처리 - signin 페이지가 아닌 경우에만 리다이렉트
   const referralCode = searchParams.get('ref');
-  if (referralCode) {
+  if (referralCode && pathname !== '/signin') {
     const response = NextResponse.next();
     response.cookies.set('referral_code', referralCode, {
       httpOnly: true,
@@ -15,14 +15,35 @@ export function middleware(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
     
-    // 추천인 코드 제거하고 리디렉트
+    // signin 페이지가 아닌 경우에만 추천인 코드 제거하고 리디렉트
     const newUrl = new URL(request.url);
     newUrl.searchParams.delete('ref');
     return NextResponse.redirect(newUrl);
   }
+  
+  // signin 페이지에서 ref 파라미터가 있는 경우 쿠키에만 저장하고 리다이렉트하지 않음
+  if (referralCode && pathname === '/signin') {
+    const response = NextResponse.next();
+    response.cookies.set('referral_code', referralCode, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+    return response; // 리다이렉트하지 않고 그대로 진행
+  }
 
   // 가격 가림 가드 - 로그인하지 않은 사용자가 상품 페이지 접근 시
-  if (pathname.startsWith('/products') && !request.cookies.get('session')) {
+  const accessToken = request.cookies.get('access_token');
+  const sessionToken = request.cookies.get('session');
+  
+  if (pathname.startsWith('/products') && !accessToken && !sessionToken) {
+    // console.log('Middleware - 상품 페이지 접근 차단:', {
+    //   pathname,
+    //   hasAccessToken: !!accessToken,
+    //   hasSessionToken: !!sessionToken,
+    //   allCookies: Object.fromEntries(request.cookies.getAll().map(c => [c.name, c.value]))
+    // });
     // 메인 페이지로 리디렉트
     return NextResponse.redirect(new URL('/', request.url));
   }

@@ -13,6 +13,9 @@ interface User {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  phoneNumber?: string;
+  shippingAddress?: any;
+  talkMessageAgreed?: boolean;
 }
 
 export default function TestUsersPage() {

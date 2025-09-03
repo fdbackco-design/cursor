@@ -9,13 +9,13 @@ export default function ApprovalPendingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log('승인 대기 페이지 - useEffect 실행:', { isAuthenticated, user, userApprove: user?.approve });
+
     
     // 로그인하지 않은 사용자는 자동으로 로그인 페이지로 이동하지 않음
     // 사용자가 직접 로그인 버튼을 클릭하도록 함
 
     if (user?.approve) {
-      console.log('승인 대기 페이지 - 사용자 승인됨, 홈 페이지로 이동');
+
       router.push('/home');
       return;
     }
@@ -23,25 +23,25 @@ export default function ApprovalPendingPage() {
     // 3초마다 사용자 승인 상태 확인
     const checkApprovalStatus = async () => {
       try {
-        console.log('승인 대기 페이지 - 승인 상태 확인 시작');
+
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/auth/me`, {
           credentials: 'include',
         });
         
         if (response.ok) {
           const userData = await response.json();
-          console.log('승인 대기 페이지 - 사용자 상태 확인 결과:', userData);
+
           
           // 승인 상태가 true로 변경되었는지 확인
           if (userData.approve) {
-            console.log('승인 대기 페이지 - 사용자 승인됨, 홈 페이지로 이동');
+      
             router.push('/home');
             return;
           } else {
-            console.log('승인 대기 페이지 - 아직 승인되지 않음');
+
           }
         } else {
-          console.log('승인 대기 페이지 - API 응답 실패:', response.status);
+
         }
       } catch (error) {
         console.error('승인 상태 확인 실패:', error);
@@ -53,19 +53,19 @@ export default function ApprovalPendingPage() {
 
     // 3초마다 승인 상태 확인
     const approvalCheckInterval = setInterval(() => {
-      console.log('승인 대기 페이지 - 주기적 승인 상태 확인 실행');
+
       checkApprovalStatus();
     }, 3000);
 
     return () => {
-      console.log('승인 대기 페이지 - useEffect 정리');
+
       clearInterval(approvalCheckInterval);
     };
   }, [isAuthenticated, user, router]);
 
   // 로그인하지 않은 사용자
   if (!isAuthenticated) {
-    console.log('승인 대기 페이지 - 로그인하지 않은 사용자');
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
@@ -135,7 +135,7 @@ export default function ApprovalPendingPage() {
 
   // 승인된 사용자는 홈 페이지로 리다이렉트
   if (user?.approve) {
-    console.log('승인 대기 페이지 - 승인된 사용자, 홈 페이지로 이동');
+
     router.push('/home');
     return null;
   }

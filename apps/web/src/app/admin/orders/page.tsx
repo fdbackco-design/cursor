@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
 import { Button } from '@repo/ui';
 import { 
@@ -15,95 +15,350 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Truck
+  Truck,
+  Loader2,
+  X,
+  Package,
+  CreditCard,
+  MapPin,
+  FileText,
+  Save,
+  Download,
+  Calendar
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import Link from 'next/link';
+import { adminApi, AdminOrder, Vendor } from '@/lib/api/admin';
+import { ordersApi } from '@/lib/api/orders';
+import { useToast, toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-modal';
 
 const OrdersPage = () => {
-  const [orders, setOrders] = useState([
-    {
-      id: 'ORD-001',
-      customerName: '김철수',
-      customerEmail: 'kim@email.com',
-      products: ['프리미엄 커피머신', '스마트 블렌더'],
-      totalAmount: 388000,
-      status: 'processing',
-      paymentMethod: '카드',
-      orderDate: '2024-01-15 14:30',
-      deliveryAddress: '서울시 강남구 테헤란로 123'
-    },
-    {
-      id: 'ORD-002',
-      customerName: '이영희',
-      customerEmail: 'lee@email.com',
-      products: ['비타민C 1000mg'],
-      totalAmount: 25000,
-      status: 'shipped',
-      paymentMethod: '계좌이체',
-      orderDate: '2024-01-15 10:15',
-      deliveryAddress: '부산시 해운대구 해운대로 456'
-    },
-    {
-      id: 'ORD-003',
-      customerName: '박민수',
-      customerEmail: 'park@email.com',
-      products: ['스마트 블렌더'],
-      totalAmount: 89000,
-      status: 'delivered',
-      paymentMethod: '카드',
-      orderDate: '2024-01-14 16:45',
-      deliveryAddress: '대구시 수성구 동대구로 789'
-    }
-  ]);
-
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('all');
+  const [selectedVendor, setSelectedVendor] = useState('all');
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [orderNotes, setOrderNotes] = useState<{ [key: string]: string }>({});
+  const [tempNote, setTempNote] = useState('');
+  const [startDate, setStartDate] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
+  const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [updatingStatus, setUpdatingStatus] = useState<{ [key: string]: boolean }>({});
 
-  const handleDelete = (id: string) => {
-    if (confirm('정말로 이 주문을 삭제하시겠습니까?')) {
-      setOrders(orders.filter(order => order.id !== id));
+  const statuses = [
+    { value: 'PENDING', label: '결제 대기' },
+    { value: 'CONFIRMED', label: '주문 확인' },
+    { value: 'PROCESSING', label: '상품 준비중' },
+    { value: 'SHIPPED', label: '배송중' },
+    { value: 'DELIVERED', label: '배송완료' },
+    { value: 'CANCELLED', label: '주문 취소' },
+  ];
+
+  // 상태 라벨 가져오기
+  const getStatusLabel = (status: string) => {
+    const statusObj = statuses.find(s => s.value === status);
+    return statusObj ? statusObj.label : status;
+  };
+
+  // 엑셀 다운로드
+  const downloadExcel = async () => {
+    try {
+      setLoading(true);
+      
+      // 선택된 기간의 모든 주문 데이터 가져오기
+      const response = await adminApi.getOrders({
+        page: 1,
+        limit: 10000, // 충분히 큰 수
+        status: selectedStatus,
+        vendorId: selectedVendor,
+        ...(searchTerm && { search: searchTerm }),
+      });
+      
+      if (!response.success || !response.data?.orders) {
+        showToast(toast.error('주문 데이터 로드 실패', '주문 데이터를 가져오는데 실패했습니다.'));
+        return;
+      }
+      
+      const orders = response.data.orders;
+      
+      // 엑셀 데이터 준비
+      const excelData = orders.map((order) => ({
+        '날짜': format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm:ss', { locale: ko }),
+        '원가': '',
+        '판매가': order.totalAmount.toLocaleString(),
+        '순이익': '',
+        '진행여부': getStatusLabel(order.status),
+        '입금여부': order.status === 'CANCELLED' ? '취소' : '완료',
+        '반품/교환': '',
+        '발주처': order.items[0]?.product?.vendor?.name || '',
+        '제품명': order.items.map(item => item.productName).join(', '),
+        '수량': order.items.reduce((sum, item) => sum + item.quantity, 0),
+        '주소': `${order.shippingAddress?.base_address || ''} ${order.shippingAddress?.detail_address || ''}`.trim(),
+        '수령인': order.shippingAddress?.receiver_name || order.user.name,
+        '연락처': order.shippingAddress?.recipientPhone || order.user.phoneNumber || '',
+        '판매자': '폐쇄몰',
+        '송하인': '김하준',
+        '비고': order.notes || '',
+        '택배사': '',
+        '송장번호': '',
+      }));
+      
+      // 워크북 생성
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      
+      // 컬럼 너비 자동 조정
+      const colWidths = [
+        { wch: 20 }, // 날짜
+        { wch: 10 }, // 원가
+        { wch: 15 }, // 판매가
+        { wch: 10 }, // 순이익
+        { wch: 15 }, // 진행여부
+        { wch: 12 }, // 입금여부
+        { wch: 15 }, // 반품/교환
+        { wch: 20 }, // 발주처
+        { wch: 30 }, // 제품명
+        { wch: 10 }, // 수량
+        { wch: 40 }, // 주소
+        { wch: 15 }, // 수령인
+        { wch: 15 }, // 연락처
+        { wch: 15 }, // 판매자
+        { wch: 15 }, // 송하인
+        { wch: 30 }, // 비고
+        { wch: 15 }, // 택배사
+        { wch: 20 }, // 송장번호
+      ];
+      ws['!cols'] = colWidths;
+      
+      // 워크시트를 워크북에 추가
+      XLSX.utils.book_append_sheet(wb, ws, '주문내역');
+      
+      // 파일명 생성
+      const fileName = `주문내역_${startDate}_${endDate}_${format(new Date(), 'yyyyMMdd_HHmmss')}.xlsx`;
+      
+      // 파일 다운로드
+      XLSX.writeFile(wb, fileName);
+      
+      showToast(toast.success('엑셀 다운로드 완료', `${orders.length}건의 주문 내역이 엑셀로 다운로드되었습니다.`));
+    } catch (error) {
+      console.error('엑셀 다운로드 실패:', error);
+      showToast(toast.error('엑셀 다운로드 실패', '엑셀 다운로드에 실패했습니다.'));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleStatusChange = (id: string, newStatus: string) => {
-    setOrders(orders.map(order => 
-      order.id === id ? { ...order, status: newStatus } : order
-    ));
+  // 주문 목록 로드
+  const loadOrders = async (page = 1) => {
+    try {
+      setLoading(true);
+      //console.log('관리자 주문 목록 로드 시작:', { page, selectedStatus, searchTerm, selectedVendor });
+      
+      const response = await adminApi.getOrders({
+        page,
+        limit: 10,
+        status: selectedStatus,
+        vendorId: selectedVendor,
+        ...(searchTerm && { search: searchTerm }),
+      });
+      
+      //console.log('관리자 API 응답:', response);
+      console.log('응답 데이터 상세:', {
+        success: response.success,
+        hasData: !!response.data,
+        orders: response.data?.orders,
+        ordersLength: response.data?.orders?.length,
+        pagination: response.data?.pagination
+      });
+      
+      if (response.success && response.data) {
+        const orders = response.data.orders || [];
+        //console.log('설정할 주문 데이터:', orders);
+        
+        setOrders(orders);
+        setCurrentPage(response.data.pagination?.page || 1);
+        setTotalPages(response.data.pagination?.totalPages || 0);
+        setTotalOrders(response.data.pagination?.total || 0);
+        
+        console.log('상태 업데이트 완료:', {
+          ordersCount: orders.length,
+          currentPage: response.data.pagination?.page || 1,
+          totalPages: response.data.pagination?.totalPages || 0,
+          totalOrders: response.data.pagination?.total || 0
+        });
+      } else {
+        //console.log('응답 실패 또는 데이터 없음');
+        setOrders([]);
+        setCurrentPage(1);
+        setTotalPages(0);
+        setTotalOrders(0);
+      }
+    } catch (error) {
+      console.error('주문 목록 로드 실패:', error);
+      setOrders([]);
+      setCurrentPage(1);
+      setTotalPages(0);
+      setTotalOrders(0);
+      showToast(toast.error('주문 목록 로드 실패', '주문 목록을 불러오는데 실패했습니다.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus === 'all' || order.status === selectedStatus;
-    const matchesPayment = selectedPaymentMethod === 'all' || order.paymentMethod === selectedPaymentMethod;
-    
-    return matchesSearch && matchesStatus && matchesPayment;
-  });
+  // 벤더 목록 로드
+  const loadVendors = async () => {
+    try {
+      const response = await adminApi.getVendors();
+      if (response.success && response.data) {
+        setVendors(response.data);
+      }
+    } catch (error) {
+      console.error('벤더 목록 로드 실패:', error);
+    }
+  };
 
-  const statuses = ['processing', 'shipped', 'delivered', 'cancelled'];
-  const paymentMethods = ['카드', '계좌이체', '무통장입금'];
+  // 검색 실행
+  const handleSearch = () => {
+    setCurrentPage(1);
+    loadOrders(1);
+  };
+
+  // 페이지 변경
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    loadOrders(page);
+  };
+
+  // 주문 상세 보기
+  const openOrderDetail = (order: AdminOrder) => {
+    setSelectedOrder(order);
+    setTempNote(orderNotes[order.id] || '');
+    setShowDetailModal(true);
+  };
+
+  // 주문 상세 보기 닫기
+  const closeOrderDetail = () => {
+    setShowDetailModal(false);
+    setSelectedOrder(null);
+    setTempNote('');
+  };
+
+  // 메모 저장
+  const saveOrderNote = async () => {
+    if (selectedOrder) {
+      try {
+        //console.log('메모 저장 시작:', { orderNumber: selectedOrder.orderNumber, notes: tempNote });
+        
+        const response = await ordersApi.updateOrderNotes(selectedOrder.orderNumber, tempNote);
+        
+        if (response.success) {
+          // 로컬 상태 업데이트
+          setOrderNotes(prev => ({
+            ...prev,
+            [selectedOrder.id]: tempNote
+          }));
+          
+          // 주문 목록에서도 notes 업데이트
+          setOrders(prevOrders => 
+            prevOrders.map(order => 
+              order.id === selectedOrder.id 
+                ? { ...order, notes: tempNote }
+                : order
+            )
+          );
+          
+          showToast(toast.success('메모 저장 완료', '메모가 성공적으로 저장되었습니다.'));
+          //console.log('메모 저장 성공:', response.data);
+        } else {
+          throw new Error(response.error || '메모 저장에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('메모 저장 실패:', error);
+        showToast(toast.error('메모 저장 실패', error instanceof Error ? error.message : '메모 저장 중 오류가 발생했습니다.'));
+      }
+    }
+  };
+
+  // 주문 상태 변경
+  const updateOrderStatus = async (orderNumber: string, newStatus: string) => {
+    try {
+      setUpdatingStatus(prev => ({ ...prev, [orderNumber]: true }));
+      const response = await adminApi.updateOrderStatus(orderNumber, newStatus);
+      if (response.success) {
+        // 주문 목록에서 해당 주문의 상태 업데이트
+        setOrders(prev => prev.map(order => 
+          order.orderNumber === orderNumber 
+            ? { ...order, status: newStatus }
+            : order
+        ));
+        
+        // 선택된 주문이 있다면 해당 주문도 업데이트
+        if (selectedOrder && selectedOrder.orderNumber === orderNumber) {
+          setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : null);
+        }
+        
+        showToast(toast.success('주문 상태 변경 완료', '주문 상태가 성공적으로 변경되었습니다.'));
+      } else {
+        showToast(toast.error('주문 상태 변경 실패', '주문 상태 변경에 실패했습니다.'));
+      }
+    } catch (error) {
+      console.error('주문 상태 변경 실패:', error);
+      showToast(toast.error('주문 상태 변경 오류', '주문 상태 변경 중 오류가 발생했습니다.'));
+    } finally {
+      setUpdatingStatus(prev => ({ ...prev, [orderNumber]: false }));
+    }
+  };
+
+  // 서버에서 필터링된 데이터를 받으므로 클라이언트 필터링 불필요
+  const filteredOrders = orders || [];
+  
+  // 디버깅: 현재 orders 상태 확인
+  // console.log('현재 orders 상태:', orders);
+  // console.log('filteredOrders:', filteredOrders);
+  // console.log('orders 타입:', typeof orders);
+  // console.log('orders 길이:', orders?.length);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'processing': return 'bg-yellow-100 text-yellow-800';
-      case 'shipped': return 'bg-blue-100 text-blue-800';
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
+      case 'CONFIRMED': return 'bg-blue-100 text-blue-800';
+      case 'PROCESSING': return 'bg-orange-100 text-orange-800';
+      case 'SHIPPED': return 'bg-indigo-100 text-indigo-800';
+      case 'DELIVERED': return 'bg-green-100 text-green-800';
+      case 'CANCELLED': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusText = (status: string) => {
-    switch (status) {
-      case 'processing': return '처리중';
-      case 'shipped': return '배송중';
-      case 'delivered': return '배송완료';
-      case 'cancelled': return '취소됨';
-      default: return status;
-    }
+    const statusObj = statuses.find(s => s.value === status);
+    return statusObj ? statusObj.label : status;
   };
+
+  // 초기 로드
+  useEffect(() => {
+    loadOrders();
+    loadVendors();
+  }, []);
+
+  // 필터 변경 시 자동 검색
+  useEffect(() => {
+    if (currentPage === 1) {
+      loadOrders(1);
+    } else {
+      setCurrentPage(1);
+    }
+  }, [selectedStatus, selectedVendor]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -117,10 +372,31 @@ const OrdersPage = () => {
               </Link>
               <h1 className="text-2xl font-bold text-gray-900">주문 관리</h1>
             </div>
+            <div className="flex space-x-2">
+              <Button 
+                onClick={async () => {
+                  try {
+                    const response = await fetch('http://localhost:3001/api/v1/auth/dev/admin-login', {
+                      method: 'POST',
+                      credentials: 'include',
+                    });
+                    if (response.ok) {
+                      showToast(toast.success('관리자 로그인', '관리자로 로그인되었습니다.'));
+                      window.location.reload();
+                    }
+                  } catch (error) {
+                    showToast(toast.error('로그인 실패', '로그인 실패'));
+                  }
+                }}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                관리자 로그인
+              </Button>
             <Button className="bg-purple-600 hover:bg-purple-700">
               <Plus className="h-4 w-4 mr-2" />
               새 주문 등록
             </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -129,14 +405,20 @@ const OrdersPage = () => {
         {/* 검색 및 필터 */}
         <Card className="mb-6">
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="주문번호, 고객명, 이메일 검색"
+                  placeholder="주문번호, 고객명, 전화번호 검색"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSearch();
+                    }
+                  }}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -148,24 +430,71 @@ const OrdersPage = () => {
               >
                 <option value="all">전체 상태</option>
                 {statuses.map(status => (
-                  <option key={status} value={status}>{getStatusText(status)}</option>
+                  <option key={status.value} value={status.value}>{status.label}</option>
                 ))}
               </select>
               
               <select
-                value={selectedPaymentMethod}
-                onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                value={selectedVendor}
+                onChange={(e) => setSelectedVendor(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <option value="all">전체 결제수단</option>
-                {paymentMethods.map(method => (
-                  <option key={method} value={method}>{method}</option>
+                <option value="all">전체 벤더</option>
+                {vendors.map(vendor => (
+                  <option key={vendor.id} value={vendor.id}>
+                    {vendor.name} ({vendor.code})
+                  </option>
                 ))}
               </select>
               
-              <Button variant="outline" className="flex items-center justify-center">
+              <Button 
+                variant="outline" 
+                className="flex items-center justify-center"
+                onClick={handleSearch}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
                 <Filter className="h-4 w-4 mr-2" />
-                필터 적용
+                )}
+                {loading ? '검색중...' : '검색'}
+              </Button>
+            </div>
+            
+            {/* 기간 선택 및 엑셀 다운로드 */}
+            <div className="mt-4 flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">기간 선택:</span>
+                </div>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                <span className="text-gray-500">~</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              
+              <Button 
+                onClick={downloadExcel}
+                disabled={loading}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-2" />
+                )}
+                {loading ? '다운로드중...' : '엑셀 다운로드'}
               </Button>
             </div>
           </CardContent>
@@ -175,7 +504,7 @@ const OrdersPage = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>주문 목록 ({filteredOrders.length}개)</span>
+              <span>주문 목록 ({totalOrders}개)</span>
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 <ArrowUpDown className="h-4 w-4" />
                 정렬
@@ -197,7 +526,21 @@ const OrdersPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredOrders.map((order) => (
+                  {loading ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+                        <p className="text-gray-500">주문 목록을 불러오는 중...</p>
+                      </td>
+                    </tr>
+                  ) : filteredOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-8">
+                        <p className="text-gray-500">주문이 없습니다.</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredOrders.map((order) => (
                     <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-3">
@@ -205,83 +548,291 @@ const OrdersPage = () => {
                             <ShoppingCart className="h-5 w-5 text-purple-600" />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{order.id}</p>
-                            <p className="text-sm text-gray-500">{order.customerName}</p>
-                            <p className="text-sm text-gray-500">{order.customerEmail}</p>
-                          </div>
+                              <p className="font-medium text-gray-900">{order.orderNumber}</p>
+                              <p className="text-sm text-gray-500">{order.user.name}</p>
+                              <p className="text-sm text-gray-500">{order.user.phoneNumber}</p>
+                            </div>
                         </div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="space-y-1">
-                          {order.products.map((product, index) => (
-                            <p key={index} className="text-sm text-gray-700">{product}</p>
+                            {order.items.map((item, index) => (
+                              <div key={item.id} className="flex items-center space-x-2">
+                                <Package className="h-4 w-4 text-gray-400" />
+                                <span className="text-sm text-gray-900">
+                                  {item.productName} x {item.quantity}
+                                </span>
+                              </div>
                           ))}
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="font-medium text-gray-900">
-                          {order.totalAmount.toLocaleString()}원
-                        </span>
+                          <p className="font-medium text-gray-900">
+                            ₩{order.totalAmount.toLocaleString()}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            상품: ₩{order.subtotal.toLocaleString()}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            배송: ₩{order.shippingAmount.toLocaleString()}
+                          </p>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-2">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                             {getStatusText(order.status)}
                           </span>
-                          {order.status === 'processing' && (
-                            <Button 
-                              size="sm" 
-                              className="bg-blue-600 hover:bg-blue-700 text-white"
-                              onClick={() => handleStatusChange(order.id, 'shipped')}
+                            <select
+                              value={order.status}
+                              onChange={(e) => updateOrderStatus(order.orderNumber, e.target.value)}
+                              disabled={updatingStatus[order.orderNumber]}
+                              className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                             >
-                              <Truck className="h-3 w-3 mr-1" />
-                              배송
-                            </Button>
-                          )}
-                          {order.status === 'shipped' && (
-                            <Button 
-                              size="sm" 
-                              className="bg-green-600 hover:bg-green-700 text-white"
-                              onClick={() => handleStatusChange(order.id, 'delivered')}
-                            >
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              완료
-                            </Button>
+                              {statuses.map((status) => (
+                                <option key={status.value} value={status.value}>
+                                  {status.label}
+                                </option>
+                              ))}
+                            </select>
+                            {updatingStatus[order.orderNumber] && (
+                              <Loader2 className="h-3 w-3 animate-spin text-purple-600" />
                           )}
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-sm text-gray-700">{order.paymentMethod}</span>
+                          <div className="flex items-center space-x-2">
+                            <CreditCard className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm text-gray-900">카드</span>
+                          </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-sm text-gray-500">{order.orderDate}</span>
+                          <div className="text-sm text-gray-900">
+                            {format(new Date(order.createdAt), 'yyyy-MM-dd')}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {format(new Date(order.createdAt), 'HH:mm')}
+                          </div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openOrderDetail(order)}
+                              className="h-8 w-8 p-0"
+                            >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700">
-                            <Edit className="h-4 w-4" />
-                          </Button>
                           <Button 
-                            variant="ghost" 
+                              variant="outline"
                             size="sm" 
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleDelete(order.id)}
+                              className="h-8 w-8 p-0"
                           >
-                            <Trash2 className="h-4 w-4" />
+                              <Edit className="h-4 w-4" />
                           </Button>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
+
+            {/* 페이지네이션 */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  이전
+                </Button>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(page)}
+                    className="w-10"
+                  >
+                    {page}
+                  </Button>
+                ))}
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  다음
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* 주문 상세 모달 */}
+      {showDetailModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                주문 상세 - {selectedOrder.orderNumber}
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={closeOrderDetail}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 주문 정보 */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">주문 정보</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">주문번호:</span>
+                    <span className="font-medium">{selectedOrder.orderNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">주문일시:</span>
+                    <span className="font-medium">
+                      {format(new Date(selectedOrder.createdAt), 'yyyy-MM-dd HH:mm:ss')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">주문상태:</span>
+                    <div className="flex items-center space-x-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedOrder.status)}`}>
+                        {getStatusText(selectedOrder.status)}
+                      </span>
+                      <select
+                        value={selectedOrder.status}
+                        onChange={(e) => updateOrderStatus(selectedOrder.orderNumber, e.target.value)}
+                        disabled={updatingStatus[selectedOrder.orderNumber]}
+                        className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                      >
+                        {statuses.map((status) => (
+                          <option key={status.value} value={status.value}>
+                            {status.label}
+                          </option>
+                        ))}
+                      </select>
+                      {updatingStatus[selectedOrder.orderNumber] && (
+                        <Loader2 className="h-3 w-3 animate-spin text-purple-600" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 고객 정보 */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">고객 정보</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">고객명:</span>
+                    <span className="font-medium">{selectedOrder.user.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">이메일:</span>
+                    <span className="font-medium">{selectedOrder.user.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">전화번호:</span>
+                    <span className="font-medium">{selectedOrder.user.phoneNumber}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 상품 정보 */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">상품 정보</h3>
+              <div className="space-y-3">
+                {selectedOrder.items.map((item) => (
+                  <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900">{item.productName}</p>
+                        <p className="text-sm text-gray-500">수량: {item.quantity}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium text-gray-900">
+                          ₩{item.totalPrice.toLocaleString()}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          단가: ₩{item.unitPrice.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 금액 정보 */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">금액 정보</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">상품 금액:</span>
+                  <span className="font-medium">₩{selectedOrder.subtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">배송비:</span>
+                  <span className="font-medium">₩{selectedOrder.shippingAmount.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">할인:</span>
+                  <span className="font-medium">₩{selectedOrder.discountAmount.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">세금:</span>
+                  <span className="font-medium">₩{selectedOrder.taxAmount.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold text-gray-900 border-t pt-2">
+                  <span>총 금액:</span>
+                  <span>₩{selectedOrder.totalAmount.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 메모 */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">메모</h3>
+              <div className="space-y-3">
+                <textarea
+                  value={tempNote}
+                  onChange={(e) => setTempNote(e.target.value)}
+                  placeholder="주문에 대한 메모를 입력하세요..."
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  rows={3}
+                />
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={closeOrderDetail}>
+                    취소
+                  </Button>
+                  <Button onClick={saveOrderNote}>
+                    <Save className="h-4 w-4 mr-2" />
+                    저장
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

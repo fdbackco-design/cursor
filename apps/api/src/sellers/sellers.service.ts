@@ -2,11 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import { CreateReferralCodeDto } from '../referral-codes/dto';
 
 @Injectable()
 export class SellersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLogService: AuditLogService
+  ) {}
 
   // 모든 셀러 조회 (사용자 정보 포함)
   async getAllSellers() {
@@ -170,6 +174,26 @@ export class SellersService {
         }
       });
     });
+  }
+
+  // createSeller 메서드에 AuditLog 추가를 위한 오버로드
+  async createSellerWithAudit(createSellerDto: CreateSellerDto, createdByUserId?: string) {
+    const newSeller = await this.createSeller(createSellerDto);
+    
+    // 셀러 등록 AuditLog 추가
+    if (createdByUserId) {
+      try {
+        await this.auditLogService.logSellerRegistration(createdByUserId, newSeller.id, {
+          companyName: newSeller.companyName,
+          representativeName: newSeller.representativeName,
+          phone: newSeller.phone
+        });
+      } catch (error) {
+        console.error('셀러 등록 AuditLog 추가 실패:', error);
+      }
+    }
+    
+    return newSeller;
   }
 
   // 셀러 수정

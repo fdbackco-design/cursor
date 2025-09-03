@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE `returns` ADD COLUMN `adminNotes` VARCHAR(191) NULL,
+    ADD COLUMN `carrier` VARCHAR(191) NULL,
+    ADD COLUMN `exchangeCarrier` VARCHAR(191) NULL,
+    ADD COLUMN `exchangeTrackingNumber` VARCHAR(191) NULL,
+    ADD COLUMN `orderItemId` VARCHAR(191) NULL,
+    ADD COLUMN `processedAt` DATETIME(3) NULL,
+    ADD COLUMN `processedBy` VARCHAR(191) NULL,
+    ADD COLUMN `refundId` VARCHAR(191) NULL,
+    ADD COLUMN `trackingNumber` VARCHAR(191) NULL,
+    ADD COLUMN `type` ENUM('RETURN', 'EXCHANGE', 'CANCEL') NOT NULL DEFAULT 'RETURN',
+    MODIFY `status` ENUM('PENDING', 'APPROVED', 'PROCESSING', 'COMPLETED', 'REJECTED') NOT NULL DEFAULT 'PENDING';
+
+-- AddForeignKey
+ALTER TABLE `returns` ADD CONSTRAINT `returns_orderItemId_fkey` FOREIGN KEY (`orderItemId`) REFERENCES `order_items`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

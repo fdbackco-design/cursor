@@ -1,7 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@repo/ui';
 import { Search, Target, User, Truck, ShoppingCart } from 'lucide-react';
 import { ProductCard } from '@/components/products/product-card';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 // 디자인 JSON에 맞는 상품 데이터
 const mdPicks = [
@@ -77,6 +82,39 @@ const homeAppliances = [
 ];
 
 export default function HomePage() {
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+    if (!isAuthenticated || !user) {
+      router.push('/signin');
+      return;
+    }
+    
+    // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
+    if (isAuthenticated && user && !user.approve) {
+      router.push('/approval-pending');
+      return;
+    }
+    
+    // 로그인하고 승인된 사용자는 홈 페이지로 리다이렉트
+    if (isAuthenticated && user && user.approve) {
+      router.push('/home');
+      return;
+    }
+  }, [isAuthenticated, user, router]);
+
+  // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+  
+  // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
+  if (isAuthenticated && user && !user.approve) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}

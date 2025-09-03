@@ -7,11 +7,10 @@ const log = new Logger('KakaoAuthGuard');
 function toStateFromRef(ref?: string): string {
   if (!ref) return '';
   const payload = { referralCode: String(ref).trim() };
-  const b64 = Buffer.from(JSON.stringify(payload), 'utf8')
+  return Buffer.from(JSON.stringify(payload), 'utf8')
     .toString('base64')
     .replace(/\+/g, '-')
-    .replace(/\//g, '_'); // URL-safe
-  return b64;
+    .replace(/\//g, '_'); // URL-safe base64
 }
 
 @Injectable()
@@ -20,15 +19,16 @@ export class KakaoAuthGuard extends AuthGuard('kakao') {
     const req = context.switchToHttp().getRequest<Request>();
     const res = context.switchToHttp().getResponse<Response>();
 
+    // 기존 옵션 유지
     const base = super.getAuthenticateOptions(context) ?? {};
 
     const qState = typeof req.query.state === 'string' ? req.query.state : '';
-    const qRef   = typeof req.query.ref === 'string' ? req.query.ref : '';
+    const qRef   = typeof req.query.ref   === 'string' ? req.query.ref   : '';
 
-    // 1) ref가 오면 state로 변환
+    // ref → state
     const state = qState || toStateFromRef(qRef);
 
-    // 2) 쿠키 백업 (유실 대비)
+    // 유실 대비로 cookie에도 백업
     if (state) {
       res.cookie('ref', state, {
         httpOnly: true,
@@ -38,9 +38,29 @@ export class KakaoAuthGuard extends AuthGuard('kakao') {
       });
     }
 
-    // 3) 로그
-    log.log(`Start OAuth: q.ref="${qRef}", q.state="${qState}", send.state="${state}"`);
+    // ✅ 여기서 scope와 prompt를 명시적으로 강제
+    const scope = [
+      'account_email',
+      'profile_nickname',
+      'phone_number',
+      'shipping_address',
+      'talk_message',
+    ];
 
-    return { ...base, state };
+    const opts = {
+      ...base,
+      state,
+      scope,
+      // 재동의 강제(동의창 표출)
+      prompt: 'consent',
+      // 필요 시 다음 줄도 시험해볼 수 있습니다(강한 재인증).
+      // auth_type: 'reauthenticate',
+    };
+
+    log.log(
+      `Start OAuth: q.ref="${qRef}", q.state="${qState}", send.state="${state}", scope=${JSON.stringify(scope)}`
+    );
+
+    return opts;
   }
 }

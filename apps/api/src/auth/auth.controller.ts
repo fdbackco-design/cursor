@@ -39,6 +39,47 @@ export class AuthController {
     }
   }
 
+  // 개발용 관리자 로그인
+  @Post('dev/admin-login')
+  async devAdminLogin(@Res() res: Response) {
+    try {
+      // 개발용 관리자 토큰 생성
+      const adminPayload = {
+        id: 'admin-dev',
+        sub: 'admin-dev',
+        email: 'admin@example.com',
+        name: '관리자',
+        role: 'ADMIN',
+      };
+
+      const token = this.jwt.sign(adminPayload);
+
+      // 쿠키 설정
+      res.cookie('access_token', token, {
+        httpOnly: true,
+        secure: false, // 개발환경이므로 false
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000, // 24시간
+      });
+
+      res.cookie('user_role', 'ADMIN', {
+        httpOnly: false,
+        secure: false,
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+
+      return res.json({
+        success: true,
+        message: '관리자로 로그인되었습니다.',
+        user: adminPayload,
+      });
+    } catch (error) {
+      console.error('관리자 로그인 실패:', error);
+      return res.status(500).json({ error: '관리자 로그인에 실패했습니다.' });
+    }
+  }
+
   @Post('users/:id/approve')
   async approveUser(@Param('id') id: string) {
     const user = await this.authService.approveUser(id);
@@ -69,10 +110,43 @@ export class AuthController {
     }
   }
 
+  @Get('validate-referral/:code')
+  async validateReferralCode(@Param('code') code: string, @Res() res: Response) {
+    try {
+      if (!code) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: '추천인 코드가 필요합니다.' 
+        });
+      }
+      
+      const isValid = await this.authService.verifyReferralCode(code);
+      return res.json({
+        valid: isValid,
+        code: code,
+        message: isValid ? '유효한 추천인 코드입니다.' : '유효하지 않은 추천인 코드입니다.',
+      });
+    } catch (error) {
+      console.error('추천인 코드 검증 에러:', error);
+      return res.status(500).json({ 
+        valid: false, 
+        error: '추천인 코드 검증에 실패했습니다.' 
+      });
+    }
+  }
+
   // 카카오 OAuth 시작
   @Get('kakao')
   @UseGuards(KakaoAuthGuard)
-  async kakaoAuth() {}
+  async kakaoAuth(@Req() req: Request, @Res() res: Response) {
+    // ref 파라미터가 있으면 state에 포함하여 전달
+    const ref = req.query.ref as string;
+    if (ref) {
+      // state에 ref 정보를 인코딩하여 전달
+      const state = Buffer.from(JSON.stringify({ ref })).toString('base64');
+      req.query.state = state;
+    }
+  }
 
   // 카카오 OAuth 콜백
   @Get('kakao/callback')
@@ -85,12 +159,23 @@ export class AuthController {
 
       const fromCookie: string | undefined = (() => {
         try {
+          // 1. 기존 ref 쿠키 확인 (base64 인코딩된 경우)
           const raw = req.cookies?.ref as string | undefined;
-          if (!raw) return undefined;
-          const norm = raw.replace(/-/g, '+').replace(/_/g, '/');
-          const json = Buffer.from(norm, 'base64').toString('utf8');
-          const parsed = JSON.parse(json);
-          return typeof parsed?.referralCode === 'string' ? parsed.referralCode : undefined;
+          if (raw) {
+            const norm = raw.replace(/-/g, '+').replace(/_/g, '/');
+            const json = Buffer.from(norm, 'base64').toString('utf8');
+            const parsed = JSON.parse(json);
+            const code = typeof parsed?.referralCode === 'string' ? parsed.referralCode : undefined;
+            if (code) return code;
+          }
+          
+          // 2. middleware에서 설정한 referral_code 쿠키 확인
+          const referralCodeCookie = req.cookies?.referral_code as string | undefined;
+          if (referralCodeCookie) {
+            return referralCodeCookie;
+          }
+          
+          return undefined;
         } catch { return undefined; }
       })();
 
@@ -109,6 +194,8 @@ export class AuthController {
 
       const result = await this.authService.handleKakaoLogin(user, referralCode);
 
+      this.logger.log(`handleKakaoLogin 결과: userId=${result.user.id}, token exists=${!!result.token}, approve=${result.user.approve}`);
+
       // 쿠키 정리 및 설정
       res.clearCookie('ref');
       res.cookie('access_token', result.token, {
@@ -126,7 +213,10 @@ export class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
+      this.logger.log(`쿠키 설정 완료: access_token, user_role=${result.user.role}`);
+
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      this.logger.log(`리다이렉트: ${frontendUrl}/home?login=success`);
       return res.redirect(`${frontendUrl}/home?login=success`);
     } catch (error) {
       this.logger.error('카카오 로그인 에러:', error as any);
@@ -175,13 +265,19 @@ export class AuthController {
     if (process.env.NODE_ENV === 'production') {
       return res.status(403).json({ error: 'Forbidden' });
     }
+    
+    this.logger.log('Dev login consumer 요청 시작');
+    
     const payload = {
       id: 'dev-consumer-id',
       email: 'consumer@test.local',
       name: 'Dev Consumer',
       role: 'CONSUMER',
+      approve: true, // 개발용 사용자는 승인된 상태
     };
     const token = this.jwt.sign(payload, { expiresIn: '1d' });
+
+    this.logger.log(`Dev login token 생성: ${token.substring(0, 20)}...`);
 
     res.cookie('access_token', token, {
       httpOnly: true,
@@ -198,7 +294,10 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    this.logger.log('Dev login 쿠키 설정 완료');
+
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    this.logger.log(`Dev login 리다이렉트: ${frontendUrl}/home`);
     return res.redirect(`${frontendUrl}/home`);
   }
   // =========================

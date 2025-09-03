@@ -84,13 +84,7 @@ export class CouponsService {
     }
 
     // 최소 주문 금액과 최대 할인 금액 유효성 검증
-    console.log('=== 유효성 검증 ===');
-    console.log('minAmount:', minAmount, typeof minAmount);
-    console.log('maxAmount:', maxAmount, typeof maxAmount);
-    console.log('minAmount < maxAmount:', minAmount && maxAmount && minAmount < maxAmount);
-    
     if (minAmount && maxAmount && minAmount < maxAmount) {
-      console.log('유효성 검증 실패: 최소 주문 금액이 최대 할인 금액보다 작습니다.');
       throw new Error('최소 주문 금액은 최대 할인 금액보다 크거나 같아야 합니다.');
     }
 
@@ -249,33 +243,194 @@ export class CouponsService {
     return coupon;
   }
 
-  // 쿠폰 사용 처리
-  async useCoupon(couponId: string, userId: string) {
-    return await this.prisma.$transaction(async (prisma) => {
-      // 쿠폰 사용 횟수 증가
-      const updatedCoupon = await prisma.coupon.update({
-        where: { id: couponId },
-        data: { currentUses: { increment: 1 } }
-      });
 
-      // 사용자 쿠폰 사용 기록 생성 (단순화된 버전)
-      await prisma.userCoupon.upsert({
-        where: {
-          userId_couponId: {
-            userId,
-            couponId
+
+  // 사용자의 쿠폰 목록 조회
+  async getUserCoupons(userId: string) {
+    //console.log('getUserCoupons 호출됨 - userId:', userId);
+    
+    const userCoupons = await this.prisma.userCoupon.findMany({
+      where: { 
+        userId,
+        deletedAt: null // 소프트 딜리트되지 않은 쿠폰만 조회
+      },
+      include: {
+        coupon: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            description: true,
+            discountType: true,
+            discountValue: true,
+            minAmount: true,
+            maxAmount: true,
+            startsAt: true,
+            endsAt: true,
+            isActive: true,
+            maxUses: true,
+            currentUses: true
           }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    //console.log('조회된 사용자 쿠폰 수:', userCoupons.length);
+    //console.log('조회된 사용자 쿠폰 데이터:', userCoupons);
+
+    // 사용 가능한 쿠폰과 만료된 쿠폰을 분류
+    const now = new Date();
+    const result = userCoupons.map(userCoupon => {
+      const coupon = userCoupon.coupon;
+      const isExpired = coupon.endsAt && coupon.endsAt < now;
+      const isUsageLimitReached = coupon.maxUses && coupon.currentUses >= coupon.maxUses;
+      const isUsable = coupon.isActive && !isExpired && !isUsageLimitReached;
+
+      return {
+        ...userCoupon,
+        coupon: {
+          ...coupon,
+          isExpired,
+          isUsageLimitReached,
+          isUsable
+        }
+      };
+    });
+
+    //console.log('반환할 결과:', result);
+    return result;
+  }
+
+  // 쿠폰 사용 처리 (소프트 딜리트)
+  async useCoupon(userId: string, couponId: string) {
+    try {
+      //console.log(`쿠폰 사용 처리 시작: userId=${userId}, couponId=${couponId}`);
+      
+      // 사용자 쿠폰 조회
+      const userCoupon = await this.prisma.userCoupon.findFirst({
+        where: {
+          id: couponId,
+          userId: userId,
+          deletedAt: null // 아직 삭제되지 않은 쿠폰만
         },
-        update: {
-          updatedAt: new Date()
-        },
-        create: {
-          userId,
-          couponId
+        include: {
+          coupon: true
         }
       });
 
-      return updatedCoupon;
+      if (!userCoupon) {
+        throw new Error('사용할 수 있는 쿠폰을 찾을 수 없습니다.');
+      }
+
+      // 쿠폰 사용 처리 (소프트 딜리트)
+      await this.prisma.$transaction(async (prisma) => {
+        // 1. 사용자 쿠폰 소프트 딜리트
+        await prisma.userCoupon.update({
+          where: { id: couponId },
+          data: {
+            deletedAt: new Date(),
+            usageCount: userCoupon.usageCount + 1
+          }
+        });
+
+        // 2. 원본 쿠폰의 사용 횟수 증가
+        await prisma.coupon.update({
+          where: { id: userCoupon.couponId },
+          data: {
+            currentUses: {
+              increment: 1
+            }
+          }
+        });
+      });
+
+      //console.log(`쿠폰 사용 처리 완료: couponId=${couponId}`);
+      return {
+        success: true,
+        message: '쿠폰이 성공적으로 사용 처리되었습니다.'
+      };
+    } catch (error) {
+      console.error('쿠폰 사용 처리 실패:', error);
+      throw error;
+    }
+  }
+
+  // 쿠폰 코드로 사용자에게 쿠폰 등록
+  async registerCouponForUser(userId: string, couponCode: string) {
+    return await this.prisma.$transaction(async (prisma) => {
+      // 쿠폰 코드로 쿠폰 찾기
+      const coupon = await prisma.coupon.findUnique({
+        where: { code: couponCode }
+      });
+
+      if (!coupon) {
+        throw new Error('유효하지 않은 쿠폰 코드입니다.');
+      }
+
+      if (!coupon.isActive) {
+        throw new Error('사용할 수 없는 쿠폰입니다.');
+      }
+
+      // 쿠폰 유효기간 확인
+      const now = new Date();
+      if (coupon.startsAt && coupon.startsAt > now) {
+        throw new Error('아직 사용할 수 없는 쿠폰입니다.');
+      }
+
+      if (coupon.endsAt && coupon.endsAt < now) {
+        throw new Error('만료된 쿠폰입니다.');
+      }
+
+      // 사용 한도 확인
+      if (coupon.maxUses && coupon.currentUses >= coupon.maxUses) {
+        throw new Error('사용 한도가 초과된 쿠폰입니다.');
+      }
+
+      // 이미 등록된 쿠폰인지 확인
+      const existingUserCoupon = await prisma.userCoupon.findUnique({
+        where: {
+          userId_couponId: {
+            userId,
+            couponId: coupon.id
+          }
+        }
+      });
+
+      if (existingUserCoupon) {
+        throw new Error('이미 등록된 쿠폰입니다.');
+      }
+
+      // 사용자에게 쿠폰 등록
+      const userCoupon = await prisma.userCoupon.create({
+        data: {
+          userId,
+          couponId: coupon.id
+        },
+        include: {
+          coupon: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              description: true,
+              discountType: true,
+              discountValue: true,
+              minAmount: true,
+              maxAmount: true,
+              startsAt: true,
+              endsAt: true,
+              isActive: true,
+              maxUses: true,
+              currentUses: true
+            }
+          }
+        }
+      });
+
+      return userCoupon;
     });
   }
 }

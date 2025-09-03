@@ -351,5 +351,5 @@ const openApiDocument = {
 const outputPath = path.join(__dirname, "../openapi.json");
 fs.writeFileSync(outputPath, JSON.stringify(openApiDocument, null, 2));
 
-console.log(`OpenAPI document generated at: ${outputPath}`);
-console.log("Total schemas registered:", registry.getDefinitions().length);
+// console.log(`OpenAPI document generated at: ${outputPath}`);
+// console.log("Total schemas registered:", registry.getDefinitions().length);

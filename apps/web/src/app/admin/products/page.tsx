@@ -18,8 +18,12 @@ import Link from 'next/link';
 import { productsApi, deleteProduct } from '@/lib/api/products';
 import { Product } from '@/types/product';
 import { getImageUrl } from '@/lib/utils/image';
+import { useToast, toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-modal';
 
 const ProductsPage = () => {
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,10 +35,12 @@ const ProductsPage = () => {
     try {
       setLoading(true);
       const data = await productsApi.getAllProducts();
-      setProducts(data);
+      // API 응답이 배열인지 확인하고, 그렇지 않으면 빈 배열로 설정
+      setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('상품 로드 실패:', error);
-      alert('상품을 불러오는데 실패했습니다.');
+      showToast(toast.error('상품 로드 실패', '상품을 불러오는데 실패했습니다.'));
+      setProducts([]); // 에러 시 빈 배열로 설정
     } finally {
       setLoading(false);
     }
@@ -46,14 +52,22 @@ const ProductsPage = () => {
 
   // 상품 삭제
   const handleDelete = async (id: string) => {
-    if (confirm('정말로 이 상품을 삭제하시겠습니까?')) {
+    const confirmed = await confirm({
+      title: '상품 삭제',
+      message: '정말로 이 상품을 삭제하시겠습니까?',
+      confirmText: '삭제',
+      cancelText: '취소',
+      type: 'danger'
+    });
+    
+    if (confirmed) {
       try {
         await deleteProduct(id);
-        alert('상품이 성공적으로 삭제되었습니다.');
+        showToast(toast.success('상품 삭제 완료', '상품이 성공적으로 삭제되었습니다.'));
         loadProducts(); // 목록 새로고침
       } catch (error) {
         console.error('상품 삭제 실패:', error);
-        alert('상품 삭제에 실패했습니다.');
+        showToast(toast.error('상품 삭제 실패', '상품 삭제에 실패했습니다.'));
       }
     }
   };
@@ -74,7 +88,7 @@ const ProductsPage = () => {
   };
 
   // 필터링된 상품 목록 (id가 있는 상품만)
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = Array.isArray(products) ? products.filter(product => {
     if (!product.id) return false; // id가 없는 상품 제외
     
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -85,10 +99,10 @@ const ProductsPage = () => {
                          (selectedStatus === 'active' ? product.isActive : !product.isActive);
     
     return matchesSearch && matchesCategory && matchesStatus;
-  });
+  }) : [];
 
   // 카테고리 목록 (실제 데이터에서 추출)
-  const categories = ['all', ...Array.from(new Set(products.map(p => p.category?.name).filter(Boolean)))];
+  const categories = ['all', ...Array.from(new Set(Array.isArray(products) ? products.map(p => p.category?.name).filter(Boolean) : []))];
   const statuses = ['all', 'active', 'inactive'];
 
   if (loading) {

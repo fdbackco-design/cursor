@@ -3,17 +3,21 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { Trash2, ShoppingBag, ArrowRight, RefreshCw } from 'lucide-react';
+import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cartApi, Cart, CartItem } from '@/lib/api/cart';
 import { getImageUrl } from '@/lib/utils/image';
+import { useRouter } from 'next/navigation';
+import { useToast, toast } from '@/components/ui/toast';
 
 export default function CartPage() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const { showToast } = useToast();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
-  const [inputQuantities, setInputQuantities] = useState<Record<string, string>>({}); // 업데이트 중인 아이템 ID
+  const [inputQuantities, setInputQuantities] = useState<Record<string, string>>({});
 
   // 장바구니 로드
   useEffect(() => {
@@ -25,19 +29,18 @@ export default function CartPage() {
   }, [isAuthenticated, user?.id, authLoading]);
 
   const loadCart = async () => {
-    if (!user?.id) return;
-    
     try {
-      setLoading(true);
-      const cartData = await cartApi.getCart(user.id);
-      setCart(cartData);
-      
-      // 입력 수량 초기화
-      const quantities: Record<string, string> = {};
-      cartData.items.forEach(item => {
-        quantities[item.id] = item.quantity.toString();
-      });
-      setInputQuantities(quantities);
+      const response = await cartApi.getCart();
+      if (response.success && response.data) {
+        setCart(response.data);
+        
+        // 초기 수량 설정
+        const quantities: Record<string, string> = {};
+        response.data.items?.forEach(item => {
+          quantities[item.id] = item.quantity.toString();
+        });
+        setInputQuantities(quantities);
+      }
     } catch (error) {
       console.error('장바구니 로드 실패:', error);
     } finally {
@@ -45,160 +48,100 @@ export default function CartPage() {
     }
   };
 
-  const updateQuantity = async (itemId: string, newQuantity: number, maxStock?: number) => {
-    if (newQuantity < 1) {
-      alert('수량은 1개 이상이어야 합니다.');
-      return;
+  const handleQuantityChange = (itemId: string, value: string) => {
+    // 숫자만 허용
+    if (value === '' || /^\d+$/.test(value)) {
+      setInputQuantities(prev => ({ ...prev, [itemId]: value }));
     }
+  };
+
+  const updateQuantity = async (itemId: string, quantity: number) => {
+    if (quantity < 1) return;
     
-    if (maxStock && newQuantity > maxStock) {
-      alert(`재고가 부족합니다. 최대 ${maxStock}개까지 담을 수 있습니다.`);
-      return;
-    }
-    
-    setUpdating(itemId);
     try {
-      const updatedItem = await cartApi.updateCartItem(itemId, { quantity: newQuantity });
-      
-      // 로컬 상태 업데이트로 더 빠른 UI 반응
-      if (cart) {
-        setCart({
-          ...cart,
-          items: cart.items.map(item => 
-            item.id === itemId 
-              ? { ...item, quantity: newQuantity }
-              : item
-          )
-        });
-        // 입력 필드 값도 업데이트
-        setInputQuantities(prev => ({
-          ...prev,
-          [itemId]: newQuantity.toString()
-        }));
+      setUpdating(itemId);
+      const response = await cartApi.updateCartItem(itemId, { quantity });
+      if (response.success) {
+        await loadCart(); // 장바구니 새로고침
       }
     } catch (error) {
       console.error('수량 업데이트 실패:', error);
-      const errorMessage = error instanceof Error ? error.message : '수량 업데이트에 실패했습니다.';
-      alert(errorMessage);
-      // 실패 시 원래 상태로 복원
-      await loadCart();
+      showToast(toast.error('수량 업데이트 실패', '수량 업데이트에 실패했습니다.'));
     } finally {
       setUpdating(null);
-    }
-  };
-
-  // 수량 직접 입력 처리
-  const handleQuantityInput = async (itemId: string, inputValue: string, maxStock?: number) => {
-    const newQuantity = parseInt(inputValue);
-    if (isNaN(newQuantity) || newQuantity < 1) {
-      alert('올바른 수량을 입력해주세요.');
-      return;
-    }
-    await updateQuantity(itemId, newQuantity, maxStock);
-  };
-
-  // Enter 키 처리
-  const handleQuantityKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, itemId: string, maxStock?: number) => {
-    if (e.key === 'Enter') {
-      const target = e.target as HTMLInputElement;
-      handleQuantityInput(itemId, target.value, maxStock);
-    }
-  };
-
-  // 입력 필드 변경 처리 (실시간 업데이트)
-  const handleQuantityChange = (itemId: string, value: string) => {
-    setInputQuantities(prev => ({
-      ...prev,
-      [itemId]: value
-    }));
-  };
-
-  // 포커스 아웃 시 처리
-  const handleQuantityBlur = (e: React.FocusEvent<HTMLInputElement>, itemId: string, originalQuantity: number, maxStock?: number) => {
-    const newValue = e.target.value;
-    const newQuantity = parseInt(newValue);
-    
-    // 값이 변경되었고 유효한 경우에만 업데이트
-    if (!isNaN(newQuantity) && newQuantity !== originalQuantity && newQuantity >= 1) {
-      handleQuantityInput(itemId, newValue, maxStock);
-    } else if (isNaN(newQuantity) || newQuantity < 1) {
-      // 잘못된 값인 경우 원래 값으로 복원
-      setInputQuantities(prev => ({
-        ...prev,
-        [itemId]: originalQuantity.toString()
-      }));
     }
   };
 
   const removeItem = async (itemId: string) => {
-    setUpdating(itemId);
     try {
-      await cartApi.removeFromCart(itemId);
-      // 장바구니 다시 로드
-      await loadCart();
+      setUpdating(itemId);
+      const response = await cartApi.removeFromCart(itemId);
+      if (response.success) {
+        await loadCart(); // 장바구니 새로고침
+      }
     } catch (error) {
       console.error('아이템 제거 실패:', error);
-      alert('아이템 제거에 실패했습니다.');
+      showToast(toast.error('아이템 제거 실패', '아이템 제거에 실패했습니다.'));
     } finally {
       setUpdating(null);
     }
   };
 
-  // 가격 계산 헬퍼 함수
-  const getItemPrice = (item: CartItem, userRole?: string) => {
-    return userRole === 'BIZ' ? item.product.priceB2C : item.product.priceB2C;
+  // 주문하기 함수 - 체크아웃 페이지로 이동
+  const handleOrder = () => {
+    if (!user || !cart || cartItems.length === 0) {
+      showToast(toast.warning('장바구니 비어있음', '장바구니가 비어있습니다.'));
+      return;
+    }
+
+    // 체크아웃 페이지로 이동
+    router.push('/checkout');
   };
 
-  const cartItems = cart?.items || [];
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cartItems.reduce((sum, item) => 
-    sum + (getItemPrice(item, user?.role) * item.quantity), 0);
-  const shippingFee = subtotal > 50000 ? 0 : 3000;
-  const total = subtotal + shippingFee;
-
   // 로딩 상태
-  if (loading || authLoading) {
+  if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-16">
-            <RefreshCw className="h-12 w-12 text-gray-400 mx-auto mb-4 animate-spin" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">장바구니를 불러오는 중...</p>
-          </div>
         </div>
       </div>
     );
   }
 
-  // 로그인하지 않은 상태
+  // 로그인 안된 상태
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-16">
-            <ShoppingBag className="h-24 w-24 text-gray-300 mx-auto mb-6" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">로그인이 필요합니다</h1>
-            <p className="text-gray-600 mb-8">장바구니를 이용하려면 로그인해주세요.</p>
-            <Button asChild size="lg">
-              <a href="/signin">로그인하기</a>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">로그인이 필요합니다</h2>
+          <p className="text-gray-600 mb-6">장바구니를 확인하려면 로그인해주세요.</p>
+          <Button onClick={() => window.location.href = '/signin'}>
+            로그인하기
             </Button>
-          </div>
         </div>
       </div>
     );
   }
 
-  // 장바구니가 비어있는 상태
+  const cartItems = cart?.items || [];
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.product.priceB2C * item.quantity), 0);
+  const shippingFee = subtotal >= 50000 ? 0 : 3000;
+  const total = subtotal + shippingFee;
+
+  // 빈 장바구니
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-16">
-            <ShoppingBag className="h-24 w-24 text-gray-300 mx-auto mb-6" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">장바구니가 비어있습니다</h1>
-            <p className="text-gray-600 mb-8">원하는 상품을 장바구니에 담아보세요.</p>
-            <Button asChild size="lg">
-              <a href="/home">쇼핑 계속하기</a>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto pt-16 pb-24 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">장바구니가 비어있습니다</h2>
+            <p className="text-gray-600 mb-6">원하는 상품을 장바구니에 담아보세요.</p>
+            <Button onClick={() => router.push('/')}>
+              쇼핑 계속하기
             </Button>
           </div>
         </div>
@@ -207,113 +150,93 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">장바구니</h1>
-          <p className="text-gray-600 mt-2">총 {totalItems}개의 상품</p>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto pt-16 pb-24 px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl mb-12">
+          장바구니
+        </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* 장바구니 상품 목록 */}
-          <div className="lg:col-span-2">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start xl:gap-x-16">
+          {/* 장바구니 아이템 */}
+          <div className="lg:col-span-7">
             <Card>
               <CardHeader>
-                <CardTitle>상품 목록</CardTitle>
+                <CardTitle>담은 상품 ({cartItems.length}개)</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {cartItems.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
+                    <div key={item.id} className="flex items-center space-x-4 p-4 bg-white border rounded-lg">
                       {/* 상품 이미지 */}
-                      <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                        {item.product.images && item.product.images.length > 0 ? (
+                      <div className="flex-shrink-0">
                           <img
-                            src={getImageUrl(item.product.images[0])}
+                          src={getImageUrl(item.product.images?.[0])}
                             alt={item.product.name}
-                            className="w-full h-full object-cover"
+                          className="w-20 h-20 object-cover rounded-lg"
                           />
-                        ) : (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                            <ShoppingBag className="h-8 w-8 text-gray-400" />
-                          </div>
-                        )}
                       </div>
                       
                       {/* 상품 정보 */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 truncate">{item.product.name}</h3>
-                        {item.product.vendor?.name && (
-                          <p className="text-sm text-gray-600">{item.product.vendor.name}</p>
-                        )}
-                        <p className="text-lg font-bold text-gray-900">
-                          {getItemPrice(item, user?.role).toLocaleString()}원
+                        <h3 className="text-lg font-medium text-gray-900 mb-1">
+                          {item.product.name}
+                        </h3>
+                        <p className="text-sm text-gray-500 mb-2">
+                          {item.product.category?.name}
                         </p>
-                        {/* 재고 정보 표시 */}
-                        {item.product.stockQuantity <= (item.product.lowStockThreshold || 10) && (
-                          <p className="text-xs text-orange-600 font-medium">
-                            재고 부족 (남은 수량: {item.product.stockQuantity}개)
-                          </p>
-                        )}
+                        <div className="flex items-center space-x-4">
+                          <span className="text-lg font-bold text-gray-900">
+                            {item.product.priceB2C.toLocaleString()}원
+                          </span>
+                        </div>
                       </div>
                       
                       {/* 수량 조절 */}
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-center space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.product.stockQuantity)}
-                            disabled={item.quantity <= 1 || updating === item.id}
-                            className="w-8 h-8 p-0"
+                          onClick={() => {
+                            const newQuantity = item.quantity - 1;
+                            if (newQuantity > 0) {
+                              updateQuantity(item.id, newQuantity);
+                            }
+                          }}
+                          disabled={updating === item.id || item.quantity <= 1}
                           >
                             -
                           </Button>
                           <input
-                            type="number"
-                            min="1"
-                            max={item.product.stockQuantity}
+                          type="text"
                             value={inputQuantities[item.id] || item.quantity}
                             onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                            onKeyPress={(e) => handleQuantityKeyPress(e, item.id, item.product.stockQuantity)}
-                            onBlur={(e) => handleQuantityBlur(e, item.id, item.quantity, item.product.stockQuantity)}
+                          onBlur={() => {
+                            const quantity = parseInt(inputQuantities[item.id] || '0');
+                            if (quantity && quantity !== item.quantity && quantity > 0) {
+                              updateQuantity(item.id, quantity);
+                            }
+                          }}
+                          className="w-16 text-center border rounded px-2 py-1"
                             disabled={updating === item.id}
-                            className="w-16 h-8 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            title={`재고: ${item.product.stockQuantity}개`}
                           />
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.product.stockQuantity)}
-                            disabled={updating === item.id || item.quantity >= item.product.stockQuantity}
-                            className="w-8 h-8 p-0"
-                            title={item.quantity >= item.product.stockQuantity ? '재고가 부족합니다' : '수량 증가'}
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          disabled={updating === item.id}
                           >
                             +
                           </Button>
-                        </div>
-                        {updating === item.id && (
-                          <div className="flex items-center gap-1">
-                            <RefreshCw className="h-3 w-3 animate-spin text-gray-400" />
-                            <span className="text-xs text-gray-500">업데이트 중...</span>
-                          </div>
-                        )}
                       </div>
                       
-                      {/* 삭제 버튼 */}
+                      {/* 제거 버튼 */}
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={() => removeItem(item.id)}
                         disabled={updating === item.id}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
-                        {updating === item.id ? (
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                        ) : (
                           <Trash2 className="h-4 w-4" />
-                        )}
                       </Button>
                     </div>
                   ))}
@@ -323,7 +246,7 @@ export default function CartPage() {
           </div>
 
           {/* 주문 요약 */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-5 mt-16 lg:mt-0">
             <Card>
               <CardHeader>
                 <CardTitle>주문 요약</CardTitle>
@@ -353,9 +276,14 @@ export default function CartPage() {
                   </div>
                 </div>
                 
-                <Button className="w-full" size="lg">
-                  주문하기
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                <Button 
+                  className="w-full" 
+                  size="lg" 
+                  onClick={handleOrder}
+                  disabled={cartItems.length === 0}
+                >
+                      주문하기
+                      <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
                 
                 <div className="text-sm text-gray-500 text-center">

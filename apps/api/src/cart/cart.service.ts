@@ -6,6 +6,17 @@ import { AddToCartDto, UpdateCartItemDto } from './dto';
 export class CartService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Decimal 타입을 number로 변환하는 헬퍼 함수
+  private convertCartItemDecimals(item: any) {
+    return {
+      ...item,
+      product: {
+        ...item.product,
+        priceB2C: item.product.priceB2C.toNumber(),
+      }
+    };
+  }
+
   // 사용자의 장바구니 조회 (없으면 생성)
   async getCartByUserId(userId: string) {
     // 장바구니가 없으면 생성
@@ -71,7 +82,19 @@ export class CartService {
       });
     }
 
-    return cart;
+    // Decimal 타입을 number로 변환
+    const cartWithNumbers = {
+      ...cart,
+      items: cart.items.map(item => ({
+        ...item,
+        product: {
+          ...item.product,
+          priceB2C: item.product.priceB2C.toNumber(),
+        }
+      }))
+    };
+
+    return cartWithNumbers;
   }
 
   // 장바구니에 상품 추가
@@ -93,7 +116,7 @@ export class CartService {
 
     if (existingItem) {
       // 이미 있으면 수량 업데이트
-      return await this.prisma.cartItem.update({
+      const updatedItem = await this.prisma.cartItem.update({
         where: { id: existingItem.id },
         data: { quantity: existingItem.quantity + quantity },
         include: {
@@ -118,9 +141,10 @@ export class CartService {
           }
         }
       });
+      return this.convertCartItemDecimals(updatedItem);
     } else {
       // 새로운 아이템 추가
-      return await this.prisma.cartItem.create({
+      const newItem = await this.prisma.cartItem.create({
         data: {
           cartId: cart.id,
           productId,
@@ -148,6 +172,7 @@ export class CartService {
           }
         }
       });
+      return this.convertCartItemDecimals(newItem);
     }
   }
 
@@ -182,7 +207,7 @@ export class CartService {
       throw new Error(`재고가 부족합니다. 현재 재고: ${existingItem.product.stockQuantity}개`);
     }
 
-    return await this.prisma.cartItem.update({
+    const updatedItem = await this.prisma.cartItem.update({
       where: { id: itemId },
       data: { quantity },
       include: {
@@ -209,6 +234,8 @@ export class CartService {
         }
       }
     });
+
+    return this.convertCartItemDecimals(updatedItem);
   }
 
   // 장바구니에서 상품 제거

@@ -18,10 +18,60 @@ export const productsApi = {
       }
 
       const result = await response.json();
-      return result.data || [];
+      // API 응답 형태: { success: true, data: { products: Product[], pagination: {...} } }
+      if (result.success && result.data && Array.isArray(result.data.products)) {
+        return result.data.products;
+      } else if (Array.isArray(result.data)) {
+        return result.data;
+      } else if (Array.isArray(result)) {
+        return result;
+      } else {
+        console.warn('예상치 못한 API 응답 형태:', result);
+        return [];
+      }
     } catch (error) {
       console.error('상품 목록 조회 실패:', error);
       return [];
+    }
+  },
+
+  // 상품 조회 (필터링 옵션 포함)
+  async getProducts(options: {
+    category?: string;
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  } = {}): Promise<{ success: boolean; data?: { products: Product[]; pagination?: any }; error?: string }> {
+    try {
+      const params = new URLSearchParams();
+      if (options.category) params.append('category', options.category);
+      if (options.page) params.append('page', options.page.toString());
+      if (options.limit) params.append('limit', options.limit.toString());
+      if (options.search) params.append('search', options.search);
+      if (options.sortBy) params.append('sortBy', options.sortBy);
+      if (options.sortOrder) params.append('sortOrder', options.sortOrder);
+
+      const queryString = params.toString();
+      const endpoint = `/api/v1/products${queryString ? `?${queryString}` : ''}`;
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('상품 목록을 불러올 수 없습니다.');
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('상품 목록 조회 실패:', error);
+      return { success: false, error: '상품 목록을 불러올 수 없습니다.' };
     }
   },
 
@@ -58,11 +108,11 @@ export const productsApi = {
       });
 
       if (!response.ok) {
-        throw new Error('상품 상세 정보를 불러올 수 없습니다.');
+        throw new Error(`상품 상세 정보를 불러올 수 없습니다. (${response.status})`);
       }
 
       const result = await response.json();
-      return result.data || null;
+      return result.data || result || null;
     } catch (error) {
       console.error('상품 상세 조회 실패:', error);
       return null;
@@ -218,7 +268,7 @@ export const updateProduct = async (id: string, productData: {
   images?: File[];
   descriptionImages?: File[];
 }) => {
-  console.log('updateProduct - 전송할 데이터:', productData);
+
   try {
     // FormData를 사용하여 이미지와 함께 데이터 전송
     const formData = new FormData();
@@ -227,9 +277,9 @@ export const updateProduct = async (id: string, productData: {
     if (productData.name && productData.name.trim()) formData.append('name', productData.name.trim());
     if (productData.description && productData.description.trim()) formData.append('description', productData.description.trim());
     if (productData.shortDescription && productData.shortDescription.trim()) formData.append('shortDescription', productData.shortDescription.trim());
-    if (productData.priceB2B && productData.priceB2B > 0) formData.append('priceB2B', productData.priceB2B.toString());
-    if (productData.priceB2C && productData.priceB2C > 0) formData.append('priceB2C', productData.priceB2C.toString());
-    if (productData.comparePrice && productData.comparePrice > 0) formData.append('comparePrice', productData.comparePrice.toString());
+    if (productData.priceB2B !== undefined && productData.priceB2B !== null) formData.append('priceB2B', productData.priceB2B.toString());
+    if (productData.priceB2C !== undefined && productData.priceB2C !== null) formData.append('priceB2C', productData.priceB2C.toString());
+    if (productData.comparePrice !== undefined && productData.comparePrice !== null) formData.append('comparePrice', productData.comparePrice.toString());
     if (productData.sku && productData.sku.trim()) formData.append('sku', productData.sku.trim());
     if (productData.weight && productData.weight > 0) formData.append('weight', productData.weight.toString());
     if (productData.length && productData.length > 0) formData.append('length', productData.length.toString());
@@ -267,15 +317,7 @@ export const updateProduct = async (id: string, productData: {
       });
     }
 
-    // FormData 디버깅
-    console.log('FormData 내용:');
-    formData.forEach((value, key) => {
-      if (value instanceof File) {
-        console.log(`${key}: File(${value.name}, ${value.size} bytes)`);
-      } else {
-        console.log(`${key}: ${value}`);
-      }
-    });
+
 
     const response = await fetch(`${API_BASE_URL}/api/v1/products/${id}`, {
       method: 'PUT',

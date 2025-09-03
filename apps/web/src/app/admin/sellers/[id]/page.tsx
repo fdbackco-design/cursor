@@ -8,12 +8,15 @@ import { ArrowLeft, Edit, Users, Shield, ShieldOff, CheckCircle, XCircle, Loader
 import { sellersApi } from '@/lib/api/sellers';
 import { Seller } from '@/types/seller';
 import Link from 'next/link';
+import { useToast, toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-modal';
 
 const SellerDetailPage = () => {
   const router = useRouter();
   const params = useParams();
   const sellerId = params.id as string;
-  
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [seller, setSeller] = useState<Seller | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -29,12 +32,12 @@ const SellerDetailPage = () => {
         if (data) {
           setSeller(data);
         } else {
-          alert('셀러를 찾을 수 없습니다.');
+          showToast(toast.error('셀러 없음', '셀러를 찾을 수 없습니다.'));
           router.push('/admin/sellers');
         }
       } catch (error) {
         console.error('셀러 로드 실패:', error);
-        alert('셀러 정보를 불러오는데 실패했습니다.');
+        showToast(toast.error('셀러 로드 실패', '셀러 정보를 불러오는데 실패했습니다.'));
         router.push('/admin/sellers');
       } finally {
         setLoading(false);
@@ -51,12 +54,12 @@ const SellerDetailPage = () => {
     try {
       setUpdating(true);
       await sellersApi.toggleSellerStatus(seller.id);
-      alert('셀러 상태가 성공적으로 변경되었습니다.');
+      showToast(toast.success('셀러 상태 변경', '셀러 상태가 성공적으로 변경되었습니다.'));
       // 페이지 새로고침
       window.location.reload();
     } catch (error) {
       console.error('셀러 상태 변경 실패:', error);
-      alert('셀러 상태 변경에 실패했습니다.');
+      showToast(toast.error('셀러 상태 변경 실패', '셀러 상태 변경에 실패했습니다.'));
     } finally {
       setUpdating(false);
     }
@@ -69,12 +72,12 @@ const SellerDetailPage = () => {
     try {
       setUpdating(true);
       await sellersApi.toggleSellerVerification(seller.id);
-      alert('셀러 인증 상태가 성공적으로 변경되었습니다.');
+      showToast(toast.success('셀러 인증 상태 변경', '셀러 인증 상태가 성공적으로 변경되었습니다.'));
       // 페이지 새로고침
       window.location.reload();
     } catch (error) {
       console.error('셀러 인증 상태 변경 실패:', error);
-      alert('셀러 인증 상태 변경에 실패했습니다.');
+      showToast(toast.error('셀러 인증 상태 변경 실패', '셀러 인증 상태 변경에 실패했습니다.'));
     } finally {
       setUpdating(false);
     }

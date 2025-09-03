@@ -21,8 +21,12 @@ import {
 import Link from 'next/link';
 import { sellersApi } from '@/lib/api/sellers';
 import { Seller } from '@/types/seller';
+import { useToast, toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-modal';
 
 const SellersPage = () => {
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,7 +41,7 @@ const SellersPage = () => {
       setSellers(data);
     } catch (error) {
       console.error('셀러 로드 실패:', error);
-      alert('셀러를 불러오는데 실패했습니다.');
+      showToast(toast.error('셀러 로드 실패', '셀러를 불러오는데 실패했습니다.'));
     } finally {
       setLoading(false);
     }
@@ -49,14 +53,22 @@ const SellersPage = () => {
 
   // 셀러 삭제
   const handleDelete = async (id: string) => {
-    if (confirm('정말로 이 셀러를 삭제하시겠습니까?')) {
+    const confirmed = await confirm({
+      title: '셀러 삭제',
+      message: '정말로 이 셀러를 삭제하시겠습니까?',
+      confirmText: '삭제',
+      cancelText: '취소',
+      type: 'danger'
+    });
+    
+    if (confirmed) {
       try {
         await sellersApi.deleteSeller(id);
-        alert('셀러가 성공적으로 삭제되었습니다.');
+        showToast(toast.success('셀러 삭제 완료', '셀러가 성공적으로 삭제되었습니다.'));
         loadSellers(); // 목록 새로고침
       } catch (error) {
         console.error('셀러 삭제 실패:', error);
-        alert('셀러 삭제에 실패했습니다.');
+        showToast(toast.error('셀러 삭제 실패', '셀러 삭제에 실패했습니다.'));
       }
     }
   };
@@ -65,11 +77,11 @@ const SellersPage = () => {
   const handleStatusChange = async (id: string) => {
     try {
       await sellersApi.toggleSellerStatus(id);
-      alert('셀러 상태가 성공적으로 변경되었습니다.');
+      showToast(toast.success('셀러 상태 변경', '셀러 상태가 성공적으로 변경되었습니다.'));
       loadSellers(); // 목록 새로고침
     } catch (error) {
       console.error('셀러 상태 변경 실패:', error);
-      alert('셀러 상태 변경에 실패했습니다.');
+      showToast(toast.error('셀러 상태 변경 실패', '셀러 상태 변경에 실패했습니다.'));
     }
   };
 
@@ -77,11 +89,11 @@ const SellersPage = () => {
   const handleVerificationChange = async (id: string) => {
     try {
       await sellersApi.toggleSellerVerification(id);
-      alert('셀러 인증 상태가 성공적으로 변경되었습니다.');
+      showToast(toast.success('셀러 인증 상태 변경', '셀러 인증 상태가 성공적으로 변경되었습니다.'));
       loadSellers(); // 목록 새로고침
     } catch (error) {
       console.error('셀러 인증 상태 변경 실패:', error);
-      alert('셀러 인증 상태 변경에 실패했습니다.');
+      showToast(toast.error('셀러 인증 상태 변경 실패', '셀러 인증 상태 변경에 실패했습니다.'));
     }
   };
 

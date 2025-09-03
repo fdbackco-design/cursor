@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export interface CartItem {
   id: string;
@@ -10,15 +10,14 @@ export interface CartItem {
   product: {
     id: string;
     name: string;
+    images?: any;
     priceB2C: number;
-    images?: string[];
-    isActive: boolean;
     stockQuantity: number;
     lowStockThreshold?: number;
-    vendor?: {
+    category?: {
       name: string;
     };
-    category?: {
+    vendor?: {
       name: string;
     };
   };
@@ -32,29 +31,46 @@ export interface Cart {
   items: CartItem[];
 }
 
-export interface AddToCartDto {
-  userId: string;
+export interface AddToCartRequest {
   productId: string;
   quantity: number;
 }
 
-export interface UpdateCartItemDto {
+export interface UpdateCartItemRequest {
   quantity: number;
 }
 
+export interface CartResponse {
+  success: boolean;
+  message: string;
+  data: Cart | null;
+  error?: string;
+}
+
+export interface CartItemResponse {
+  success: boolean;
+  message: string;
+  data: CartItem | null;
+  error?: string;
+}
+
 export const cartApi = {
-  // 사용자의 장바구니 조회
-  async getCart(userId: string): Promise<Cart | null> {
+  // 장바구니 조회
+  async getCart(): Promise<CartResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/cart/${userId}`);
-      
+      const response = await fetch(`${API_BASE_URL}/api/v1/cart`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`장바구니를 불러올 수 없습니다. ${JSON.stringify(errorData)}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      const result = await response.json();
-      return result.data;
+
+      return await response.json();
     } catch (error) {
       console.error('장바구니 조회 실패:', error);
       throw error;
@@ -62,23 +78,22 @@ export const cartApi = {
   },
 
   // 장바구니에 상품 추가
-  async addToCart(addToCartDto: AddToCartDto): Promise<CartItem> {
+  async addToCart(data: AddToCartRequest): Promise<CartItemResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/cart/add`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/cart/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(addToCartDto),
+        credentials: 'include',
+        body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`장바구니 추가에 실패했습니다. ${JSON.stringify(errorData)}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      const result = await response.json();
-      return result.data;
+
+      return await response.json();
     } catch (error) {
       console.error('장바구니 추가 실패:', error);
       throw error;
@@ -86,57 +101,66 @@ export const cartApi = {
   },
 
   // 장바구니 아이템 수량 업데이트
-  async updateCartItem(itemId: string, updateCartItemDto: UpdateCartItemDto): Promise<CartItem> {
+  async updateCartItem(itemId: string, data: UpdateCartItemRequest): Promise<CartItemResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/cart/item/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/cart/item/${itemId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updateCartItemDto),
+        credentials: 'include',
+        body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`장바구니 아이템 업데이트에 실패했습니다. ${JSON.stringify(errorData)}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      const result = await response.json();
-      return result.data;
+
+      return await response.json();
     } catch (error) {
       console.error('장바구니 아이템 업데이트 실패:', error);
       throw error;
     }
   },
 
-  // 장바구니에서 상품 제거
-  async removeFromCart(itemId: string): Promise<void> {
+  // 장바구니에서 아이템 제거
+  async removeFromCart(itemId: string): Promise<CartResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/cart/item/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/cart/item/${itemId}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`장바구니에서 제거에 실패했습니다. ${JSON.stringify(errorData)}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      return await response.json();
     } catch (error) {
-      console.error('장바구니에서 제거 실패:', error);
+      console.error('장바구니 아이템 제거 실패:', error);
       throw error;
     }
   },
 
   // 장바구니 전체 비우기
-  async clearCart(userId: string): Promise<void> {
+  async clearCart(): Promise<CartResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/cart/${userId}/clear`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/cart/clear`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`장바구니 비우기에 실패했습니다. ${JSON.stringify(errorData)}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      return await response.json();
     } catch (error) {
       console.error('장바구니 비우기 실패:', error);
       throw error;

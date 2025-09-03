@@ -6,9 +6,9 @@ export const wishlistApi = {
   // 찜목록 조회
   async getWishlist(): Promise<WishlistResponse> {
     try {
-      console.log('=== 찜목록 조회 요청 시작 ===');
-      console.log('현재 쿠키:', document.cookie);
-      console.log('API URL:', `${API_BASE_URL}/api/v1/wishlist`);
+      // console.log('=== 찜목록 조회 요청 시작 ===');
+      // console.log('현재 쿠키:', document.cookie);
+      // console.log('API URL:', `${API_BASE_URL}/api/v1/wishlist`);
       
       const requestOptions = {
         method: 'GET',
@@ -18,12 +18,12 @@ export const wishlistApi = {
         },
       };
       
-      console.log('요청 옵션:', requestOptions);
+      //console.log('요청 옵션:', requestOptions);
       
       const response = await fetch(`${API_BASE_URL}/api/v1/wishlist`, requestOptions);
 
-      console.log('찜목록 조회 응답:', response.status, response.statusText);
-      console.log('응답 헤더:', Object.fromEntries(response.headers.entries()));
+      // console.log('찜목록 조회 응답:', response.status, response.statusText);
+      // console.log('응답 헤더:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         throw new Error('찜목록을 불러올 수 없습니다.');
@@ -39,10 +39,10 @@ export const wishlistApi = {
   // 찜하기 추가
   async addToWishlist(data: AddToWishlistRequest): Promise<WishlistResponse> {
     try {
-      console.log('=== 찜하기 추가 요청 시작 ===');
-      console.log('요청 데이터:', data);
-      console.log('현재 쿠키:', document.cookie);
-      console.log('API URL:', `${API_BASE_URL}/api/v1/wishlist`);
+      // console.log('=== 찜하기 추가 요청 시작 ===');
+      // console.log('요청 데이터:', data);
+      // console.log('현재 쿠키:', document.cookie);
+      // console.log('API URL:', `${API_BASE_URL}/api/v1/wishlist`);
       
       const requestOptions = {
         method: 'POST',
@@ -53,12 +53,12 @@ export const wishlistApi = {
         body: JSON.stringify(data),
       };
       
-      console.log('요청 옵션:', requestOptions);
+      //console.log('요청 옵션:', requestOptions);
       
       const response = await fetch(`${API_BASE_URL}/api/v1/wishlist`, requestOptions);
 
-      console.log('찜하기 추가 응답:', response.status, response.statusText);
-      console.log('응답 헤더:', Object.fromEntries(response.headers.entries()));
+      // console.log('찜하기 추가 응답:', response.status, response.statusText);
+      // console.log('응답 헤더:', Object.fromEntries(response.headers.entries()));
       
       if (response.status === 401) {
         // TODO: 로그인 유도 처리

@@ -9,11 +9,16 @@ import { sellersApi } from '@/lib/api/sellers';
 import { referralCodesApi } from '@/lib/api/referral-codes';
 import { Seller } from '@/types/seller';
 import { ReferralCode, CreateReferralCodeDto, UpdateReferralCodeDto } from '@/types/referral-code';
+import { useToast, toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-modal';
 
 const EditSellerPage = () => {
   const router = useRouter();
   const params = useParams();
   const sellerId = params.id as string;
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
+  
   
   const [seller, setSeller] = useState<Seller | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,12 +58,12 @@ const EditSellerPage = () => {
             setReferralCodes(data.referralCodes);
           }
         } else {
-          alert('셀러를 찾을 수 없습니다.');
+          showToast(toast.error('셀러 없음', '셀러를 찾을 수 없습니다.'));
           router.push('/admin/sellers');
         }
       } catch (error) {
         console.error('셀러 로드 실패:', error);
-        alert('셀러 정보를 불러오는데 실패했습니다.');
+        showToast(toast.error('셀러 로드 실패', '셀러 정보를 불러오는데 실패했습니다.'));
         router.push('/admin/sellers');
       } finally {
         setLoading(false);
@@ -89,11 +94,11 @@ const EditSellerPage = () => {
       };
 
       await sellersApi.updateSeller(seller.id, sellerData);
-      alert('셀러가 성공적으로 수정되었습니다.');
+      showToast(toast.success('셀러 수정 완료', '셀러가 성공적으로 수정되었습니다.'));
       router.push('/admin/sellers');
     } catch (error) {
       console.error('셀러 수정 실패:', error);
-      alert('셀러 수정에 실패했습니다.');
+      showToast(toast.error('셀러 수정 실패', '셀러 수정에 실패했습니다.'));
     } finally {
       setSaving(false);
     }
@@ -110,7 +115,7 @@ const EditSellerPage = () => {
 
   const handleCreateReferralCode = async () => {
     if (!newReferralCode.code.trim()) {
-      alert('추천 코드를 입력해주세요.');
+      showToast(toast.warning('추천 코드 입력 필요', '추천 코드를 입력해주세요.'));
       return;
     }
 
@@ -125,11 +130,11 @@ const EditSellerPage = () => {
         setReferralCodes(prev => [...prev, result.data]);
         setNewReferralCode({ code: '', isActive: true });
         setShowNewReferralCodeForm(false);
-        alert('추천 코드가 성공적으로 생성되었습니다.');
+        showToast(toast.success('추천 코드 생성 완료', '추천 코드가 성공적으로 생성되었습니다.'));
       }
     } catch (error) {
       console.error('추천 코드 생성 실패:', error);
-      alert('추천 코드 생성에 실패했습니다.');
+      showToast(toast.error('추천 코드 생성 실패', '추천 코드 생성에 실패했습니다.'));
     }
   };
 
@@ -142,27 +147,34 @@ const EditSellerPage = () => {
           code.id === referralCodeId ? { ...code, ...updatedData } : code
         ));
         setEditingReferralCode(null);
-        alert('추천 코드가 성공적으로 수정되었습니다.');
+        showToast(toast.success('추천 코드 수정 완료', '추천 코드가 성공적으로 수정되었습니다.'));
       }
     } catch (error) {
       console.error('추천 코드 수정 실패:', error);
-      alert('추천 코드 수정에 실패했습니다.');
+      showToast(toast.error('추천 코드 수정 실패', '추천 코드 수정에 실패했습니다.'));
     }
   };
 
   const handleDeleteReferralCode = async (referralCodeId: string) => {
-    if (!confirm('정말로 이 추천 코드를 삭제하시겠습니까?')) return;
+    const confirmed = await confirm({
+      title: '추천 코드 삭제',
+      message: '정말로 이 추천 코드를 삭제하시겠습니까?',
+      confirmText: '삭제',
+      cancelText: '취소',
+      type: 'danger'
+    });
+    if (!confirmed) return;
 
     try {
       const result = await referralCodesApi.deleteReferralCode(referralCodeId);
       if (result.success) {
         // 목록에서 해당 추천 코드 제거
         setReferralCodes(prev => prev.filter(code => code.id !== referralCodeId));
-        alert('추천 코드가 성공적으로 삭제되었습니다.');
+        showToast(toast.success('추천 코드 삭제 완료', '추천 코드가 성공적으로 삭제되었습니다.'));
       }
     } catch (error) {
       console.error('추천 코드 삭제 실패:', error);
-      alert('추천 코드 삭제에 실패했습니다.');
+      showToast(toast.error('추천 코드 삭제 실패', '추천 코드 삭제에 실패했습니다.'));
     }
   };
 
@@ -174,11 +186,11 @@ const EditSellerPage = () => {
         setReferralCodes(prev => prev.map(code => 
           code.id === referralCodeId ? { ...code, isActive: !code.isActive } : code
         ));
-        alert('추천 코드 상태가 성공적으로 변경되었습니다.');
+        showToast(toast.success('추천 코드 상태 변경', '추천 코드 상태가 성공적으로 변경되었습니다.'));
       }
     } catch (error) {
       console.error('추천 코드 상태 변경 실패:', error);
-      alert('추천 코드 상태 변경에 실패했습니다.');
+      showToast(toast.error('추천 코드 상태 변경 실패', '추천 코드 상태 변경에 실패했습니다.'));
     }
   };
 

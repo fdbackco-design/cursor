@@ -13,6 +13,15 @@ import { ReferralCodesModule } from './referral-codes/referral-codes.module';
 import { UsersModule } from './users/users.module';
 import { CartModule } from './cart/cart.module';
 import { CouponsModule } from './coupons/coupons.module';
+import { AuditLogModule } from './audit-log/audit-log.module';
+import { AdminModule } from './admin/admin.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { PaymentsModule } from './payments/payments.module';
+import { OrdersModule } from './orders/orders.module';
+import { AddressesModule } from './addresses/addresses.module';
+import { ReturnsModule } from './returns/returns.module';
+import { RefundsModule } from './refunds/refunds.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -46,6 +55,15 @@ import { CouponsModule } from './coupons/coupons.module';
     UsersModule,
     CartModule,
     CouponsModule,
+    AuditLogModule,
+    AdminModule,
+    AnalyticsModule,
+    PaymentsModule,
+    OrdersModule,
+    AddressesModule,
+    ReturnsModule,
+    RefundsModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

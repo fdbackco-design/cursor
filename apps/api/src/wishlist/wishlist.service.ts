@@ -18,7 +18,7 @@ export class WishlistService {
   // ✅ 여기 수정
   async addToWishlist(userId: string, dto: CreateWishlistDto) {
     const { productId } = dto;
-    console.log('WishlistService.addToWishlist - userId:', userId, 'productId:', productId);
+    //console.log('WishlistService.addToWishlist - userId:', userId, 'productId:', productId);
 
     // 1) 상품 존재 확인
     const product = await this.prisma.product.findUnique({ where: { id: productId } });
@@ -39,7 +39,7 @@ export class WishlistService {
       include: { product: true },
     });
 
-    console.log('WishlistService.addToWishlist - 생성됨:', wishlist.id);
+    //console.log('WishlistService.addToWishlist - 생성됨:', wishlist.id);
     return wishlist;
   }
 

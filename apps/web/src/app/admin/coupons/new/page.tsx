@@ -7,9 +7,13 @@ import { ArrowLeft, Save, Percent, DollarSign, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { couponsApi, CreateCouponDto } from '@/lib/api/coupons';
+import { useToast, toast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-modal';
 
 export default function NewCouponPage() {
   const router = useRouter();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [formData, setFormData] = useState<CreateCouponDto>({
     code: '',
     name: '',
@@ -45,32 +49,32 @@ export default function NewCouponPage() {
 
   const validateForm = () => {
     if (!formData.code.trim()) {
-      alert('쿠폰 코드를 입력해주세요.');
+      showToast(toast.warning('쿠폰 코드 입력 필요', '쿠폰 코드를 입력해주세요.'));
       return false;
     }
 
     if (!formData.name.trim()) {
-      alert('쿠폰명을 입력해주세요.');
+      showToast(toast.warning('쿠폰명 입력 필요', '쿠폰명을 입력해주세요.'));
       return false;
     }
 
     if (formData.discountValue <= 0) {
-      alert('할인값을 올바르게 입력해주세요.');
+      showToast(toast.warning('할인값 오류', '할인값을 올바르게 입력해주세요.'));
       return false;
     }
 
     if (formData.discountType === 'PERCENTAGE' && formData.discountValue > 100) {
-      alert('할인율은 100%를 초과할 수 없습니다.');
+      showToast(toast.warning('할인율 오류', '할인율은 100%를 초과할 수 없습니다.'));
       return false;
     }
 
     if (formData.minAmount && formData.maxAmount && formData.minAmount < formData.maxAmount) {
-      alert('최소 주문 금액은 최대 할인 금액보다 크거나 같아야 합니다.');
+      showToast(toast.warning('주문 금액 오류', '최소 주문 금액은 최대 할인 금액보다 크거나 같아야 합니다.'));
       return false;
     }
 
     if (formData.startsAt && formData.endsAt && new Date(formData.startsAt) > new Date(formData.endsAt)) {
-      alert('시작일이 종료일보다 늦을 수 없습니다.');
+      showToast(toast.warning('날짜 오류', '시작일이 종료일보다 늦을 수 없습니다.'));
       return false;
     }
 
@@ -112,11 +116,11 @@ export default function NewCouponPage() {
       };
 
       await couponsApi.createCoupon(couponData);
-      alert('쿠폰이 성공적으로 생성되었습니다.');
+      showToast(toast.success('쿠폰 생성 완료', '쿠폰이 성공적으로 생성되었습니다.'));
       router.push('/admin/coupons');
     } catch (error) {
       console.error('쿠폰 생성 실패:', error);
-      alert(`쿠폰 생성에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      showToast(toast.error('쿠폰 생성 실패', `쿠폰 생성에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`));
     } finally {
       setLoading(false);
     }

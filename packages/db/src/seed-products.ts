@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('상품 데이터 시드 시작...');
+  //console.log('상품 데이터 시드 시작...');
 
   // 카테고리 생성
   const homeAppliances = await prisma.category.upsert({

@@ -1,58 +1,73 @@
-import { ProductCard } from '@/components/products/product-card';
+'use client';
 
-// 주방용품 상품 데이터
-const kitchenProducts = [
-  {
-    id: '1',
-    name: '냄비 3종 세트',
-    brand: '아슬란',
-    description: '프리미엄 스테인리스 냄비 3종 세트',
-    priceB2B: 120000,
-    priceB2C: 150000,
-    images: ['/products/back1.jpg', '/products/back2.jpg', '/products/back3.jpg'],
-    descriptionImages: [
-      '/products/01.jpg',
-      '/products/02.gif',
-      '/products/03.jpg'
-    ],
-    category: '주방용품',
-    isActive: true,
-  },
-  {
-    id: '2',
-    name: '프라이팬',
-    brand: '아슬란',
-    description: '녹스틱 코팅 프라이팬',
-    priceB2B: 60000,
-    priceB2C: 75000,
-    images: ['/products/back1.jpg', '/products/back2.jpg', '/products/back3.jpg'],
-    descriptionImages: [
-      '/products/01.jpg',
-      '/products/02.gif',
-      '/products/03.jpg'
-    ],
-    category: '주방용품',
-    isActive: true,
-  },
-  {
-    id: '3',
-    name: '커피메이커',
-    brand: 'Hoid',
-    description: '드립 커피메이커',
-    priceB2B: 40000,
-    priceB2C: 50000,
-    images: ['/products/back1.jpg', '/products/back2.jpg', '/products/back3.jpg'],
-    descriptionImages: [
-      '/products/01.jpg',
-      '/products/02.gif',
-      '/products/03.jpg'
-    ],
-    category: '주방용품',
-    isActive: true,
-  },
-];
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { ProductCard } from '@/components/products/product-card';
+import { productsApi } from '@/lib/api/products';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function KitchenPage() {
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+    if (!isAuthenticated || !user) {
+      router.push('/signin');
+      return;
+    }
+    
+    // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
+    if (isAuthenticated && user && !user.approve) {
+      router.push('/approval-pending');
+      return;
+    }
+
+    const loadKitchenProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // 주방용품 카테고리 상품 조회
+        const response = await productsApi.getProducts({
+          category: '주방용품',
+          limit: 50
+        });
+
+        if (response.success && response.data) {
+          setProducts(response.data.products || []);
+        } else {
+          setError('상품을 불러올 수 없습니다.');
+        }
+      } catch (err) {
+        console.error('주방용품 상품 조회 실패:', err);
+        setError('상품을 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // 승인된 사용자만 상품 로드
+    if (isAuthenticated && user && user.approve) {
+      loadKitchenProducts();
+    } else {
+      setLoading(false);
+    }
+  }, [isAuthenticated, user, router]);
+
+  // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+  
+  // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
+  if (isAuthenticated && user && !user.approve) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* 헤더 섹션 */}
@@ -70,14 +85,31 @@ export default function KitchenPage() {
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">주방용품 상품</h2>
-            <p className="text-gray-600">총 {kitchenProducts.length}개의 상품</p>
+            <p className="text-gray-600">
+              {loading ? '로딩 중...' : `총 ${products.length}개의 상품`}
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {kitchenProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600 mt-4">상품을 불러오는 중...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600">{error}</p>
+            </div>
+          ) : products.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">주방용품 상품이 없습니다.</p>
+            </div>
+          )}
         </div>
       </section>
     </div>

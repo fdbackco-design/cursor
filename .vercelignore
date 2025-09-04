@@ -1,0 +1,14 @@
+node_modules
+.turbo
+.next
+dist
+*.log
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+apps/api
+packages/db
+packages/eslint-config
+packages/prettier-config
+packages/typescript-config

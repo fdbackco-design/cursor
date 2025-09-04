@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "pnpm -w turbo run build --filter=@repo/ui --filter=@repo/contracts --no-cache",
+    "prebuild": "cd ../.. && pnpm install --frozen-lockfile && pnpm turbo run build --filter=@repo/ui --filter=@repo/contracts --no-cache",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

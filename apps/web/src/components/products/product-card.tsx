@@ -84,7 +84,6 @@ export function ProductCard({ product }: ProductCardProps) {
     setCartLoading(true);
     try {
       await cartApi.addToCart({
-        userId: user.id,
         productId: product.id,
         quantity: 1
       });
@@ -141,7 +140,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <CardHeader className="pb-2 sm:pb-3 p-0">
           <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 mb-2 sm:mb-3 flex items-center justify-center relative overflow-hidden">
             {/* 상품 이미지 표시 */}
-            {product.images && product.images.length > 0 ? (
+            {product.images && product.images.length > 0 && product.images[0] ? (
               <img
                 src={getImageUrl(product.images[0])} // 첫 번째 이미지 사용
                 alt={product.name}

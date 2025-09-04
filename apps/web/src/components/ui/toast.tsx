@@ -152,21 +152,21 @@ export const toast = {
   success: (title: string, message?: string): Omit<Toast, 'id'> => ({
     type: 'success' as ToastType,
     title,
-    message,
+    ...(message && { message }),
   }),
   error: (title: string, message?: string): Omit<Toast, 'id'> => ({
     type: 'error' as ToastType,
     title,
-    message,
+    ...(message && { message }),
   }),
   warning: (title: string, message?: string): Omit<Toast, 'id'> => ({
     type: 'warning' as ToastType,
     title,
-    message,
+    ...(message && { message }),
   }),
   info: (title: string, message?: string): Omit<Toast, 'id'> => ({
     type: 'info' as ToastType,
     title,
-    message,
+    ...(message && { message }),
   }),
 };

@@ -88,7 +88,7 @@ export const refundsApi = {
           refundReason
         }),
       });
-      return { success: true, data: response };
+      return { success: true, data: response.data! };
     } catch (error) {
       console.error('환불 금액 계산 실패:', error);
       return { 
@@ -107,7 +107,7 @@ export const refundsApi = {
         method: 'POST',
         body: JSON.stringify(refundData),
       });
-      return { success: true, data: response };
+      return { success: true, data: response.data! };
     } catch (error) {
       console.error('환불 생성 실패:', error);
       return { 
@@ -129,7 +129,7 @@ export const refundsApi = {
         method: 'PATCH',
         body: JSON.stringify(processData),
       });
-      return { success: true, data: response };
+      return { success: true, data: response.data! };
     } catch (error) {
       console.error('환불 처리 실패:', error);
       return { 
@@ -157,7 +157,7 @@ export const refundsApi = {
       const response = await apiRequest<any>(`/refunds?${params.toString()}`, {
         method: 'GET',
       });
-      return { success: true, data: response };
+      return { success: true, data: response.data! };
     } catch (error) {
       console.error('환불 내역 조회 실패:', error);
       return { 
@@ -175,7 +175,7 @@ export const refundsApi = {
       const response = await apiRequest<RefundStats>('/refunds/stats', {
         method: 'GET',
       });
-      return { success: true, data: response };
+      return { success: true, data: response.data! };
     } catch (error) {
       console.error('환불 통계 조회 실패:', error);
       return { 
@@ -193,7 +193,7 @@ export const refundsApi = {
       const response = await apiRequest(`/refunds/${refundId}`, {
         method: 'GET',
       });
-      return { success: true, data: response };
+      return { success: true, data: response.data! };
     } catch (error) {
       console.error('환불 상세 조회 실패:', error);
       return { 

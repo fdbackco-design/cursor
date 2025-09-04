@@ -28,7 +28,7 @@ const getReferralCodeFromStorage = (): string => {
   // 1. 쿠키에서 확인 (middleware 또는 프론트엔드에서 설정)
   if (typeof document !== 'undefined') {
     const match = document.cookie.match(/referral_code=([^;]+)/);
-    if (match) {
+    if (match && match[1]) {
       return decodeURIComponent(match[1]);
     }
   }
@@ -127,6 +127,9 @@ function SignInPageInner() {
       
       return () => clearTimeout(timer);
     }
+    
+    // cleanup 함수가 필요하지 않은 경우 undefined 반환
+    return undefined;
   }, [loginSuccess, router]);
 
   // 추천인 코드 유효성 검증 함수
@@ -378,7 +381,7 @@ function SignInPageInner() {
           )}
 
           <Button 
-            onClick={handleKakaoLogin}
+            onClick={() => handleKakaoLogin()}
             disabled={isLoading || !canProceedToLogin}
             className={`w-full text-black disabled:opacity-50 disabled:cursor-not-allowed ${
               canProceedToLogin 

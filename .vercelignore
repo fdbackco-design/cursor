@@ -11,4 +11,6 @@ apps/api
 packages/db
 packages/eslint-config
 packages/prettier-config
-packages/typescript-config
+!packages/typescript-config/**
+!packages/ui/**
+!packages/contracts/**

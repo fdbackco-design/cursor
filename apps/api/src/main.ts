@@ -15,7 +15,7 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: configService.get('FRONTEND_URL', 'http://localhost:3000'),
+    origin: configService.get('FRONTEND_URL', 'http://localhost:3000', 'https://feedbackmall.com'),
     credentials: true,
   });
 

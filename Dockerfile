@@ -36,3 +36,5 @@
     
     # 시작
     CMD ["node", "apps/api/dist/main.js"]
+
+    

@@ -1,5 +1,4 @@
 {
-  "buildCommand": "cd apps/web && pnpm -w turbo run build --filter=@repo/ui --filter=@repo/contracts --no-cache && pnpm build",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm -w install --frozen-lockfile",
   "framework": "nextjs",

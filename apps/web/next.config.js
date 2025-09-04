@@ -4,6 +4,9 @@ const nextConfig = {
   //   appDir: true,
   // },
   transpilePackages: ['@repo/ui', '@repo/contracts'],
+  experimental: {
+    externalDir: true,
+  },
   images: {
     domains: ['example.com', 'localhost'],
   },

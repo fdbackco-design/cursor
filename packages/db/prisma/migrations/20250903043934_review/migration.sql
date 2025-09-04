@@ -7,7 +7,7 @@
 
 */
 -- DropIndex
-DROP INDEX `reviews_productId_userId_key` ON `reviews`;
+-- DROP INDEX `reviews_productId_userId_key` ON `reviews`;
 
 -- AlterTable
 ALTER TABLE `reviews` ADD COLUMN `orderId` VARCHAR(191) NOT NULL,

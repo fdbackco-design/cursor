@@ -1,14 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // experimental: {
-  //   appDir: true,
-  // },
   transpilePackages: ['@repo/ui', '@repo/contracts'],
   experimental: {
     externalDir: true,
   },
   images: {
     domains: ['example.com', 'localhost'],
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname, 'src'),
+    };
+    return config;
   },
   async redirects() {
     return [

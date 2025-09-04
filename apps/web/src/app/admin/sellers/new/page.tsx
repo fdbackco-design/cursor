@@ -85,7 +85,7 @@ const NewSellerPage = () => {
         representativeName: formData.representativeName.trim(),
         phone: formData.phone.trim(),
         address: formData.address.trim(),
-        referralCodes: referralCodes.length > 0 ? referralCodes : undefined
+        referralCodes: referralCodes.length > 0 ? referralCodes : []
       };
 
       await sellersApi.createSeller(sellerData);

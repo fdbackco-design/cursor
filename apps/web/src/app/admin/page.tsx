@@ -130,9 +130,6 @@ const AdminPage = () => {
         
         if (response.success && response.data) {
           setAdminStats(response.data);
-        } else if (response.totalProducts) {
-          // 백엔드에서 직접 AdminStats 객체를 반환하는 경우
-          setAdminStats(response as AdminStats);
         } else {
           console.error('관리자 통계 응답 오류:', response.error);
           // 에러 시 기본값 설정

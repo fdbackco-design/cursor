@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient, UserRole } from '@repo/db';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { AddressesService } from '../addresses/addresses.service';
 

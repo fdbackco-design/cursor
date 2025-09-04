@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Logger, BadRequestException } from '@nes
 import { PrismaService } from '../prisma/prisma.service';
 import { DeliveryTrackingQueryDto } from './dto/delivery-tracking.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus } from '@repo/db';
 
 @Injectable()
 export class OrdersService {

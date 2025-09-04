@@ -230,7 +230,7 @@ const ProductsPage = () => {
                             <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                               {product.images && product.images.length > 0 ? (
                                 <img
-                                  src={getImageUrl(product.images[0])}
+                                  src={getImageUrl(product.images[0] || '')}
                                   alt={product.name}
                                   className="w-full h-full object-cover"
                                 />

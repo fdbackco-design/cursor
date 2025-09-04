@@ -58,7 +58,7 @@ export default function CartPage() {
     
     try {
       setUpdating(itemId);
-      const response = await cartApi.updateQuantity(itemId, quantity);
+      const response = await cartApi.updateCartItem(itemId, { quantity });
       if (response.success) {
         await loadCart(); // 장바구니 새로고침
       }
@@ -73,7 +73,7 @@ export default function CartPage() {
   const removeItem = async (itemId: string) => {
     try {
       setUpdating(itemId);
-      const response = await cartApi.removeItem(itemId);
+      const response = await cartApi.removeFromCart(itemId);
       if (response.success) {
         await loadCart(); // 장바구니 새로고침
       }
@@ -125,7 +125,7 @@ export default function CartPage() {
   }
 
   const cartItems = cart?.items || [];
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.finalPrice * item.quantity), 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.product.priceB2C * item.quantity), 0);
   const shippingFee = subtotal >= 50000 ? 0 : 3000;
   const total = subtotal + shippingFee;
 
@@ -184,13 +184,8 @@ export default function CartPage() {
                         </p>
                         <div className="flex items-center space-x-4">
                           <span className="text-lg font-bold text-gray-900">
-                            {item.finalPrice.toLocaleString()}원
+                            {item.product.priceB2C.toLocaleString()}원
                           </span>
-                          {item.discountAmount > 0 && (
-                            <span className="text-sm text-gray-500 line-through">
-                              {item.unitPrice.toLocaleString()}원
-                            </span>
-                          )}
                         </div>
                       </div>
 
@@ -214,7 +209,7 @@ export default function CartPage() {
                           value={inputQuantities[item.id] || item.quantity}
                           onChange={(e) => handleQuantityChange(item.id, e.target.value)}
                           onBlur={() => {
-                            const quantity = parseInt(inputQuantities[item.id]);
+                            const quantity = parseInt(inputQuantities[item.id] || '0');
                             if (quantity && quantity !== item.quantity && quantity > 0) {
                               updateQuantity(item.id, quantity);
                             }

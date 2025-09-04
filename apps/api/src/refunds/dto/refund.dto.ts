@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsArray, IsEnum, IsNumber, IsDecimal } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { RefundReason, RefundStatus } from '@prisma/client';
+import { RefundReason, RefundStatus } from '@repo/db';
 
 export class CreateRefundDto {
   @IsString()

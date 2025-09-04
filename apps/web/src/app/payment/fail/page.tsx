@@ -35,9 +35,9 @@ export default function PaymentFailPage() {
     const orderId = searchParams.get('orderId');
 
     setErrorInfo({
-      code: code || undefined,
-      message: message || undefined,
-      orderId: orderId || undefined,
+      ...(code ? { code } : {}),
+      ...(message ? { message } : {}),
+      ...(orderId ? { orderId } : {}),
     });
   }, [searchParams, isAuthenticated, user, router]);
 

@@ -4,7 +4,13 @@
   "private": true,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "prisma"],  
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "prisma", "src/generated"],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -20,7 +26,7 @@
     "db:push": "prisma db push",
     "db:reset": "prisma migrate reset --force",
     "migrate:shipping-addresses": "tsx src/migrate-shipping-addresses.ts",
-    "prebuild": "pnpm db:generate"      
+    "prebuild": "prisma generate --schema ./prisma/schema.prisma"      
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

@@ -79,12 +79,12 @@ const AnalyticsPage = () => {
       });
 
       // apiRequest가 래핑한 데이터 구조 처리
-      setOverview(overviewResponse.success ? overviewResponse.data : overviewResponse);
-      setSellerData(sellerResponse.success ? sellerResponse.data : sellerResponse);
-      setVendorData(vendorResponse.success ? vendorResponse.data : vendorResponse);
-      setProductData(productResponse.success ? productResponse.data : productResponse);
-      setPopularProducts(popularResponse.success ? popularResponse.data : popularResponse);
-      setReturnRateData(returnResponse.success ? returnResponse.data : returnResponse);
+      setOverview(overviewResponse.success ? overviewResponse.data : overviewResponse as any);
+      setSellerData(sellerResponse.success ? sellerResponse.data : sellerResponse as any);
+      setVendorData(vendorResponse.success ? vendorResponse.data : vendorResponse as any);
+      setProductData(productResponse.success ? productResponse.data : productResponse as any);
+      setPopularProducts(popularResponse.success ? popularResponse.data : popularResponse as any);
+      setReturnRateData(returnResponse.success ? returnResponse.data : returnResponse as any);
     } catch (error) {
       console.error('분석 데이터 로딩 실패:', error);
     } finally {

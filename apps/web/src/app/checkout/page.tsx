@@ -203,7 +203,7 @@ export default function CheckoutPage() {
       setPaymentInfo(prev => ({
         ...prev,
         couponDiscount: 0,
-        selectedCouponId: undefined
+        selectedCouponId: ''
       }));
     }
   };
@@ -213,7 +213,7 @@ export default function CheckoutPage() {
     const coupon = userCoupon.coupon;
     
     // 최소 주문 금액 확인
-    if (coupon.minAmount && subtotal < parseInt(coupon.minAmount)) {
+    if (coupon.minAmount && subtotal < coupon.minAmount) {
       return 0;
     }
 
@@ -221,15 +221,15 @@ export default function CheckoutPage() {
     
     if (coupon.discountType === 'PERCENTAGE') {
       // 퍼센트 할인
-      discount = Math.floor(subtotal * (parseInt(coupon.discountValue) / 100));
+      discount = Math.floor(subtotal * (coupon.discountValue / 100));
       
       // 최대 할인 금액 제한
       if (coupon.maxAmount) {
-        discount = Math.min(discount, parseInt(coupon.maxAmount));
+        discount = Math.min(discount, coupon.maxAmount);
       }
     } else if (coupon.discountType === 'FIXED_AMOUNT') {
       // 고정 금액 할인
-      discount = parseInt(coupon.discountValue);
+      discount = coupon.discountValue;
       
       // 주문 금액보다 큰 할인은 불가
       discount = Math.min(discount, subtotal);
@@ -652,7 +652,7 @@ export default function CheckoutPage() {
                     {availableCoupons.map((userCoupon) => {
                       const coupon = userCoupon.coupon;
                       const subtotal = calculateSubtotal();
-                      const canUse = !coupon.minAmount || subtotal >= parseInt(coupon.minAmount);
+                      const canUse = !coupon.minAmount || subtotal >= coupon.minAmount;
                       const discount = canUse ? calculateCouponDiscount(userCoupon, subtotal) : 0;
                       
                       return (
@@ -677,7 +677,7 @@ export default function CheckoutPage() {
                               }`}>
                                 {coupon.discountType === 'PERCENTAGE' 
                                   ? `${coupon.discountValue}%` 
-                                  : `${parseInt(coupon.discountValue).toLocaleString()}원`}
+                                  : `${coupon.discountValue.toLocaleString()}원`}
                               </span>
                             </div>
                             <p className="text-sm text-gray-600 mt-1">{coupon.description}</p>
@@ -689,22 +689,22 @@ export default function CheckoutPage() {
                               </p>
                             ) : (
                               <p className="text-sm text-red-500 mt-1">
-                                최소 주문금액 {parseInt(coupon.minAmount || '0').toLocaleString()}원 이상
+                                최소 주문금액 {(coupon.minAmount || 0).toLocaleString()}원 이상
                               </p>
                             )}
                             
                             {/* 사용 조건 */}
                             <div className="text-xs text-gray-500 mt-1 space-y-1">
                               {coupon.minAmount && (
-                                <div>최소 주문금액: {parseInt(coupon.minAmount).toLocaleString()}원</div>
+                                <div>최소 주문금액: {coupon.minAmount.toLocaleString()}원</div>
                               )}
                               {coupon.maxAmount && coupon.discountType === 'PERCENTAGE' && (
-                                <div>최대 할인금액: {parseInt(coupon.maxAmount).toLocaleString()}원</div>
+                                <div>최대 할인금액: {coupon.maxAmount.toLocaleString()}원</div>
                               )}
                               {coupon.endsAt && (
                                 <div>만료일: {new Date(coupon.endsAt).toLocaleDateString()}</div>
                               )}
-                            </div>
+                            </div>    
                           </div>
                           
                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ml-3 ${
@@ -819,6 +819,7 @@ export default function CheckoutPage() {
         {/* 배송지 추가 모달 */}
         {showAddressModal && (
           <AddressFormModal
+            isOpen={showAddressModal}
             onSubmit={handleAddAddress}
             onClose={() => setShowAddressModal(false)}
           />

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { ArrowLeft, Save, Percent, DollarSign, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { couponsApi, CreateCouponDto } from '@/lib/api/coupons';
+import { couponsApi, UpdateCouponDto } from '@/lib/api/coupons';
 import { useToast, toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-modal';
 
@@ -14,16 +14,16 @@ export default function NewCouponPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const { confirm } = useConfirm();
-  const [formData, setFormData] = useState<CreateCouponDto>({
+  const [formData, setFormData] = useState<UpdateCouponDto>({
     code: '',
     name: '',
     description: '',
     discountType: 'PERCENTAGE',
     discountValue: 0,
-    minAmount: undefined,
-    maxAmount: undefined,
-    maxUses: undefined,
-    userMaxUses: undefined,
+    minAmount: 0,
+    maxAmount: 0,
+    maxUses: 0,
+    userMaxUses: 0,
     startsAt: '',
     endsAt: '',
     isActive: true
@@ -48,17 +48,17 @@ export default function NewCouponPage() {
   };
 
   const validateForm = () => {
-    if (!formData.code.trim()) {
+    if (!formData.code?.trim()) {
       showToast(toast.warning('쿠폰 코드 입력 필요', '쿠폰 코드를 입력해주세요.'));
       return false;
     }
 
-    if (!formData.name.trim()) {
+    if (!formData.name?.trim()) {
       showToast(toast.warning('쿠폰명 입력 필요', '쿠폰명을 입력해주세요.'));
       return false;
     }
 
-    if (formData.discountValue <= 0) {
+    if (!formData.discountValue || formData.discountValue <= 0) {
       showToast(toast.warning('할인값 오류', '할인값을 올바르게 입력해주세요.'));
       return false;
     }
@@ -91,28 +91,28 @@ export default function NewCouponPage() {
     setLoading(true);
     try {
       const couponData = {
-        code: formData.code.trim().toUpperCase(),
-        name: formData.name.trim(),
-        description: formData.description?.trim() || undefined,
-        discountType: formData.discountType,
+        code: formData.code?.trim().toUpperCase() || '',
+        name: formData.name?.trim() || '',
+        description: formData.description?.trim() || '',
+        discountType: formData.discountType || 'PERCENTAGE',
         discountValue: typeof formData.discountValue === 'string' 
           ? parseFloat(formData.discountValue) 
-          : formData.discountValue,
+          : (formData.discountValue || 0),
         minAmount: formData.minAmount 
           ? (typeof formData.minAmount === 'string' ? parseFloat(formData.minAmount) : formData.minAmount)
-          : undefined,
+          : 0,
         maxAmount: formData.maxAmount 
           ? (typeof formData.maxAmount === 'string' ? parseFloat(formData.maxAmount) : formData.maxAmount)
-          : undefined,
+          : 0,
         maxUses: formData.maxUses 
           ? (typeof formData.maxUses === 'string' ? parseInt(formData.maxUses) : formData.maxUses)
-          : undefined,
+          : 0,
         userMaxUses: formData.userMaxUses 
           ? (typeof formData.userMaxUses === 'string' ? parseInt(formData.userMaxUses) : formData.userMaxUses)
-          : undefined,
-        startsAt: formData.startsAt || undefined,
-        endsAt: formData.endsAt || undefined,
-        isActive: formData.isActive
+          : 0,
+        startsAt: formData.startsAt || '',
+        endsAt: formData.endsAt || '',
+        isActive: formData.isActive || false
       };
 
       await couponsApi.createCoupon(couponData);
@@ -270,13 +270,12 @@ export default function NewCouponPage() {
                       max={formData.discountType === 'PERCENTAGE' ? 100 : undefined}
                       step={formData.discountType === 'PERCENTAGE' ? 0.1 : 1}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      disabled={formData.discountType === 'FREE_SHIPPING'}
+                      disabled={false}
                       required
                     />
                     <span className="absolute right-3 top-2 text-gray-500">
                       {formData.discountType === 'PERCENTAGE' && '%'}
                       {formData.discountType === 'FIXED_AMOUNT' && '원'}
-                      {formData.discountType === 'FREE_SHIPPING' && '무료'}
                     </span>
                   </div>
                 </div>

@@ -27,6 +27,9 @@ export default function DebugJwtPage() {
     try {
       // JWT 토큰의 payload 부분 추출 (두 번째 점 이후)
       const base64Url = token.split('.')[1];
+      if (!base64Url) {
+        throw new Error('Invalid JWT token format');
+      }
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);

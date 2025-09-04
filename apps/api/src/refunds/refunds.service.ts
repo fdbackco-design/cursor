@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRefundDto, ProcessRefundDto, RefundCalculationResult } from './dto/refund.dto';
-import { RefundReason, RefundStatus } from '@prisma/client';
+import { RefundReason, RefundStatus } from '@repo/db';
 
 @Injectable()
 export class RefundsService {

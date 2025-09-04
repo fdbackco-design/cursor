@@ -337,7 +337,7 @@ export default function CartPage() {
       // 8. 취소 버튼 이벤트 등록
       closeButton.addEventListener('click', () => {
         document.body.removeChild(overlay);
-        setPaymentLoading(false);
+        // setPaymentLoading(false);
       });
 
       // 9. ESC 키로 닫기
@@ -346,7 +346,7 @@ export default function CartPage() {
           if (document.body.contains(overlay)) {
             document.body.removeChild(overlay);
           }
-          setPaymentLoading(false);
+          // setPaymentLoading(false);
           document.removeEventListener('keydown', handleEscape);
         }
       };
@@ -356,7 +356,7 @@ export default function CartPage() {
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
           document.body.removeChild(overlay);
-          setPaymentLoading(false);
+          // setPaymentLoading(false);
           document.removeEventListener('keydown', handleEscape);
         }
       });
@@ -364,7 +364,7 @@ export default function CartPage() {
     } catch (error) {
       console.error('결제위젯 초기화 실패:', error);
       alert('결제위젯 초기화에 실패했습니다: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
-      setPaymentLoading(false);
+      // setPaymentLoading(false);
     }
   };
 

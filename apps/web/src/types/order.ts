@@ -57,6 +57,13 @@ export interface OrderItem {
       name: string;
     };
   };
+  returns?: {
+    id: string;
+    type: 'RETURN' | 'EXCHANGE' | 'CANCEL';
+    status: 'PENDING' | 'APPROVED' | 'PROCESSING' | 'COMPLETED' | 'REJECTED';
+    reason: string;
+    createdAt: string;
+  }[];
 }
 
 export interface Payment {

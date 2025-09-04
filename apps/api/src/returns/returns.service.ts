@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ReturnType, ReturnStatus, RefundReason } from '@prisma/client';
+import { ReturnType, ReturnStatus, RefundReason } from '@repo/db';
 
 export interface CreateReturnDto {
   orderId: string;

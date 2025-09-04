@@ -46,10 +46,10 @@ export default function CouponDetailPage() {
         description: couponData.description || '',
         discountType: couponData.discountType,
         discountValue: couponData.discountValue,
-        minAmount: couponData.minAmount || undefined,
-        maxAmount: couponData.maxAmount || undefined,
-        maxUses: couponData.maxUses || undefined,
-        userMaxUses: couponData.userMaxUses || undefined,
+        minAmount: couponData.minAmount ?? 0,
+        maxAmount: couponData.maxAmount ?? 0,
+        maxUses: couponData.maxUses ?? 0,
+        userMaxUses: couponData.userMaxUses ?? 0,
         startsAt: couponData.startsAt ? new Date(couponData.startsAt).toISOString().slice(0, 16) : '',
         endsAt: couponData.endsAt ? new Date(couponData.endsAt).toISOString().slice(0, 16) : '',
         isActive: couponData.isActive
@@ -487,13 +487,12 @@ export default function CouponDetailPage() {
                         max={formData.discountType === 'PERCENTAGE' ? 100 : undefined}
                         step={formData.discountType === 'PERCENTAGE' ? 0.1 : 1}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        disabled={formData.discountType === 'FREE_SHIPPING'}
+                        disabled={false}
                         required
                       />
                       <span className="absolute right-3 top-2 text-gray-500">
                         {formData.discountType === 'PERCENTAGE' && '%'}
                         {formData.discountType === 'FIXED_AMOUNT' && '원'}
-                        {formData.discountType === 'FREE_SHIPPING' && '무료'}
                       </span>
                     </div>
                   </div>
@@ -802,10 +801,10 @@ export default function CouponDetailPage() {
                         {coupon.userCoupons.map((userCoupon) => (
                           <tr key={userCoupon.id}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {userCoupon.user.name}
+                              {userCoupon.userId}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {userCoupon.user.email}
+                              {userCoupon.userId}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               -

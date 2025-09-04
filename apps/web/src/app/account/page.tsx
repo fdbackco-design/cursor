@@ -110,9 +110,23 @@ export default function AccountPage() {
         const orders = response.data.orders || [];
         //console.log('조회된 주문 수:', orders.length);
         
-        const convertedOrders = orders.map(order => ({
+        const convertedOrders: Order[] = orders.map(order => ({
           ...order,
           status: order.status as 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED',
+          items: order.items.map(item => ({
+            ...item,
+            id: item.productId, // productId를 id로 매핑
+            product: {
+              id: item.productId,
+              name: item.productName,
+              description: '',
+              images: [], // API에서 이미지 정보가 없으므로 빈 배열
+              priceB2C: item.unitPrice,
+              category: {
+                name: ''
+              }
+            }
+          }))
         }));
         setOrders(convertedOrders);
         setOrdersTotalPages(response.data.pagination?.totalPages || 0);
@@ -706,7 +720,21 @@ export default function AccountPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {wishlist.map((item) => (
                       <div key={item.id} className="relative">
-                        <ProductCard product={item.product} />
+                        <ProductCard product={{
+                          ...item.product,
+                          sku: '',
+                          categoryId: '',
+                          isFeatured: false,
+                          stockQuantity: 0,
+                          lowStockThreshold: 0,
+                          tags: [],
+                          metadata: {},
+                          createdAt: new Date(),
+                          updatedAt: new Date(),
+                          category: typeof item.product.category === 'string' 
+                            ? { id: '', name: item.product.category, slug: '' }
+                            : { id: '', name: '', slug: '' }
+                        }} />
                         <button
                           onClick={() => removeFromWishlist(item.productId)}
                           className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
@@ -989,7 +1017,16 @@ export default function AccountPage() {
             base_address: editingAddress.base_address || editingAddress.baseAddress,
             detail_address: editingAddress.detail_address || editingAddress.detailAddress,
             is_default: editingAddress.is_default !== undefined ? editingAddress.is_default : editingAddress.isDefault,
-          } : undefined}
+          } : {
+            name: '',
+            receiver_name: '',
+            receiver_phone_number1: '',
+            receiver_phone_number2: '',
+            zone_number: '',
+            base_address: '',
+            detail_address: '',
+            is_default: false
+          }}
           title={editingAddress ? "배송지 수정" : "배송지 추가"}
         />
       </div>

@@ -1048,7 +1048,7 @@ export default function OrderDetailPage() {
                       <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                         {item.productImages && item.productImages.length > 0 ? (
                           <img
-                            src={getImageUrl(item.productImages[0])}
+                            src={getImageUrl(item.productImages?.[0] ?? '/images/placeholder.png')}
                             alt={item.productName}
                             className="w-full h-full object-cover"
                           />

@@ -106,24 +106,24 @@ const NewProductPage = () => {
     const productData = {
       name: formData.name,
       description: formData.description,
-      shortDescription: formData.shortDescription || undefined,
+      shortDescription: formData.shortDescription || '',
       priceB2B: Number(formData.priceB2B),
       priceB2C: Number(formData.priceB2C),
-      comparePrice: formData.comparePrice ? Number(formData.comparePrice) : undefined,
-      sku: formData.sku || undefined,
-      weight: formData.weight ? Number(formData.weight) : undefined,
-      length: formData.length ? Number(formData.length) : undefined,
-      width: formData.width ? Number(formData.width) : undefined,
-      height: formData.height ? Number(formData.height) : undefined,
+      comparePrice: formData.comparePrice ? Number(formData.comparePrice) : 0,
+      sku: formData.sku || '',
+      weight: formData.weight ? Number(formData.weight) : 0,
+      length: formData.length ? Number(formData.length) : 0,
+      width: formData.width ? Number(formData.width) : 0,
+      height: formData.height ? Number(formData.height) : 0,
 
       // ✅ 서버가 요구하는 필드명으로
       category: formData.category,    // ← 카테고리 이름
-      vendor: formData.vendor || undefined,
+      vendor: formData.vendor || '',
 
       isActive: Boolean(formData.isActive),
       isFeatured: Boolean(formData.isFeatured),
       stockQuantity: Number(formData.stockQuantity),
-      lowStockThreshold: formData.lowStockThreshold ? Number(formData.lowStockThreshold) : undefined,
+      lowStockThreshold: formData.lowStockThreshold ? Number(formData.lowStockThreshold) : 0,
 
       // ✅ 이미지 파일 배열
       images: formData.images || [],

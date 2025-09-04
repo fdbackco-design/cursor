@@ -72,7 +72,7 @@ export interface AnalyticsOverview {
 
 export const analyticsApi = {
   // 셀러별 매출 분석
-  async getSellerSales(period: string = 'month', sellerId?: string): Promise<SellerSales[]> {
+  async getSellerSales(period: string = 'month', sellerId?: string) {
     const params = new URLSearchParams();
     params.append('period', period);
     if (sellerId) params.append('sellerId', sellerId);
@@ -82,11 +82,11 @@ export const analyticsApi = {
     
     return apiRequest<SellerSales[]>(endpoint, {
       method: 'GET',
-    }) as Promise<SellerSales[]>;
+    });
   },
 
   // 벤더별 매출 분석
-  async getVendorSales(period: string = 'month', vendorId?: string): Promise<VendorSales[]> {
+  async getVendorSales(period: string = 'month', vendorId?: string) {
     const params = new URLSearchParams();
     params.append('period', period);
     if (vendorId) params.append('vendorId', vendorId);
@@ -96,11 +96,11 @@ export const analyticsApi = {
     
     return apiRequest<VendorSales[]>(endpoint, {
       method: 'GET',
-    }) as Promise<VendorSales[]>;
+    });
   },
 
   // 상품별 매출 분석
-  async getProductSales(period: string = 'month', productId?: string): Promise<ProductSales[]> {
+  async getProductSales(period: string = 'month', productId?: string) {
     const params = new URLSearchParams();
     params.append('period', period);
     if (productId) params.append('productId', productId);
@@ -110,11 +110,11 @@ export const analyticsApi = {
     
     return apiRequest<ProductSales[]>(endpoint, {
       method: 'GET',
-    }) as Promise<ProductSales[]>;
+    });
   },
 
   // 인기 상품 분석
-  async getPopularProducts(period: string = 'month', limit: number = 10): Promise<PopularProduct[]> {
+  async getPopularProducts(period: string = 'month', limit: number = 10) {
     const params = new URLSearchParams();
     params.append('period', period);
     params.append('limit', limit.toString());
@@ -124,11 +124,11 @@ export const analyticsApi = {
     
     return apiRequest<PopularProduct[]>(endpoint, {
       method: 'GET',
-    }) as Promise<PopularProduct[]>;
+    });
   },
 
   // 상품별 반품율 분석
-  async getReturnRate(period: string = 'month', productId?: string): Promise<ReturnRateData[]> {
+  async getReturnRate(period: string = 'month', productId?: string) {
     const params = new URLSearchParams();
     params.append('period', period);
     if (productId) params.append('productId', productId);
@@ -138,11 +138,11 @@ export const analyticsApi = {
     
     return apiRequest<ReturnRateData[]>(endpoint, {
       method: 'GET',
-    }) as Promise<ReturnRateData[]>;
+    });
   },
 
   // 전체 개요
-  async getOverview(period: string = 'month'): Promise<AnalyticsOverview> {
+  async getOverview(period: string = 'month') {
     const params = new URLSearchParams();
     params.append('period', period);
 
@@ -151,6 +151,6 @@ export const analyticsApi = {
     
     return apiRequest<AnalyticsOverview>(endpoint, {
       method: 'GET',
-    }) as Promise<AnalyticsOverview>;
+    });
   },
 };

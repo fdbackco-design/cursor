@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsOptional, IsNumber, IsBoolean, IsDateString, IsEnum, Min, Max } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { DiscountType } from '@prisma/client';
+import { DiscountType } from '@repo/db';
 
 export class CreateCouponDto {
   @IsString()

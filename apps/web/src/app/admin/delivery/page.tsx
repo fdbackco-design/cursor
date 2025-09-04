@@ -112,7 +112,10 @@ const DeliveryPage = () => {
       // 엑셀 파일 읽기
       const arrayBuffer = await file.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const worksheet = workbook.Sheets[workbook.SheetNames[0] || ''];
+      if (!worksheet) {
+        throw new Error('엑셀 파일에서 워크시트를 찾을 수 없습니다.');
+      }
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
       // 헤더 검증
@@ -250,7 +253,7 @@ const DeliveryPage = () => {
 
               results.push({
                 success: true,
-                orderId: matchedOrderItems[0].orderId, // 첫 번째 주문 ID 표시
+                orderId: matchedOrderItems[0]?.orderId || '', // 첫 번째 주문 ID 표시
                 orderNumber: matchedOrderItems.map(item => item.orderNumber).join(', '), // 모든 주문번호 표시
                 recipientName: delivery.recipientName,
                 recipientPhone: delivery.recipientPhone,

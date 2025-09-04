@@ -60,29 +60,31 @@ const EditProductPage = () => {
         setProduct(data);
         
         // 폼 데이터 설정
-        setFormData({
-          name: data.name || '',
-          description: data.description || '',
-          shortDescription: data.shortDescription || '',
-          priceB2B: data.priceB2B ? data.priceB2B.toString() : '',
-          priceB2C: data.priceB2C ? data.priceB2C.toString() : '',
-          comparePrice: data.comparePrice ? data.comparePrice.toString() : '',
-          sku: data.sku || '',
-          weight: data.weight ? data.weight.toString() : '',
-          length: data.length ? data.length.toString() : '',
-          width: data.width ? data.width.toString() : '',
-          height: data.height ? data.height.toString() : '',
-          category: data.category?.name || '',
-          vendor: data.vendor?.name || '',
-          isActive: data.isActive,
-          isFeatured: data.isFeatured,
-          stockQuantity: data.stockQuantity ? data.stockQuantity.toString() : '',
-          lowStockThreshold: data.lowStockThreshold ? data.lowStockThreshold.toString() : '',
-          tags: data.tags || [],
-          metadata: data.metadata || {},
-          images: [],
-          descriptionImages: []
-        });
+        if (data) {
+          setFormData({
+            name: data.name || '',
+            description: data.description || '',
+            shortDescription: data.shortDescription || '',
+            priceB2B: data.priceB2B ? data.priceB2B.toString() : '',
+            priceB2C: data.priceB2C ? data.priceB2C.toString() : '',
+            comparePrice: data.comparePrice ? data.comparePrice.toString() : '',
+            sku: data.sku || '',
+            weight: data.weight ? data.weight.toString() : '',
+            length: data.length ? data.length.toString() : '',
+            width: data.width ? data.width.toString() : '',
+            height: data.height ? data.height.toString() : '',
+            category: data.category?.name || '',
+            vendor: data.vendor?.name || '',
+            isActive: data.isActive,
+            isFeatured: data.isFeatured,
+            stockQuantity: data.stockQuantity ? data.stockQuantity.toString() : '',
+            lowStockThreshold: data.lowStockThreshold ? data.lowStockThreshold.toString() : '',
+            tags: data.tags || [],
+            metadata: data.metadata || {},
+            images: [],
+            descriptionImages: []
+          });
+        }
       } catch (error) {
         console.error('상품 로드 실패:', error);
         showToast(toast.error('상품 로드 실패', '상품을 불러오는데 실패했습니다.'));

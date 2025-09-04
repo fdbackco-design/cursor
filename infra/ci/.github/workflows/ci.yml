@@ -154,15 +154,15 @@ jobs:
       - name: Build contracts
         run: pnpm contracts:generate
 
-  deploy-staging:
-    needs: build
-    if: github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - name: Deploy to staging
-        run: echo "Deploy to staging environment"
-        # Add your staging deployment steps here
+  # deploy-staging:
+  #   needs: build
+  #   if: github.ref == 'refs/heads/develop'
+  #   runs-on: ubuntu-latest
+  #   environment: staging
+  #   steps:
+  #     - name: Deploy to staging
+  #       run: echo "Deploy to staging environment"
+  #       # Add your staging deployment steps here
 
   deploy-production:
     needs: build

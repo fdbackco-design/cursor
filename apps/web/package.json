@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm -w turbo run build --filter=@repo/ui --filter=@repo/contracts --filter=@repo/web",
+    "prebuild": "pnpm -w --filter @repo/ui build && pnpm -w --filter @repo/contracts build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .next"

@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma } from './generated/client';
 
 const prisma = new PrismaClient();
 

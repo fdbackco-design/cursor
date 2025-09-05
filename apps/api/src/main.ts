@@ -15,7 +15,15 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: configService.get<string>('FRONTEND_URL') || 'http://localhost:3000',
+    origin: (origin, cb) => {
+      const whitelist = [
+        'https://feedbackmall.com',
+        'https://www.feedbackmall.com',
+        'http://localhost:3000',
+      ];
+      if (!origin || whitelist.includes(origin)) return cb(null, true);
+      cb(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   });
 
@@ -73,6 +81,8 @@ async function bootstrap() {
 
   const port = configService.get('PORT', 3001);
   await app.listen(port);
+
+  
 
   // console.log(`🚀 Application is running on: http://localhost:${port}`);
   // console.log(`📚 Swagger documentation: http://localhost:${port}/docs`);

@@ -15,37 +15,62 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 인증 체크 및 상품 로드
   useEffect(() => {
+    console.log('ProductPage useEffect:', { 
+      authLoading, 
+      isAuthenticated, 
+      user: user ? { id: user.id, approve: user.approve } : null,
+      productId: params.id 
+    });
+
     // 인증 로딩 중이면 아무것도 하지 않음
     if (authLoading) {
+      console.log('Auth loading, waiting...');
       return;
     }
 
-    // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트 (현재 URL을 쿼리 파라미터로 전달)
+    // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
     if (!isAuthenticated || !user) {
-      const currentUrl = window.location.pathname;
-      router.push(`/signin?redirect=${encodeURIComponent(currentUrl)}`);
+      console.log('Not authenticated, redirecting to signin');
+      if (typeof window !== 'undefined') {
+        const currentUrl = window.location.pathname;
+        router.push(`/signin?redirect=${encodeURIComponent(currentUrl)}`);
+      } else {
+        router.push('/signin');
+      }
       return;
     }
     
     // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
-    if (isAuthenticated && user && !user.approve) {
+    if (!user.approve) {
+      console.log('User not approved, redirecting to approval-pending');
       router.push('/approval-pending');
       return;
     }
 
+    console.log('User authenticated and approved, loading product...');
+
+    // 상품 로드
     const loadProduct = async () => {
       if (!params.id) {
+        console.log('No product ID provided');
+        setError('상품 ID가 없습니다.');
+        setLoading(false);
         return;
       }
       
       try {
+        console.log('Loading product with ID:', params.id);
         setLoading(true);
+        setError(null);
         const productData = await productsApi.getProductById(params.id as string);
         
+        console.log('Product data received:', productData);
         if (productData) {
           setProduct(productData);
         } else {
+          console.log('No product data found');
           setError('상품을 찾을 수 없습니다.');
         }
       } catch (err) {
@@ -56,10 +81,7 @@ export default function ProductPage() {
       }
     };
 
-    // 인증된 사용자만 상품 로드
-    if (isAuthenticated && user && user.approve) {
-      loadProduct();
-    }
+    loadProduct();
   }, [params.id, isAuthenticated, user, router, authLoading]);
 
   // 인증 로딩 중이면 로딩 화면 표시
@@ -74,13 +96,8 @@ export default function ProductPage() {
     );
   }
 
-  // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
-  if (!isAuthenticated || !user) {
-    return null;
-  }
-  
-  // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
-  if (isAuthenticated && user && !user.approve) {
+  // 로그인하지 않은 사용자나 승인되지 않은 사용자는 리다이렉트 중이므로 아무것도 렌더링하지 않음
+  if (!isAuthenticated || !user || !user.approve) {
     return null;
   }
 

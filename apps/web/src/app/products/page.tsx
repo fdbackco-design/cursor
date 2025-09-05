@@ -67,8 +67,13 @@ export default function ProductsPage() {
   useEffect(() => {
     // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트 (현재 URL을 쿼리 파라미터로 전달)
     if (!isAuthenticated || !user) {
-      const currentUrl = window.location.pathname;
-      router.push(`/signin?redirect=${encodeURIComponent(currentUrl)}`);
+      // 클라이언트 사이드에서만 window 객체 사용
+      if (typeof window !== 'undefined') {
+        const currentUrl = window.location.pathname;
+        router.push(`/signin?redirect=${encodeURIComponent(currentUrl)}`);
+      } else {
+        router.push('/signin');
+      }
       return;
     }
     

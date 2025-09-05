@@ -5,7 +5,7 @@ const nextConfig = {
     externalDir: true,
   },
   images: {
-    domains: ['example.com', 'localhost'],
+    domains: ['feedbackmall.com', 'localhost'],
   },
   webpack: (config) => {
     config.resolve.alias = {

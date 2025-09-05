@@ -57,8 +57,8 @@ export class AuthController {
       // 쿠키 설정
       res.cookie('access_token', token, {
         httpOnly: true,                 // 토큰은 httpOnly 유지
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none' as const,
         domain: '.feedbackmall.com',    // ★ 추가: 최상위 도메인에 귀속
         path: '/',
         maxAge: 24 * 60 * 60 * 1000,
@@ -66,8 +66,8 @@ export class AuthController {
 
       res.cookie('user_role', 'ADMIN', {
         httpOnly: false,                // 미들웨어에서 볼 필요 있으면 false
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none' as const,
         domain: '.feedbackmall.com',    // ★ 추가
         path: '/',
         maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -204,16 +204,16 @@ export class AuthController {
       res.clearCookie('ref');
       res.cookie('access_token', result.token, {
         httpOnly: true,                 // 토큰은 httpOnly 유지
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none' as const,
         domain: '.feedbackmall.com',    // ★ 추가: 최상위 도메인에 귀속
         path: '/',
         maxAge: 24 * 60 * 60 * 1000,
       });
       res.cookie('user_role', result.user.role, {
         httpOnly: false,                // 미들웨어에서 볼 필요 있으면 false
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none' as const,
         domain: '.feedbackmall.com',    // ★ 추가
         path: '/',
         maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -249,8 +249,8 @@ export class AuthController {
 
     res.cookie('access_token', token, {
       httpOnly: true,                 // 토큰은 httpOnly 유지
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none' as const,
       domain: '.feedbackmall.com',    // ★ 추가: 최상위 도메인에 귀속
       path: '/',
       maxAge: 24 * 60 * 60 * 1000,
@@ -258,8 +258,8 @@ export class AuthController {
 
     res.cookie('user_role', 'ADMIN', {
       httpOnly: false,                // 미들웨어에서 볼 필요 있으면 false
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none' as const,
       domain: '.feedbackmall.com',    // ★ 추가
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -289,16 +289,16 @@ export class AuthController {
 
     res.cookie('access_token', token, {
       httpOnly: true,                 // 토큰은 httpOnly 유지
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none' as const,
       domain: '.feedbackmall.com',    // ★ 추가: 최상위 도메인에 귀속
       path: '/',
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.cookie('user_role', 'CONSUMER', {
       httpOnly: false,                // 미들웨어에서 볼 필요 있으면 false
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none' as const,
       domain: '.feedbackmall.com',    // ★ 추가
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,

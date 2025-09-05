@@ -376,7 +376,7 @@ const OrdersPage = () => {
               <Button 
                 onClick={async () => {
                   try {
-                    const response = await fetch('http://localhost:3001/api/v1/auth/dev/admin-login', {
+                    const response = await fetch('https://feedbackmall.com/api/v1/auth/dev/admin-login', {
                       method: 'POST',
                       credentials: 'include',
                     });

@@ -329,7 +329,7 @@ const DeliveryPage = () => {
   // 주문 아이템별 배송 전 남은 수량 조회
   const getShippedQuantityForItem = async (itemId: string): Promise<number> => {
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/orders/admin/item/${itemId}/shipped-quantity`, {
+      const response = await fetch(`https://api.feedbackmall.com/api/v1/orders/admin/item/${itemId}/shipped-quantity`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -360,7 +360,7 @@ const DeliveryPage = () => {
   ) => {
     try {
       // 새로운 API 엔드포인트 사용
-      const response = await fetch(`http://localhost:3001/api/v1/orders/admin/${orderId}/delivery/item`, {
+      const response = await fetch(`https://api.feedbackmall.com/api/v1/orders/admin/${orderId}/delivery/item`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

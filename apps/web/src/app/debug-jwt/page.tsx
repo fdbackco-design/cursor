@@ -44,7 +44,7 @@ export default function DebugJwtPage() {
 
   const refreshToken = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/v1/auth/me', {
+      const response = await fetch('https://api.feedbackmall.com/api/v1/auth/me', {
         credentials: 'include',
       });
       

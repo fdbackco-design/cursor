@@ -10,7 +10,10 @@
     "types": ["node"],              // ✅ Node 전역(require, process 등)
     "esModuleInterop": true,        // 권장
     "skipLibCheck": true,           // 권장(속도/잡음 감소)
-    "resolveJsonModule": true       // 필요 시
+    "resolveJsonModule": true,       // 필요 시
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

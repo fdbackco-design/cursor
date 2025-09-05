@@ -57,16 +57,20 @@ export class AuthController {
       // 쿠키 설정
       res.cookie('access_token', token, {
         httpOnly: true,
-        secure: false, // 개발환경이므로 false
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000, // 24시간
+        secure: process.env.NODE_ENV === 'production', // prod에서는 true
+        sameSite: 'none',                             // 크로스도메인 쿠키 허용
+        domain: '.feedbackmall.com',                  // ✅ 최상위 도메인으로 공유
+        path: '/',
+        maxAge: 24 * 60 * 60 * 1000,
       });
 
       res.cookie('user_role', 'ADMIN', {
         httpOnly: false,
-        secure: false,
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        domain: '.feedbackmall.com',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       return res.json({
@@ -243,15 +247,17 @@ export class AuthController {
 
     res.cookie('access_token', token, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production', // prod에서는 true
+      sameSite: 'none',                             // 크로스도메인 쿠키 허용
+      domain: '.feedbackmall.com',                  // ✅ 최상위 도메인으로 공유
       path: '/',
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.cookie('user_role', 'ADMIN', {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      domain: '.feedbackmall.com',
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -281,15 +287,17 @@ export class AuthController {
 
     res.cookie('access_token', token, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production', // prod에서는 true
+      sameSite: 'none',                             // 크로스도메인 쿠키 허용
+      domain: '.feedbackmall.com',                  // ✅ 최상위 도메인으로 공유
       path: '/',
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.cookie('user_role', 'CONSUMER', {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      domain: '.feedbackmall.com',
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });

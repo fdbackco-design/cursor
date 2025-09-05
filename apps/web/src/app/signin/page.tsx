@@ -119,10 +119,19 @@ function SignInPageInner() {
   // 로그인 성공 시 자동 리다이렉트
   useEffect(() => {
     if (loginSuccess === 'success') {
-      // 2초 후 홈 페이지로 리다이렉트 (URL 파라미터 제거)
+      // 2초 후 리다이렉트 (URL 파라미터 확인)
       const timer = setTimeout(() => {
-        // URL 파라미터를 제거하고 깔끔하게 리다이렉트
-        window.location.href = '/home';
+        // URL에서 redirect 파라미터 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUrl = urlParams.get('redirect');
+        
+        if (redirectUrl) {
+          // 원래 접근하려던 페이지로 리다이렉트
+          window.location.href = redirectUrl;
+        } else {
+          // 리다이렉트 URL이 없으면 홈으로
+          window.location.href = '/home';
+        }
       }, 2000);
       
       return () => clearTimeout(timer);

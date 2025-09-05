@@ -37,9 +37,10 @@ export default function HomePage() {
 
     // 로그인 직후 인증 상태가 아직 업데이트되지 않을 수 있으므로 잠시 대기
     const checkAuth = () => {
-      // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+      // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트 (현재 URL을 쿼리 파라미터로 전달)
       if (!isAuthenticated || !user) {
-        router.push('/signin');
+        const currentUrl = window.location.pathname;
+        router.push(`/signin?redirect=${encodeURIComponent(currentUrl)}`);
         return;
       }
       

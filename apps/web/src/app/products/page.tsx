@@ -65,9 +65,10 @@ export default function ProductsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+    // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트 (현재 URL을 쿼리 파라미터로 전달)
     if (!isAuthenticated || !user) {
-      router.push('/signin');
+      const currentUrl = window.location.pathname;
+      router.push(`/signin?redirect=${encodeURIComponent(currentUrl)}`);
       return;
     }
     

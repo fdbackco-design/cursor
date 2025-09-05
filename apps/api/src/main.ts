@@ -20,6 +20,7 @@ async function bootstrap() {
         'https://feedbackmall.com',
         'https://www.feedbackmall.com',
         'http://localhost:3000',
+        'https://api.feedbackmall.com'
       ];
       if (!origin || whitelist.includes(origin)) return cb(null, true);
       cb(new Error('Not allowed by CORS'));

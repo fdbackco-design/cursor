@@ -67,15 +67,17 @@ const Header = () => {
 
                         {/* 데스크톱 오른쪽 버튼 영역 */}
             <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
-              {/* 관리자 페이지 버튼 (임시로 항상 표시) */}
-              <Link href="/admin">
-                <Button 
-                  variant="outline"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50 px-3 lg:px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200"
-                >
-                  관리자
-                </Button>
-              </Link>
+              {/* 관리자 페이지 버튼 (ADMIN 역할 사용자만 표시) */}
+              {isAuthenticated && user && user.role === 'ADMIN' && (
+                <Link href="/admin">
+                  <Button 
+                    variant="outline"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50 px-3 lg:px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200"
+                  >
+                    관리자
+                  </Button>
+                </Link>
+              )}
               
               {/* 로그인 상태에 따른 버튼 */}
               {!loading && (
@@ -247,12 +249,14 @@ const Header = () => {
                           배송
                         </Button>
                       </Link>
-                      <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Button variant="outline" className="w-full justify-start">
-                          <Settings className="h-4 w-4 mr-3" />
-                          관리자 (테스트)
-                        </Button>
-                      </Link>
+                      {isAuthenticated && user && user.role === 'ADMIN' && (
+                        <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                          <Button variant="outline" className="w-full justify-start">
+                            <Settings className="h-4 w-4 mr-3" />
+                            관리자
+                          </Button>
+                        </Link>
+                      )}
                       <Button 
                         onClick={() => {
                           handleLogout();

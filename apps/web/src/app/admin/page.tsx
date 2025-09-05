@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
 import { 
   Package, 
@@ -21,8 +22,11 @@ import {
 import Link from 'next/link';
 import { getRecentActivities, AuditLog } from '../../lib/api/audit-log';
 import { getAdminStats, AdminStats } from '../../lib/api/admin';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AdminPage = () => {
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [recentActivities, setRecentActivities] = useState<AuditLog[]>([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
@@ -119,6 +123,7 @@ const AdminPage = () => {
     { title: '오늘 활동', ...adminStats.todayOrders },
     { title: '재고 부족', ...adminStats.lowStockProducts }
   ] : [];
+
 
   // 통계 데이터 로딩
   useEffect(() => {
@@ -230,6 +235,7 @@ const AdminPage = () => {
       return '방금 전';
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -32,7 +32,7 @@ const UsersPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/v1/auth/users', {
+      const response = await fetch('https://api.feedbackmall.com/api/v1/auth/users', {
         credentials: 'include',
       });
       if (response.ok) {
@@ -48,7 +48,7 @@ const UsersPage = () => {
 
   const handleApprove = async (userId: string) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/auth/users/${userId}/approve`, {
+      const response = await fetch(`https://api.feedbackmall.com/api/v1/auth/users/${userId}/approve`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -62,7 +62,7 @@ const UsersPage = () => {
 
   const handleReject = async (userId: string) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/auth/users/${userId}/reject`, {
+      const response = await fetch(`https://api.feedbackmall.com/api/v1/auth/users/${userId}/reject`, {
         method: 'POST',
         credentials: 'include',
       });

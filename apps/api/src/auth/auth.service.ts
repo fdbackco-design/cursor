@@ -316,9 +316,28 @@ export class AuthService {
     };
   }
   async logout(res: Response) {
-    res.clearCookie('session');
-    res.clearCookie('user_role');
-    res.clearCookie('access_token', { path: '/' });
+    // 발급 시 옵션과 100% 동일해야 함
+    const common = {
+      domain: '.feedbackmall.com',
+      path: '/',
+      secure: true,
+      sameSite: 'none' as const,
+    };
+  
+    // 1) clearCookie
+    res.clearCookie('access_token', { ...common, httpOnly: true  });
+    res.clearCookie('user_role',   { ...common, httpOnly: false });
+    // 필요하면 referral 관련 쿠키도
+    res.clearCookie('referral_code', { ...common, httpOnly: true  });
+    res.clearCookie('ref',           { ...common, httpOnly: true  });
+  
+    // 2) 안전망: 빈 값 + 과거 만료
+    const past = new Date(0);
+    res.cookie('access_token', '', { ...common, httpOnly: true,  expires: past, maxAge: 0 });
+    res.cookie('user_role',   '', { ...common, httpOnly: false, expires: past, maxAge: 0 });
+    res.cookie('referral_code','',{ ...common, httpOnly: true,  expires: past, maxAge: 0 });
+    res.cookie('ref',          '',{ ...common, httpOnly: true,  expires: past, maxAge: 0 });
+  
     return { message: '로그아웃되었습니다.' };
   }
 

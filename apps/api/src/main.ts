@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import express from 'express';
+import express, { Request, Response } from 'express';
 
 import { AppModule } from './app.module';
 
@@ -78,6 +78,11 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
+
+  const server = app.getHttpAdapter().getInstance();
+  server.get('/health', (_req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok' });
+  });
 
   const port = configService.get('PORT', 3001);
   await app.listen(port);

@@ -56,19 +56,19 @@ export class AuthController {
 
       // 쿠키 설정
       res.cookie('access_token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // prod에서는 true
-        sameSite: 'none',                             // 크로스도메인 쿠키 허용
-        domain: '.feedbackmall.com',                  // ✅ 최상위 도메인으로 공유
+        httpOnly: true,                 // 토큰은 httpOnly 유지
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        domain: '.feedbackmall.com',    // ★ 추가: 최상위 도메인에 귀속
         path: '/',
         maxAge: 24 * 60 * 60 * 1000,
       });
 
       res.cookie('user_role', 'ADMIN', {
-        httpOnly: false,
+        httpOnly: false,                // 미들웨어에서 볼 필요 있으면 false
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        domain: '.feedbackmall.com',
+        sameSite: 'lax',
+        domain: '.feedbackmall.com',    // ★ 추가
         path: '/',
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
@@ -203,19 +203,21 @@ export class AuthController {
       // 쿠키 정리 및 설정
       res.clearCookie('ref');
       res.cookie('access_token', result.token, {
-        httpOnly: true,
+        httpOnly: true,                 // 토큰은 httpOnly 유지
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
+        domain: '.feedbackmall.com',    // ★ 추가: 최상위 도메인에 귀속
         path: '/',
         maxAge: 24 * 60 * 60 * 1000,
       });
       res.cookie('user_role', result.user.role, {
-        httpOnly: true,
+        httpOnly: false,                // 미들웨어에서 볼 필요 있으면 false
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
+        domain: '.feedbackmall.com',    // ★ 추가
         path: '/',
         maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      })
 
       this.logger.log(`쿠키 설정 완료: access_token, user_role=${result.user.role}`);
 
@@ -246,22 +248,22 @@ export class AuthController {
     const token = this.jwt.sign(payload, { expiresIn: '1d' });
 
     res.cookie('access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // prod에서는 true
-      sameSite: 'none',                             // 크로스도메인 쿠키 허용
-      domain: '.feedbackmall.com',                  // ✅ 최상위 도메인으로 공유
+      httpOnly: true,                 // 토큰은 httpOnly 유지
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      domain: '.feedbackmall.com',    // ★ 추가: 최상위 도메인에 귀속
       path: '/',
       maxAge: 24 * 60 * 60 * 1000,
     });
+
     res.cookie('user_role', 'ADMIN', {
-      httpOnly: false,
+      httpOnly: false,                // 미들웨어에서 볼 필요 있으면 false
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      domain: '.feedbackmall.com',
+      sameSite: 'lax',
+      domain: '.feedbackmall.com',    // ★ 추가
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     return res.redirect(`${frontendUrl}/admin`);
   }
@@ -286,22 +288,21 @@ export class AuthController {
     this.logger.log(`Dev login token 생성: ${token.substring(0, 20)}...`);
 
     res.cookie('access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // prod에서는 true
-      sameSite: 'none',                             // 크로스도메인 쿠키 허용
-      domain: '.feedbackmall.com',                  // ✅ 최상위 도메인으로 공유
+      httpOnly: true,                 // 토큰은 httpOnly 유지
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      domain: '.feedbackmall.com',    // ★ 추가: 최상위 도메인에 귀속
       path: '/',
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.cookie('user_role', 'CONSUMER', {
-      httpOnly: false,
+      httpOnly: false,                // 미들웨어에서 볼 필요 있으면 false
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      domain: '.feedbackmall.com',
+      sameSite: 'lax',
+      domain: '.feedbackmall.com',    // ★ 추가
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
+    }); 
     this.logger.log('Dev login 쿠키 설정 완료');
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';

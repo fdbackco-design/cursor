@@ -284,6 +284,7 @@ const Header = () => {
         )}
       </header>
 
+
       {/* 카테고리 네비게이션 */}
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">

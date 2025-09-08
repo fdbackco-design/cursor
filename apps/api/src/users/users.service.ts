@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import axios from 'axios';
 
@@ -6,7 +7,10 @@ import axios from 'axios';
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
   
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService
+  ) {}
 
   async getAllUsers(role?: string, excludeSellerUsers: boolean = false) {
     const where: any = {};
@@ -217,9 +221,21 @@ export class UsersService {
       this.logger.log(`카카오 연결 끊기 시작: kakaoSub=${kakaoSub}`);
       
       // 카카오 연결 끊기 API 호출
+      const kakaoAdminKey = this.configService.get<string>('KAKAO_ADMIN_KEY');
+      
+      if (!kakaoAdminKey) {
+        this.logger.error('KAKAO_ADMIN_KEY 환경 변수가 설정되지 않았습니다!');
+        return {
+          success: false,
+          message: '카카오 API 설정이 올바르지 않습니다.'
+        };
+      }
+      
+      this.logger.log(`카카오 Admin Key 로드됨: ${kakaoAdminKey.substring(0, 10)}...`);
+      
       const response = await axios.post('https://kapi.kakao.com/v1/user/unlink', null, {
         headers: {
-          'Authorization': `KakaoAK ${process.env.KAKAO_ADMIN_KEY || process.env.KAKAO_CLIENT_SECRET}`,
+          'Authorization': `KakaoAK ${kakaoAdminKey}`,
           'Content-Type': 'application/x-www-form-urlencoded'
         },
         data: new URLSearchParams({

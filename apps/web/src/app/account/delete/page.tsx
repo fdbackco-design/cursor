@@ -35,15 +35,28 @@ export default function DeleteAccountPage() {
       
       if (result.success) {
         showToast(toast.success('회원탈퇴', '회원탈퇴가 완료되었습니다.'));
-        // 로그아웃 처리 - 쿠키 삭제 및 상태 초기화
-        document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        
+        // 완전한 로그아웃 처리
+        // 1. 모든 쿠키 삭제
+        document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.feedbackmall.com;';
+        document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.feedbackmall.com;';
+        document.cookie = 'user_role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.feedbackmall.com;';
+        
+        // 2. 로컬 스토리지 정리
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        // 사용자 상태 초기화
+        localStorage.removeItem('user_role');
+        
+        // 3. 세션 스토리지도 정리
+        sessionStorage.clear();
+        
+        // 4. 사용자 상태 초기화
         await refetch();
-        // 홈페이지로 리다이렉트
-        router.push('/');
+        
+        // 5. 잠시 대기 후 홈페이지로 리다이렉트
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
       } else {
         showToast(toast.error('회원탈퇴', result.message));
       }

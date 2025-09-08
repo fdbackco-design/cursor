@@ -37,33 +37,11 @@ export default function DeleteAccountPage() {
         showToast(toast.success('회원탈퇴', '회원탈퇴가 완료되었습니다.'));
         
         // 완전한 로그아웃 처리
-
-        // 1. 현재 존재하는 모든 쿠키 삭제
-        const allCookies = document.cookie.split(';');
-        allCookies.forEach(cookie => {
-          const eqPos = cookie.indexOf('=');
-          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-          
-          // 모든 가능한 조합으로 쿠키 삭제
-          const domains = ['', '.feedbackmall.com', '.api.feedbackmall.com', 'feedbackmall.com'];
-          const paths = ['/', '/api', '/api/v1'];
-          
-          domains.forEach(domain => {
-            paths.forEach(path => {
-              // 다양한 속성 조합으로 삭제
-              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain};`;
-              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure;`;
-              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure; samesite=strict;`;
-              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure; samesite=lax;`;
-              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; samesite=strict;`;
-              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; samesite=lax;`;
-            });
-          });
-        });
+        // HttpOnly 쿠키들(access_token, refresh_token)은 서버에서 처리됨
         
-        // 2. 특정 쿠키들 강제 삭제 (이름으로 직접)
-        const specificCookies = ['access_token', 'refresh_token', 'user_role', 'referral_code', 'auth_token', 'token', 'session', 'sessionid', 'user', 'login', 'auth'];
-        specificCookies.forEach(cookieName => {
+        // 1. 클라이언트에서 접근 가능한 쿠키들 삭제
+        const clientCookies = ['user_role', 'referral_code', 'auth_token', 'token', 'session', 'sessionid', 'user', 'login', 'auth'];
+        clientCookies.forEach(cookieName => {
           const domains = ['', '.feedbackmall.com', '.api.feedbackmall.com', 'feedbackmall.com'];
           const paths = ['/', '/api', '/api/v1'];
           

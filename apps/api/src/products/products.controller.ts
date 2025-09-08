@@ -100,9 +100,31 @@ export class ProductsController {
     @Request() req?: any
   ) {
     try {
-      // 이미지 파일 처리 (files가 undefined일 수 있음)
-      const imageUrls = files?.images ? files.images.map(file => file.filename) : [];
-      const descriptionImageUrls = files?.descriptionImages ? files.descriptionImages.map(file => file.filename) : [];
+      // 이미지 파일 처리 - S3 업로드 (files가 undefined일 수 있음)
+      let imageUrls: string[] = [];
+      let descriptionImageUrls: string[] = [];
+      
+      if (files?.images && files.images.length > 0) {
+        try {
+          const s3Images = await this.productsService.uploadProductImages('temp', files.images);
+          imageUrls = s3Images.map(img => img.cdnUrl);
+        } catch (error) {
+          console.error('S3 이미지 업로드 실패:', error);
+          // S3 업로드 실패 시 로컬 파일명 사용
+          imageUrls = files.images.map(file => file.filename);
+        }
+      }
+      
+      if (files?.descriptionImages && files.descriptionImages.length > 0) {
+        try {
+          const s3DescriptionImages = await this.productsService.uploadProductImages('temp', files.descriptionImages);
+          descriptionImageUrls = s3DescriptionImages.map(img => img.cdnUrl);
+        } catch (error) {
+          console.error('S3 설명 이미지 업로드 실패:', error);
+          // S3 업로드 실패 시 로컬 파일명 사용
+          descriptionImageUrls = files.descriptionImages.map(file => file.filename);
+        }
+      }
       
       // 데이터 변환 및 정규화
       const productData = {

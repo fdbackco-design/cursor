@@ -134,7 +134,11 @@ const NewProductPage = () => {
       metadata: formData.metadata || {},
     };
 
-    const result = await createProduct(productData);
+    const result = await createProduct({
+      ...productData,
+      images: formData.images,
+      descriptionImages: formData.descriptionImages
+    });
     if (result.success) {
       showToast(toast.success('상품 등록 완료', '상품이 성공적으로 등록되었습니다!'));
       router.push('/admin/products');

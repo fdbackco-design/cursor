@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 /**
  * 이미지 URL을 올바르게 구성합니다.
- * @param imagePath 이미지 경로 (파일명 또는 전체 URL)
+ * @param imagePath 이미지 경로 (파일명, 전체 URL, 또는 S3 이미지 객체)
  * @returns 완전한 이미지 URL
  */
 export function getImageUrl(imagePath: any): string {
@@ -13,25 +13,35 @@ export function getImageUrl(imagePath: any): string {
     return '/images/placeholder-product.jpg';
   }
 
-  // 문자열이 아닌 경우 문자열로 변환
-  const path = typeof imagePath === 'string' ? imagePath : String(imagePath);
-  
-  // 빈 문자열 처리
-  if (path.trim().length === 0) {
-    return '/images/placeholder-product.jpg';
+  // S3 이미지 객체인 경우
+  if (typeof imagePath === 'object' && imagePath !== null) {
+    return getS3ImageUrl(imagePath);
   }
 
-  // 이미 전체 URL인 경우 그대로 반환
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path;
+  // 문자열인 경우
+  if (typeof imagePath === 'string') {
+    const path = imagePath.trim();
+    
+    // 빈 문자열 처리
+    if (path.length === 0) {
+      return '/images/placeholder-product.jpg';
+    }
+
+    // 이미 전체 URL인 경우 그대로 반환
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    
+    // 파일명만 있는 경우 API 서버의 uploads 경로와 결합
+    if (path.startsWith('/')) {
+      return `${API_BASE_URL}${path}`;
+    }
+    
+    return `${API_BASE_URL}/uploads/${path}`;
   }
-  
-  // 파일명만 있는 경우 API 서버의 uploads 경로와 결합
-  if (path.startsWith('/')) {
-    return `${API_BASE_URL}${path}`;
-  }
-  
-  return `${API_BASE_URL}/uploads/${path}`;
+
+  // 다른 타입인 경우 기본 이미지 반환
+  return '/images/placeholder-product.jpg';
 }
 
 /**
@@ -51,7 +61,7 @@ export function getS3ImageUrl(s3Image: any): string {
 
   // s3Key만 있는 경우 CDN URL 생성
   if (s3Image.s3Key && typeof s3Image.s3Key === 'string') {
-    const cdnBaseUrl = 'https://dbf9mgv9dy7hl.cloudfront.net';
+    const cdnBaseUrl = process.env.NEXT_PUBLIC_CDN_URL || 'https://dbf9mgv9dy7hl.cloudfront.net';
     return `${cdnBaseUrl}/${s3Image.s3Key}`.trim();
   }
 

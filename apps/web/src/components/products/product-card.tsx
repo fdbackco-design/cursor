@@ -99,7 +99,6 @@ export function ProductCard({ product }: ProductCardProps) {
   
   // 가격 표시 로직
   const getPriceDisplay = () => {
-    
     if (loading) {
       return { text: '연결 중...', price: null };
     }

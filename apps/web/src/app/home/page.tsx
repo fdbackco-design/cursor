@@ -21,7 +21,9 @@ export default function HomePage() {
     const loadProducts = async () => {
       try {
         const response = await productsApi.getProducts({ limit: 50 });
+        console.log('홈페이지 - API 응답:', response);
         if (response.success && response.data) {
+          console.log('홈페이지 - 상품 데이터:', response.data.products);
           setProducts(response.data.products || []);
         } else {
           console.error('상품 로드 실패:', response.error);

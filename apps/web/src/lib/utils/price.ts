@@ -8,30 +8,38 @@
  * @param showCurrency - 통화 표시 여부 (기본값: true)
  * @returns 포맷팅된 가격 문자열 (예: "300,000원")
  */
-export function formatPrice(price: number, showCurrency: boolean = true): string {
-  if (typeof price !== 'number' || isNaN(price)) {
+export function formatPrice(price: number | string, showCurrency: boolean = true): string {
+  // 문자열인 경우 숫자로 변환
+  let numericPrice: number;
+  if (typeof price === 'string') {
+    numericPrice = parseFloat(price);
+  } else {
+    numericPrice = price;
+  }
+  
+  if (typeof numericPrice !== 'number' || isNaN(numericPrice) || numericPrice < 0) {
     return showCurrency ? '0원' : '0';
   }
   
-  const formatted = price.toLocaleString('ko-KR');
+  const formatted = numericPrice.toLocaleString('ko-KR');
   return showCurrency ? `${formatted}원` : formatted;
 }
 
 /**
  * 가격을 간단한 형식으로 포맷팅합니다.
- * @param price - 포맷팅할 가격 (숫자)
+ * @param price - 포맷팅할 가격 (숫자 또는 문자열)
  * @returns 포맷팅된 가격 문자열 (예: "300,000")
  */
-export function formatPriceNumber(price: number): string {
+export function formatPriceNumber(price: number | string): string {
   return formatPrice(price, false);
 }
 
 /**
  * 가격을 통화 포함 형식으로 포맷팅합니다.
- * @param price - 포맷팅할 가격 (숫자)
+ * @param price - 포맷팅할 가격 (숫자 또는 문자열)
  * @returns 포맷팅된 가격 문자열 (예: "300,000원")
  */
-export function formatPriceWithCurrency(price: number): string {
+export function formatPriceWithCurrency(price: number | string): string {
   return formatPrice(price, true);
 }
 

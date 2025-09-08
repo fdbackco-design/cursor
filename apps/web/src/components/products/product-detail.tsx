@@ -5,6 +5,7 @@ import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { ShoppingCart, Heart, Star, Image as ImageIcon, Check, X } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image';
+import { formatPriceWithCurrency } from '@/lib/utils/price';
 import { useAuth } from '@/contexts/AuthContext';
 import { cartApi } from '@/lib/api/cart';
 import { wishlistApi } from '@/lib/api/wishlist';
@@ -287,7 +288,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <span className="text-3xl font-bold text-primary">
-              {displayPrice.toLocaleString()}원
+              {formatPriceWithCurrency(displayPrice)}
             </span>
             {discount > 0 && (
               <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-medium">

@@ -9,6 +9,7 @@ import { wishlistApi } from '@/lib/api/wishlist';
 import { cartApi } from '@/lib/api/cart';
 import { useToast, toast } from '@/components/ui/toast';
 import { getImageUrl } from '@/lib/utils/image';
+import { formatPriceWithCurrency } from '@/lib/utils/price';
 
 import { Product } from '@/types/product';
 
@@ -110,12 +111,12 @@ export function ProductCard({ product }: ProductCardProps) {
     if (user?.role === 'BIZ') {
       return { 
         text: 'B2B 가격', 
-        price: product.priceB2B.toLocaleString() + '원' 
+        price: formatPriceWithCurrency(product.priceB2B)
       };
     } else {
       return { 
         text: '일반 가격', 
-        price: product.priceB2C.toLocaleString() + '원' 
+        price: formatPriceWithCurrency(product.priceB2C)
       };
     }
   };

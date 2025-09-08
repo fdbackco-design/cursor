@@ -22,6 +22,7 @@ import { AddressesModule } from './addresses/addresses.module';
 import { ReturnsModule } from './returns/returns.module';
 import { RefundsModule } from './refunds/refunds.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     ReturnsModule,
     RefundsModule,
     ReviewsModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [AppService],

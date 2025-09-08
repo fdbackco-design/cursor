@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { ShoppingCart, Heart, Star, Image as ImageIcon, Check, X } from 'lucide-react';
-import { getImageUrl } from '@/lib/utils/image';
+import { getProductImageUrls, getProductThumbnailUrl } from '@/lib/utils/image';
 import { formatPriceWithCurrency } from '@/lib/utils/price';
 import { useAuth } from '@/contexts/AuthContext';
 import { cartApi } from '@/lib/api/cart';
@@ -235,7 +235,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 </div>
               ) : (
                 <img
-                  src={getImageUrl(product.images[safeSelectedImage] || '')}
+                  src={getProductThumbnailUrl(product.images, safeSelectedImage)}
                   alt={`${product.name} 이미지 ${safeSelectedImage + 1}`}
                   className={`w-full h-full object-cover transition-opacity duration-200 ${
                     imageLoading ? 'opacity-0' : 'opacity-100'
@@ -267,7 +267,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 }`}
               >
                 <img
-                  src={getImageUrl(image)}
+                  src={getProductThumbnailUrl(product.images, index)}
                   alt={`${product.name} 썸네일 ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
@@ -416,7 +416,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 {product.descriptionImages.map((image, index) => (
                   <div key={index} className="w-full">
                     <img
-                      src={getImageUrl(image)}
+                      src={getProductThumbnailUrl(product.images, index)}
                       alt={`${product.name} 상세 이미지 ${index + 1}`}
                       className="w-full h-auto rounded-lg shadow-sm"
                       loading="lazy"

@@ -301,12 +301,6 @@ const Header = () => {
               주방용품
             </Link>
             <Link 
-              href="/category/health" 
-              className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
-            >
-              건강기능식품
-            </Link>
-            <Link 
               href="/category/electronics" 
               className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
             >

@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@repo/db';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { S3Service } from '../s3/s3.service';
+import { S3UploadRequest, ProductImages } from '@repo/contracts';
 
 @Injectable()
 export class ProductsService {
   constructor(
     private prisma: PrismaService,
-    private readonly auditLogService: AuditLogService
+    private readonly auditLogService: AuditLogService,
+    private readonly s3Service: S3Service
   ) {}
 
   // 모든 상품 조회
@@ -427,11 +430,191 @@ export class ProductsService {
       throw new Error('상품을 찾을 수 없습니다.');
     }
 
+    // 기존 이미지들을 S3에서 삭제
+    if (product.images && Array.isArray(product.images)) {
+      const s3Keys = (product.images as unknown as ProductImages)
+        .map(img => img.s3Key)
+        .filter(Boolean);
+      
+      if (s3Keys.length > 0) {
+        await this.s3Service.deleteMultipleImages(s3Keys);
+      }
+    }
+
     // 소프트 삭제: isActive를 false로 설정
     return await this.prisma.product.update({
       where: { id },
       data: { isActive: false },
       include: { category: true, vendor: true }
     });
+  }
+
+  // 상품 이미지 업로드
+  async uploadProductImages(
+    productId: string,
+    imageFiles: Array<{ buffer: Buffer; originalname: string; mimetype: string }>
+  ): Promise<ProductImages> {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId }
+    });
+
+    if (!product) {
+      throw new Error('상품을 찾을 수 없습니다.');
+    }
+
+    // 기존 이미지들을 S3에서 삭제
+    if (product.images && Array.isArray(product.images)) {
+      const existingImages = product.images as unknown as ProductImages;
+      const s3Keys = existingImages.map(img => img.s3Key).filter(Boolean);
+      
+      if (s3Keys.length > 0) {
+        await this.s3Service.deleteMultipleImages(s3Keys);
+      }
+    }
+
+    // 새 이미지들을 S3에 업로드
+    const uploadRequests: S3UploadRequest[] = imageFiles.map(file => ({
+      file: file.buffer,
+      filename: file.originalname,
+      mimeType: file.mimetype,
+      path: `products/${productId}`,
+      resizeOptions: {
+        width: 1200,
+        height: 1200,
+        quality: 85,
+      },
+    }));
+
+    const uploadResponses = await this.s3Service.uploadMultipleImages(uploadRequests);
+    const productImages = this.s3Service.createProductImages(
+      uploadResponses,
+      imageFiles.map(file => file.originalname)
+    );
+
+    // 데이터베이스에 이미지 정보 업데이트
+    await this.prisma.product.update({
+      where: { id: productId },
+      data: { images: productImages as any },
+    });
+
+    return productImages;
+  }
+
+  // 상품 이미지 추가 (기존 이미지에 추가)
+  async addProductImages(
+    productId: string,
+    imageFiles: Array<{ buffer: Buffer; originalname: string; mimetype: string }>
+  ): Promise<ProductImages> {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId }
+    });
+
+    if (!product) {
+      throw new Error('상품을 찾을 수 없습니다.');
+    }
+
+    // 기존 이미지들 가져오기
+    const existingImages = (product.images as unknown as ProductImages) || [];
+
+    // 새 이미지들을 S3에 업로드
+    const uploadRequests: S3UploadRequest[] = imageFiles.map(file => ({
+      file: file.buffer,
+      filename: file.originalname,
+      mimeType: file.mimetype,
+      path: `products/${productId}`,
+      resizeOptions: {
+        width: 1200,
+        height: 1200,
+        quality: 85,
+      },
+    }));
+
+    const uploadResponses = await this.s3Service.uploadMultipleImages(uploadRequests);
+    const newImages = this.s3Service.createProductImages(
+      uploadResponses,
+      imageFiles.map(file => file.originalname)
+    );
+
+    // 기존 이미지와 새 이미지 합치기
+    const allImages = [...existingImages, ...newImages];
+
+    // 데이터베이스에 이미지 정보 업데이트
+    await this.prisma.product.update({
+      where: { id: productId },
+      data: { images: allImages as any },
+    });
+
+    return allImages;
+  }
+
+  // 상품 이미지 삭제
+  async deleteProductImage(productId: string, imageIndex: number): Promise<ProductImages> {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId }
+    });
+
+    if (!product) {
+      throw new Error('상품을 찾을 수 없습니다.');
+    }
+
+    const existingImages = (product.images as unknown as ProductImages) || [];
+
+    if (imageIndex < 0 || imageIndex >= existingImages.length) {
+      throw new Error('유효하지 않은 이미지 인덱스입니다.');
+    }
+
+    const imageToDelete = existingImages[imageIndex];
+
+    // S3에서 이미지 삭제
+    if (imageToDelete.s3Key) {
+      await this.s3Service.deleteImage(imageToDelete.s3Key);
+    }
+
+    // 배열에서 이미지 제거
+    const updatedImages = existingImages.filter((_, index) => index !== imageIndex);
+
+    // 데이터베이스 업데이트
+    await this.prisma.product.update({
+      where: { id: productId },
+      data: { images: updatedImages as any },
+    });
+
+    return updatedImages;
+  }
+
+  // 상품 이미지 순서 변경
+  async reorderProductImages(
+    productId: string,
+    imageOrders: Array<{ index: number; order: number }>
+  ): Promise<ProductImages> {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId }
+    });
+
+    if (!product) {
+      throw new Error('상품을 찾을 수 없습니다.');
+    }
+
+    const existingImages = (product.images as unknown as ProductImages) || [];
+
+    // 이미지 순서 업데이트
+    const updatedImages = existingImages.map((image, index) => {
+      const orderInfo = imageOrders.find(io => io.index === index);
+      return {
+        ...image,
+        order: orderInfo ? orderInfo.order : index,
+      };
+    });
+
+    // order 기준으로 정렬
+    updatedImages.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    // 데이터베이스 업데이트
+    await this.prisma.product.update({
+      where: { id: productId },
+      data: { images: updatedImages as any },
+    });
+
+    return updatedImages;
   }
 }

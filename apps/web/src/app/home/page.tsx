@@ -88,11 +88,6 @@ export default function HomePage() {
     p.category?.name === '주방용품' ||
     p.category?.name === '주방'
   ).slice(0, 3);
-  const healthProducts = safeProducts.filter(p => 
-    p.category?.slug === 'health' || 
-    p.category?.name === '건강기능식품' ||
-    p.category?.name === '건강'
-  ).slice(0, 3);
   const electronicsProducts = safeProducts.filter(p => 
     p.category?.slug === 'electronics' || 
     p.category?.name === '전자제품' ||
@@ -127,21 +122,6 @@ export default function HomePage() {
         onClick: () => {}
       }
     },
-    {
-      id: 3,
-      image: '/main/HOIDBanner.png',
-      title: '건강한 라이프스타일<br />시작하기',
-      subtitle: '웰니스 케어',
-      description: '프리미엄 건강기능식품으로 더 나은 내일을',
-      primaryButton: {
-        text: '건강식품 보기',
-        onClick: () => router.push('/category/health')
-      },
-      secondaryButton: {
-        text: '무료 상담 신청',
-        onClick: () => {}
-      }
-    }
   ];
 
   // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
@@ -248,26 +228,6 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* 건강기능식품 */}
-          <div className="mb-8 sm:mb-12 lg:mb-16">
-            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">건강기능식품</h3>
-              <Link href="/category/health" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
-                더보기 →
-              </Link>
-            </div>
-            {healthProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {healthProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 sm:py-12">
-                <p className="text-gray-500">건강기능식품이 없습니다.</p>
-              </div>
-            )}
-          </div>
 
           {/* 전자제품 */}
           <div>

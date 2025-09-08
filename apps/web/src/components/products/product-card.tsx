@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { wishlistApi } from '@/lib/api/wishlist';
 import { cartApi } from '@/lib/api/cart';
 import { useToast, toast } from '@/components/ui/toast';
-import { getImageUrl } from '@/lib/utils/image';
+import { getProductMainImageUrl } from '@/lib/utils/image';
 import { formatPriceWithCurrency } from '@/lib/utils/price';
 
 import { Product } from '@/types/product';
@@ -140,23 +140,17 @@ export function ProductCard({ product }: ProductCardProps) {
         <CardHeader className="pb-2 sm:pb-3 p-0">
           <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 mb-2 sm:mb-3 flex items-center justify-center relative overflow-hidden">
             {/* 상품 이미지 표시 */}
-            {product.images && product.images.length > 0 && product.images[0] ? (
-              <img
-                src={getImageUrl(product.images[0])} // 첫 번째 이미지 사용
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                loading="lazy"
-              />
-            ) : (
-              <>
-                {/* 이미지가 없을 때의 대체 디자인 */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 opacity-60"></div>
-                <div className="relative z-10 flex flex-col items-center justify-center text-center p-3 sm:p-4">
-                  <Package className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mb-1 sm:mb-2" />
-                  <span className="text-xs text-gray-500 font-medium">이미지 준비중</span>
-                </div>
-              </>
-            )}
+            <img
+              src={getProductMainImageUrl(product.images)} // S3 이미지 지원
+              alt={product.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+              loading="lazy"
+              onError={(e) => {
+                // 이미지 로드 실패 시 기본 이미지로 대체
+                e.currentTarget.src = '/images/placeholder-product.jpg';
+              }}
+            />
+            
             
             {/* 브랜드 배지 */}
             {product.brand && (

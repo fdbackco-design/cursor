@@ -207,4 +207,165 @@ export class ProductsController {
       };
     }
   }
+
+  // 상품 이미지 업로드 (기존 이미지 교체)
+  @Post(':id/images')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'images', maxCount: 10 }
+  ], uploadConfig))
+  async uploadProductImages(
+    @Param('id') productId: string,
+    @UploadedFiles() files: { images?: Express.Multer.File[] },
+    @Request() req: any
+  ) {
+    try {
+      if (!files.images || files.images.length === 0) {
+        return {
+          success: false,
+          message: '업로드할 이미지가 없습니다.',
+          data: null,
+        };
+      }
+
+      const imageFiles = files.images.map(file => ({
+        buffer: file.buffer,
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+      }));
+
+      const productImages = await this.productsService.uploadProductImages(productId, imageFiles);
+
+      return {
+        success: true,
+        message: '상품 이미지가 성공적으로 업로드되었습니다.',
+        data: productImages,
+      };
+    } catch (error) {
+      console.error('상품 이미지 업로드 에러:', error);
+      return {
+        success: false,
+        message: '상품 이미지 업로드에 실패했습니다.',
+        data: null,
+        error: error.message,
+      };
+    }
+  }
+
+  // 상품 이미지 추가 (기존 이미지에 추가)
+  @Post(':id/images/add')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'images', maxCount: 10 }
+  ], uploadConfig))
+  async addProductImages(
+    @Param('id') productId: string,
+    @UploadedFiles() files: { images?: Express.Multer.File[] },
+    @Request() req: any
+  ) {
+    try {
+      if (!files.images || files.images.length === 0) {
+        return {
+          success: false,
+          message: '추가할 이미지가 없습니다.',
+          data: null,
+        };
+      }
+
+      const imageFiles = files.images.map(file => ({
+        buffer: file.buffer,
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+      }));
+
+      const productImages = await this.productsService.addProductImages(productId, imageFiles);
+
+      return {
+        success: true,
+        message: '상품 이미지가 성공적으로 추가되었습니다.',
+        data: productImages,
+      };
+    } catch (error) {
+      console.error('상품 이미지 추가 에러:', error);
+      return {
+        success: false,
+        message: '상품 이미지 추가에 실패했습니다.',
+        data: null,
+        error: error.message,
+      };
+    }
+  }
+
+  // 상품 이미지 삭제
+  @Delete(':id/images/:imageIndex')
+  @UseGuards(JwtAuthGuard)
+  async deleteProductImage(
+    @Param('id') productId: string,
+    @Param('imageIndex') imageIndex: string,
+    @Request() req: any
+  ) {
+    try {
+      const index = parseInt(imageIndex, 10);
+      if (isNaN(index)) {
+        return {
+          success: false,
+          message: '유효하지 않은 이미지 인덱스입니다.',
+          data: null,
+        };
+      }
+
+      const productImages = await this.productsService.deleteProductImage(productId, index);
+
+      return {
+        success: true,
+        message: '상품 이미지가 성공적으로 삭제되었습니다.',
+        data: productImages,
+      };
+    } catch (error) {
+      console.error('상품 이미지 삭제 에러:', error);
+      return {
+        success: false,
+        message: '상품 이미지 삭제에 실패했습니다.',
+        data: null,
+        error: error.message,
+      };
+    }
+  }
+
+  // 상품 이미지 순서 변경
+  @Put(':id/images/reorder')
+  @UseGuards(JwtAuthGuard)
+  async reorderProductImages(
+    @Param('id') productId: string,
+    @Body() body: { imageOrders: Array<{ index: number; order: number }> },
+    @Request() req: any
+  ) {
+    try {
+      const { imageOrders } = body;
+      
+      if (!imageOrders || !Array.isArray(imageOrders)) {
+        return {
+          success: false,
+          message: '이미지 순서 정보가 올바르지 않습니다.',
+          data: null,
+        };
+      }
+
+      const productImages = await this.productsService.reorderProductImages(productId, imageOrders);
+
+      return {
+        success: true,
+        message: '상품 이미지 순서가 성공적으로 변경되었습니다.',
+        data: productImages,
+      };
+    } catch (error) {
+      console.error('상품 이미지 순서 변경 에러:', error);
+      return {
+        success: false,
+        message: '상품 이미지 순서 변경에 실패했습니다.',
+        data: null,
+        error: error.message,
+      };
+    }
+  }
 }

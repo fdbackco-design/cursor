@@ -1,4 +1,4 @@
-import { PrismaClient } from './generated/client';
+import { PrismaClient } from './generated/client/index.js';
 
 const prisma = new PrismaClient();
 
@@ -26,15 +26,6 @@ async function main() {
     },
   });
 
-  const health = await prisma.category.upsert({
-    where: { slug: 'health' },
-    update: {},
-    create: {
-      name: '건강기능식품',
-      slug: 'health',
-      description: '건강 증진을 위한 기능성 식품',
-    },
-  });
 
   // 벤더 생성
   const hoidVendor = await prisma.vendor.upsert({
@@ -57,15 +48,6 @@ async function main() {
     },
   });
 
-  const healthVendor = await prisma.vendor.upsert({
-    where: { code: 'HEALTH' },
-    update: {},
-    create: {
-      name: '헬스케어',
-      code: 'HEALTH',
-      notes: { description: '건강기능식품 전문 브랜드' },
-    },
-  });
 
   // 상품 생성
   const products = [
@@ -206,52 +188,6 @@ async function main() {
       lowStockThreshold: 8,
       tags: ['가습기', '초음파', '조용함'],
       metadata: { capacity: '4L', noise: '20dB' },
-    },
-    {
-      name: '프로바이오틱스',
-      description: '장 건강을 위한 프로바이오틱스 - 유산균 함유',
-      shortDescription: '장 건강 프로바이오틱스',
-      priceB2B: 30000,
-      priceB2C: 40000,
-      comparePrice: 50000,
-      sku: 'HEALTH-PRO001',
-      weight: 0.1,
-      length: 8,
-      width: 5,
-      height: 15,
-      images: ['/products/back1.jpg', '/products/back2.jpg', '/products/back3.jpg'],
-      descriptionImages: ['/products/01.jpg', '/products/02.gif', '/products/03.jpg'],
-      categoryId: health.id,
-      vendorId: healthVendor.id,
-      isActive: true,
-      isFeatured: true,
-      stockQuantity: 200,
-      lowStockThreshold: 30,
-      tags: ['프로바이오틱스', '유산균', '장건강'],
-      metadata: { count: '100억개', form: '캡슐' },
-    },
-    {
-      name: '오메가3',
-      description: '순수 EPA/DHA 오메가3 - 심혈관 건강에 도움',
-      shortDescription: 'EPA/DHA 오메가3',
-      priceB2B: 25000,
-      priceB2C: 35000,
-      comparePrice: 45000,
-      sku: 'HEALTH-OMG001',
-      weight: 0.1,
-      length: 8,
-      width: 5,
-      height: 15,
-      images: ['/products/back1.jpg', '/products/back2.jpg', '/products/back3.jpg'],
-      descriptionImages: ['/products/01.jpg', '/products/02.gif', '/products/03.jpg'],
-      categoryId: health.id,
-      vendorId: healthVendor.id,
-      isActive: true,
-      isFeatured: false,
-      stockQuantity: 150,
-      lowStockThreshold: 25,
-      tags: ['오메가3', 'EPA', 'DHA'],
-      metadata: { epa: '180mg', dha: '120mg', form: '캡슐' },
     },
   ];
 

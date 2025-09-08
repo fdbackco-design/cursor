@@ -15,3 +15,6 @@ export * from "./orders";
 
 // Payments schemas
 export * from "./payments";
+
+// S3 Image types
+export * from "./types/s3-image";

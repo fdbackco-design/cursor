@@ -44,9 +44,6 @@ const Footer = () => {
         {/* 하단 바 */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            {/* <div className="mb-4 md:mb-0">
-              <span className="text-2xl font-extrabold text-gray-900 tracking-[1.5px]">FEEDBACK</span>
-            </div> */}
             <Link href="/" className="flex items-center">
               <span className="text-lg sm:text-2xl font-normal text-black italic" style={{ 
                 fontFamily: 'Georgia, "Times New Roman", serif',
@@ -55,8 +52,15 @@ const Footer = () => {
                 feedbackmall
               </span>
             </Link>
-            <div className="text-sm text-gray-500">
-              © 2025 Feedbackmall. All rights reserved.
+            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
+              <div className="flex space-x-4 text-sm text-gray-500">
+                <Link href="/privacy" className="hover:text-gray-700 transition-colors duration-200">
+                  개인정보처리방침
+                </Link>
+              </div>
+              <div className="text-sm text-gray-500">
+                © 2025 Feedbackmall. All rights reserved.
+              </div>
             </div>
           </div>
         </div>

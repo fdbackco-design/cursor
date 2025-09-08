@@ -60,7 +60,10 @@ export const usersApi = {
   // 회원탈퇴
   async deleteAccount(): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/account`, {
+      const url = `${API_BASE_URL}/api/v1/users/account`;
+      console.log('회원탈퇴 API 호출:', url);
+      
+      const response = await fetch(url, {
         method: 'DELETE',
         credentials: 'include', // 쿠키를 사용한 인증
         headers: {
@@ -68,12 +71,17 @@ export const usersApi = {
         },
       });
       
+      console.log('회원탈퇴 API 응답:', response.status, response.statusText);
+      
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error('로그인이 필요합니다.');
         }
+        if (response.status === 404) {
+          throw new Error('API 엔드포인트를 찾을 수 없습니다. 서버를 확인해주세요.');
+        }
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || '회원탈퇴 처리 중 오류가 발생했습니다.');
+        throw new Error(errorData.message || `회원탈퇴 처리 중 오류가 발생했습니다. (${response.status})`);
       }
       
       return await response.json();

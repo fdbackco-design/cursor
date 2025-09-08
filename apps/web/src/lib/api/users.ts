@@ -60,20 +60,18 @@ export const usersApi = {
   // 회원탈퇴
   async deleteAccount(): Promise<{ success: boolean; message: string }> {
     try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        throw new Error('로그인이 필요합니다.');
-      }
-
       const response = await fetch(`${API_BASE_URL}/users/account`, {
         method: 'DELETE',
+        credentials: 'include', // 쿠키를 사용한 인증
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('로그인이 필요합니다.');
+        }
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || '회원탈퇴 처리 중 오류가 발생했습니다.');
       }

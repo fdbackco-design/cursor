@@ -18,13 +18,23 @@ export class S3Service {
   private readonly cdnUrl: string;
 
   constructor(private configService: ConfigService) {
+    const region = this.configService.get('AWS_REGION', 'ap-northeast-2');
+    this.bucketName = this.configService.get('AWS_S3_BUCKET_NAME');
+    const cloudfrontUrl = this.configService.get('AWS_CLOUDFRONT_URL');
+    
+    // 환경 변수 로깅
+    this.logger.log(`S3 설정 - Region: ${region}, Bucket: ${this.bucketName}, CloudFront: ${cloudfrontUrl}`);
+    
+    if (!this.bucketName) {
+      this.logger.error('AWS_S3_BUCKET_NAME 환경 변수가 설정되지 않았습니다!');
+    }
+    
     this.s3Client = new S3Client({
-      region: this.configService.get('AWS_REGION', 'ap-northeast-2'),
+      region,
     });
     
-    this.bucketName = this.configService.get('AWS_S3_BUCKET_NAME');
-    this.cdnUrl = this.configService.get('AWS_CLOUDFRONT_URL') || 
-                  `https://${this.bucketName}.s3.${this.configService.get('AWS_REGION', 'ap-northeast-2')}.amazonaws.com`;
+    this.cdnUrl = cloudfrontUrl || 
+                  `https://${this.bucketName}.s3.${region}.amazonaws.com`;
   }
 
   /**

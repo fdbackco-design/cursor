@@ -100,32 +100,34 @@ export class ProductsController {
     @Request() req?: any
   ) {
     try {
-      // 이미지 파일 처리 - S3 업로드 (files가 undefined일 수 있음)
-      let imageUrls: string[] = [];
-      let descriptionImageUrls: string[] = [];
+      // 이미지 파일 처리 - S3 업로드
+      let s3ImageData: any[] = [];
+      let s3DescriptionImageData: any[] = [];
       
       if (files?.images && files.images.length > 0) {
         try {
-          const s3Images = await this.productsService.uploadProductImages('temp', files.images);
-          imageUrls = s3Images.map(img => img.cdnUrl);
+          console.log('S3 이미지 업로드 시작:', files.images.length, '개 파일');
+          s3ImageData = await this.productsService.uploadImagesForNewProduct(files.images);
+          console.log('S3 이미지 업로드 성공:', s3ImageData.length, '개');
         } catch (error) {
           console.error('S3 이미지 업로드 실패:', error);
-          // S3 업로드 실패 시 로컬 파일명 사용
-          imageUrls = files.images.map(file => file.filename);
+          // S3 업로드 실패 시 로컬 파일명으로 폴백
+          s3ImageData = files.images.map(file => ({ cdnUrl: file.filename }));
         }
       }
       
       if (files?.descriptionImages && files.descriptionImages.length > 0) {
         try {
-          const s3DescriptionImages = await this.productsService.uploadProductImages('temp', files.descriptionImages);
-          descriptionImageUrls = s3DescriptionImages.map(img => img.cdnUrl);
+          console.log('S3 설명 이미지 업로드 시작:', files.descriptionImages.length, '개 파일');
+          s3DescriptionImageData = await this.productsService.uploadImagesForNewProduct(files.descriptionImages);
+          console.log('S3 설명 이미지 업로드 성공:', s3DescriptionImageData.length, '개');
         } catch (error) {
           console.error('S3 설명 이미지 업로드 실패:', error);
-          // S3 업로드 실패 시 로컬 파일명 사용
-          descriptionImageUrls = files.descriptionImages.map(file => file.filename);
+          // S3 업로드 실패 시 로컬 파일명으로 폴백
+          s3DescriptionImageData = files.descriptionImages.map(file => ({ cdnUrl: file.filename }));
         }
       }
-      
+
       // 데이터 변환 및 정규화
       const productData = {
         ...createProductDto,
@@ -135,9 +137,9 @@ export class ProductsController {
         // 불린 필드 변환
         isActive: createProductDto.isActive !== undefined ? Boolean(createProductDto.isActive) : true,
         isFeatured: createProductDto.isFeatured !== undefined ? Boolean(createProductDto.isFeatured) : false,
-        // 이미지 배열
-        images: imageUrls,
-        descriptionImages: descriptionImageUrls
+        // S3 이미지 객체 배열
+        images: s3ImageData,
+        descriptionImages: s3DescriptionImageData
       };
 
       // 현재 사용자 정보 가져오기 (AuditLog용)

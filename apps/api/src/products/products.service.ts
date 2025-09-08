@@ -449,6 +449,34 @@ export class ProductsService {
     });
   }
 
+  // 상품 생성 시 이미지 업로드 (상품 ID 없이)
+  async uploadImagesForNewProduct(
+    imageFiles: Array<{ buffer: Buffer; originalname: string; mimetype: string }>
+  ): Promise<ProductImages> {
+    const uploadPromises = imageFiles.map(async (file) => {
+      const s3Key = `products/temp/${Date.now()}-${Math.random().toString(36).substring(2)}-${file.originalname}`;
+      
+      const uploadRequest: S3UploadRequest = {
+        file: file.buffer,
+        filename: file.originalname,
+        mimeType: file.mimetype,
+        path: 'products/temp',
+      };
+
+      const result = await this.s3Service.uploadImage(uploadRequest);
+      
+      return {
+        s3Key: result.s3Key,
+        cdnUrl: result.cdnUrl,
+        mime: file.mimetype,
+        size: file.buffer.length,
+        uploadedAt: new Date().toISOString(),
+      };
+    });
+
+    return await Promise.all(uploadPromises);
+  }
+
   // 상품 이미지 업로드
   async uploadProductImages(
     productId: string,

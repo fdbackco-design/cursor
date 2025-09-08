@@ -1,3 +1,4 @@
+// main.ts
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -6,92 +7,82 @@ import cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import express, { Request, Response } from 'express';
-
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
 
-  // CORS
+  // ✅ CORS - 안전하고 유연하게
   app.enableCors({
     origin: (origin, cb) => {
-      const whitelist = [
-        'https://feedbackmall.com',
-        'https://www.feedbackmall.com',
-        'http://localhost:3000',
-        'https://api.feedbackmall.com'
-      ];
-      if (!origin || whitelist.includes(origin)) return cb(null, true);
-      cb(new Error('Not allowed by CORS'));
+      // 서버-서버/헬스체크/프리플라이트 등 Origin이 없는 경우 허용
+      if (!origin) return cb(null, true);
+
+      try {
+        const { hostname } = new URL(origin);
+
+        // 고정 화이트리스트
+        const allowList = new Set([
+          'feedbackmall.com',
+          'www.feedbackmall.com',
+          'api.feedbackmall.com',
+          'localhost',
+          '127.0.0.1',
+        ]);
+
+        // 패턴 허용: 모든 feedbackmall 서브도메인, vercel 프리뷰
+        const allowByPattern =
+          /\.feedbackmall\.com$/i.test(hostname) || /\.vercel\.app$/i.test(hostname);
+
+        if (allowList.has(hostname) || allowByPattern) {
+          return cb(null, true);
+        }
+
+        // ❌ 미허용 Origin: 에러 던지지 말고 false (브라우저만 막힘, 서버는 조용)
+        return cb(null, false);
+      } catch {
+        return cb(null, false);
+      }
     },
     credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    optionsSuccessStatus: 204,
   });
 
-  // Cookie parser middleware
+  // ✅ 프리플라이트 빠른 응답(방어)
+  app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') return res.sendStatus(204);
+    next();
+  });
+
   app.use(cookieParser());
-  
-  // Body parser 제한 증가 (100MB)
   app.use(express.json({ limit: '100mb' }));
   app.use(express.urlencoded({ limit: '100mb', extended: true }));
-  
-  // 정적 파일 서빙을 위한 설정
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/',
-  });
-  
-  // 쿠키 파싱 디버깅을 위한 미들웨어
-  app.use((req, res, next) => {
-    // console.log('=== 쿠키 파서 미들웨어 ===');
-    // console.log('요청 URL:', req.url);
-    // console.log('요청 메서드:', req.method);
-    // console.log('요청 쿠키 (parsed):', req.headers.cookie);
-    // console.log('요청 헤더 전체:', req.headers);
-    next();
-  });
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/uploads/' });
 
-  // Global validation pipe
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-  
-  // NestJS 전역 설정 - 페이로드 크기 제한 증가
-  app.use((req, res, next) => {
-    res.setTimeout(300000); // 5분 타임아웃
-    next();
-  });
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
 
-  // API prefix
+  app.use((req, res, next) => { res.setTimeout(300000); next(); });
+
   app.setGlobalPrefix('api/v1');
 
-  // Swagger documentation
-  const config = new DocumentBuilder()
+  const swagger = new DocumentBuilder()
     .setTitle('E-commerce API')
     .setDescription('E-commerce API - MVP Skeleton')
     .setVersion('1.0')
     .addBearerAuth()
     .addTag('App')
     .build();
-
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, swagger);
   SwaggerModule.setup('docs', app, document);
 
+  // /health
   const server = app.getHttpAdapter().getInstance();
-  server.get('/health', (_req: Request, res: Response) => {
-    res.status(200).json({ status: 'ok' });
-  });
+  server.get('/health', (_req: Request, res: Response) => res.status(200).json({ status: 'ok' }));
 
-  const port = configService.get('PORT', 3001);
+  const port = configService.get('PORT', 3001) as number;
   await app.listen(port);
-
-  
-
-  // console.log(`🚀 Application is running on: http://localhost:${port}`);
-  // console.log(`📚 Swagger documentation: http://localhost:${port}/docs`);
 }
-
 bootstrap();

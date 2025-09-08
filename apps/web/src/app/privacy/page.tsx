@@ -29,22 +29,39 @@ export default function PrivacyPage() {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. 수집 항목</h2>
-              <div className="space-y-4 text-gray-700">
+              <div className="space-y-6 text-gray-700">
                 <div>
-                  <h3 className="font-semibold mb-2">(카카오 로그인) 카카오에서 제공받는 정보:</h3>
-                  <p className="font-medium">이메일(account_email), 이름(name), 전화번호(phone_number), 배송지(shipping_address)</p>
+                  <h3 className="font-semibold mb-3 text-lg">(카카오 로그인) 카카오에서 제공받는 정보:</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="space-y-2">
+                      <p>• <strong>이름</strong>: 필수</p>
+                      <p>• <strong>카카오계정(전화번호)</strong>: 필수</p>
+                      <p>• <strong>배송지정보</strong>:</p>
+                      <div className="ml-4 space-y-1">
+                        <p>  - 수령인명: 필수</p>
+                        <p>  - 배송지 주소: 필수</p>
+                        <p>  - 전화번호: 필수</p>
+                      </div>
+                      <p>• <strong>마케팅 수신 동의 (문자/알림톡)</strong>: 선택</p>
+                    </div>
+                  </div>
                 </div>
+                
                 <div>
                   <h3 className="font-semibold mb-2">(서비스 이용 시)</h3>
                   <p>주문/결제/배송 정보, 상담 기록, 접속 로그/기기 정보(쿠키 포함)</p>
                 </div>
+                
                 <div>
                   <h3 className="font-semibold mb-2">(선택)</h3>
                   <p>카카오 <strong>톡 메시지 수신 동의</strong> 상태</p>
                 </div>
-                <p className="text-sm text-gray-600 italic">
-                  ※ 선택 항목 미동의 시에도 필수 서비스 이용은 가능하나, 일부 기능은 제한될 수 있습니다.
-                </p>
+                
+                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                  <p className="text-sm text-blue-800">
+                    <strong>※ 선택 항목 미동의 시에도 필수 서비스 이용은 가능하나, 일부 기능은 제한될 수 있습니다.</strong>
+                  </p>
+                </div>
               </div>
             </section>
 
@@ -79,6 +96,7 @@ export default function PrivacyPage() {
                 <p>• 클라우드/저장: <strong>Amazon Web Services(AWS)</strong> – 인프라 운영(S3/EC2 등)</p>
                 <p>• 배송사: 택배사(주문 시 안내) – 배송 업무</p>
                 <p>• 메시지/알림: <strong>카카오(알림톡/톡 메시지)</strong> – 공지/안내 발송</p>
+                <p>• 소셜 로그인: <strong>카카오</strong> – 회원 인증 및 로그인 서비스</p>
               </div>
             </section>
 

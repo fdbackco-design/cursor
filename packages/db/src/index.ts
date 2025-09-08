@@ -1,5 +1,5 @@
-// 1) Prisma Client 클래스와 타입을 src/generated/client에서 가져오기
-export { PrismaClient } from "./generated/client";
+// 1) Prisma Client 클래스와 타입을 src/generated/client/index에서 가져오기
+export { PrismaClient } from "./generated/client/index.js";
 
 // 2) 모델/enum 타입들 재수출
 export type {
@@ -21,7 +21,7 @@ export type {
   Review,
   Qna,
   AuditLog,
-} from "./generated/client";
+} from "./generated/client/index.js";
 
 // 3) enum들을 값으로도 export
 export {
@@ -35,7 +35,7 @@ export {
   RefundReason,
   RefundStatus,
   ReturnType,
-} from "./generated/client";
+} from "./generated/client/index.js";
 
 // 4) Prisma namespace 전체도 재수출 (as a value)
-export { Prisma } from "./generated/client";
+export { Prisma } from "./generated/client/index.js";

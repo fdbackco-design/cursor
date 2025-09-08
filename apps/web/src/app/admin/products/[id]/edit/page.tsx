@@ -161,11 +161,11 @@ const EditProductPage = () => {
       const currentPriceB2C = parseFloat(formData.priceB2C);
       const currentComparePrice = formData.comparePrice ? parseFloat(formData.comparePrice) : null;
       
-      console.log('가격 비교:', {
-        formData: { priceB2B: formData.priceB2B, priceB2C: formData.priceB2C, comparePrice: formData.comparePrice },
-        product: { priceB2B: product.priceB2B, priceB2C: product.priceB2C, comparePrice: product.comparePrice },
-        parsed: { priceB2B: currentPriceB2B, priceB2C: currentPriceB2C, comparePrice: currentComparePrice }
-      });
+      // console.log('가격 비교:', {
+      //   formData: { priceB2B: formData.priceB2B, priceB2C: formData.priceB2C, comparePrice: formData.comparePrice },
+      //   product: { priceB2B: product.priceB2B, priceB2C: product.priceB2C, comparePrice: product.comparePrice },
+      //   parsed: { priceB2B: currentPriceB2B, priceB2C: currentPriceB2C, comparePrice: currentComparePrice }
+      // });
       
       if (currentPriceB2B !== Number(product.priceB2B)) productData.priceB2B = currentPriceB2B;
       if (currentPriceB2C !== Number(product.priceB2C)) productData.priceB2C = currentPriceB2C;

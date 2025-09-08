@@ -69,14 +69,14 @@ const AnalyticsPage = () => {
         analyticsApi.getReturnRate(selectedPeriod)
       ]);
 
-      console.log('분석 데이터 응답:', {
-        overview: overviewResponse,
-        seller: sellerResponse,
-        vendor: vendorResponse,
-        product: productResponse,
-        popular: popularResponse,
-        return: returnResponse
-      });
+      // console.log('분석 데이터 응답:', {
+      //   overview: overviewResponse,
+      //   seller: sellerResponse,
+      //   vendor: vendorResponse,
+      //   product: productResponse,
+      //   popular: popularResponse,
+      //   return: returnResponse
+      // });
 
       // apiRequest가 래핑한 데이터 구조 처리
       setOverview(overviewResponse.success ? overviewResponse.data : overviewResponse as any);

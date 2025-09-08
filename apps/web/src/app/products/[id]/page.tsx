@@ -17,22 +17,22 @@ export default function ProductPage() {
 
   // 인증 체크 및 상품 로드
   useEffect(() => {
-    console.log('ProductPage useEffect:', { 
-      authLoading, 
-      isAuthenticated, 
-      user: user ? { id: user.id, approve: user.approve } : null,
-      productId: params.id 
-    });
+    // console.log('ProductPage useEffect:', { 
+    //   authLoading, 
+    //   isAuthenticated, 
+    //   user: user ? { id: user.id, approve: user.approve } : null,
+    //   productId: params.id 
+    // });
 
     // 인증 로딩 중이면 아무것도 하지 않음
     if (authLoading) {
-      console.log('Auth loading, waiting...');
+      //console.log('Auth loading, waiting...');
       return;
     }
 
     // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
     if (!isAuthenticated || !user) {
-      console.log('Not authenticated, redirecting to signin');
+      //console.log('Not authenticated, redirecting to signin');
       if (typeof window !== 'undefined') {
         const currentUrl = window.location.pathname;
         router.push(`/signin?redirect=${encodeURIComponent(currentUrl)}`);
@@ -44,33 +44,33 @@ export default function ProductPage() {
     
     // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
     if (!user.approve) {
-      console.log('User not approved, redirecting to approval-pending');
+      //console.log('User not approved, redirecting to approval-pending');
       router.push('/approval-pending');
       return;
     }
 
-    console.log('User authenticated and approved, loading product...');
+    //console.log('User authenticated and approved, loading product...');
 
     // 상품 로드
     const loadProduct = async () => {
       if (!params.id) {
-        console.log('No product ID provided');
+        //console.log('No product ID provided');
         setError('상품 ID가 없습니다.');
         setLoading(false);
         return;
       }
       
       try {
-        console.log('Loading product with ID:', params.id);
+        //console.log('Loading product with ID:', params.id);
         setLoading(true);
         setError(null);
         const productData = await productsApi.getProductById(params.id as string);
         
-        console.log('Product data received:', productData);
+        //console.log('Product data received:', productData);
         if (productData) {
           setProduct(productData);
         } else {
-          console.log('No product data found');
+          //console.log('No product data found');
           setError('상품을 찾을 수 없습니다.');
         }
       } catch (err) {

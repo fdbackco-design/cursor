@@ -381,14 +381,14 @@ export default function CheckoutPage() {
           payButton.innerText = '결제 처리 중...';
           
           // 쿠폰 정보를 localStorage에 저장 (확실한 전달을 위해)
-          console.log('결제 시점 상태 확인:', {
-            selectedCoupon: selectedCoupon,
-            selectedCouponId: selectedCoupon?.id,
-            couponDiscount: paymentInfo.couponDiscount,
-            paymentInfo: paymentInfo,
-            selectedAddressId: selectedAddressId,
-            selectedAddress: selectedAddress
-          });
+          // console.log('결제 시점 상태 확인:', {
+          //   selectedCoupon: selectedCoupon,
+          //   selectedCouponId: selectedCoupon?.id,
+          //   couponDiscount: paymentInfo.couponDiscount,
+          //   paymentInfo: paymentInfo,
+          //   selectedAddressId: selectedAddressId,
+          //   selectedAddress: selectedAddress
+          // });
           
           if (selectedCoupon?.id) {
             const couponInfoToStore = {

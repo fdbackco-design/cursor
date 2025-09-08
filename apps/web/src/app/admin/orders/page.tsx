@@ -173,13 +173,13 @@ const OrdersPage = () => {
       });
       
       //console.log('관리자 API 응답:', response);
-      console.log('응답 데이터 상세:', {
-        success: response.success,
-        hasData: !!response.data,
-        orders: response.data?.orders,
-        ordersLength: response.data?.orders?.length,
-        pagination: response.data?.pagination
-      });
+      // console.log('응답 데이터 상세:', {
+      //   success: response.success,
+      //   hasData: !!response.data,
+      //   orders: response.data?.orders,
+      //   ordersLength: response.data?.orders?.length,
+      //   pagination: response.data?.pagination
+      // });
       
       if (response.success && response.data) {
         const orders = response.data.orders || [];
@@ -190,12 +190,12 @@ const OrdersPage = () => {
         setTotalPages(response.data.pagination?.totalPages || 0);
         setTotalOrders(response.data.pagination?.total || 0);
         
-        console.log('상태 업데이트 완료:', {
-          ordersCount: orders.length,
-          currentPage: response.data.pagination?.page || 1,
-          totalPages: response.data.pagination?.totalPages || 0,
-          totalOrders: response.data.pagination?.total || 0
-        });
+        // console.log('상태 업데이트 완료:', {
+        //   ordersCount: orders.length,
+        //   currentPage: response.data.pagination?.page || 1,
+        //   totalPages: response.data.pagination?.totalPages || 0,
+        //   totalOrders: response.data.pagination?.total || 0
+        // });
       } else {
         //console.log('응답 실패 또는 데이터 없음');
         setOrders([]);

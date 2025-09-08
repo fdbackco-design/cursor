@@ -102,7 +102,7 @@ export default function PaymentSuccessPage() {
             return; // 이미 주문이 생성되어 있으므로 종료
           }
         } catch (error) {
-          console.log('기존 주문 조회 실패 (정상):', error);
+          //console.log('기존 주문 조회 실패 (정상):', error);
         }
         
         throw new Error('장바구니 데이터를 찾을 수 없습니다. 이미 주문이 처리되었을 수 있습니다.');
@@ -124,11 +124,11 @@ export default function PaymentSuccessPage() {
       if (urlCouponId) {
         couponId = urlCouponId;
         couponDiscount = parseInt(urlCouponDiscount || '0');
-        console.log('✅ URL 파라미터에서 쿠폰 정보 확인:', { 
-          couponId, 
-          couponDiscount, 
-          couponCode: urlCouponCode 
-        });
+        // console.log('✅ URL 파라미터에서 쿠폰 정보 확인:', { 
+        //   couponId, 
+        //   couponDiscount, 
+        //   couponCode: urlCouponCode 
+        // });
       } else {
         //console.log('URL 파라미터에 쿠폰 정보 없음');
         
@@ -150,16 +150,16 @@ export default function PaymentSuccessPage() {
               // 사용 후 localStorage에서 제거
               localStorage.removeItem('checkout_coupon_info');
             } else {
-              console.log('주문 ID 불일치, localStorage 쿠폰 정보 무시:', {
-                stored: couponInfo.orderId,
-                current: orderId
-              });
+              // console.log('주문 ID 불일치, localStorage 쿠폰 정보 무시:', {
+              //   stored: couponInfo.orderId,
+              //   current: orderId
+              // });
             }
           } else {
-            console.log('localStorage에 쿠폰 정보 없음');
+            //console.log('localStorage에 쿠폰 정보 없음');
           }
         } catch (error) {
-          console.log('localStorage 쿠폰 정보 파싱 실패:', error);
+          //console.log('localStorage 쿠폰 정보 파싱 실패:', error);
         }
       }
       
@@ -175,7 +175,7 @@ export default function PaymentSuccessPage() {
             //console.log('결제 정보에서 쿠폰 정보:', { couponDiscount, couponId });
           }
         } catch (error) {
-          console.log('결제 정보 조회 실패 (계속 진행):', error);
+          //console.log('결제 정보 조회 실패 (계속 진행):', error);
         }
       }
 
@@ -202,14 +202,14 @@ export default function PaymentSuccessPage() {
       const totalAmount = amount; // 실제 결제 금액
       const actualDiscount = totalBeforeDiscount - totalAmount; // 실제 할인 금액
       
-      console.log('금액 계산:', {
-        subtotal,
-        shippingAmount,
-        totalBeforeDiscount,
-        actualDiscount,
-        totalAmount,
-        originalCouponDiscount: couponDiscount
-      });
+      // console.log('금액 계산:', {
+      //   subtotal,
+      //   shippingAmount,
+      //   totalBeforeDiscount,
+      //   actualDiscount,
+      //   totalAmount,
+      //   originalCouponDiscount: couponDiscount
+      // });
 
       // 실제 배송지 정보 가져오기
       let shippingAddress = {
@@ -232,7 +232,7 @@ export default function PaymentSuccessPage() {
           //console.log('전체 결제 metadata:', paymentInfoForAddress.data.metadata);
         }
       } catch (error) {
-        console.log('배송지 조회용 결제 정보 가져오기 실패:', error);
+        //console.log('배송지 조회용 결제 정보 가져오기 실패:', error);
       }
       
       if (addressId) {
@@ -276,32 +276,32 @@ export default function PaymentSuccessPage() {
               };
               //console.log('사용자 기본 주소로 배송지 설정:', shippingAddress);
             } else {
-              console.log('기본 주소가 없어서 기본 배송지 정보 사용');
+              //console.log('기본 주소가 없어서 기본 배송지 정보 사용');
             }
           } else {
-            console.log('주소 목록 조회 실패, 기본 배송지 정보 사용');
+            //console.log('주소 목록 조회 실패, 기본 배송지 정보 사용');
           }
         } catch (error) {
           console.error('기본 주소 조회 중 오류:', error);
-          console.log('기본 배송지 정보 사용');
+          //console.log('기본 배송지 정보 사용');
         }
       }
 
       // 주문 데이터 검증
-      console.log('주문 생성 데이터 준비:', {
-        orderNumber: orderId,
-        subtotal,
-        shippingAmount,
-        totalBeforeDiscount,
-        actualDiscount,
-        totalAmount,
-        couponId,
-        itemsCount: orderItems.length,
-        paymentKey,
-        amount,
-        shippingAddress,
-        addressId: addressId
-      });
+      // console.log('주문 생성 데이터 준비:', {
+      //   orderNumber: orderId,
+      //   subtotal,
+      //   shippingAmount,
+      //   totalBeforeDiscount,
+      //   actualDiscount,
+      //   totalAmount,
+      //   couponId,
+      //   itemsCount: orderItems.length,
+      //   paymentKey,
+      //   amount,
+      //   shippingAddress,
+      //   addressId: addressId
+      // });
 
       // 데이터 타입 변환 및 검증
       const orderData = {
@@ -341,7 +341,7 @@ export default function PaymentSuccessPage() {
         
         // 백엔드에서 이미 쿠폰 사용 처리를 완료했으므로 별도 API 호출 불필요
         if (couponId) {
-          console.log('✅ 쿠폰 사용 처리 완료 (백엔드에서 자동 처리됨):', couponId);
+          //console.log('✅ 쿠폰 사용 처리 완료 (백엔드에서 자동 처리됨):', couponId);
         }
       } else {
         throw new Error(orderResponse.error || '주문 생성에 실패했습니다.');

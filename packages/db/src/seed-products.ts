@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './generated/client';
 
 const prisma = new PrismaClient();
 
@@ -263,7 +263,7 @@ async function main() {
     });
   }
 
-  console.log('상품 데이터 시드 완료!');
+  //console.log('상품 데이터 시드 완료!');
 }
 
 main()

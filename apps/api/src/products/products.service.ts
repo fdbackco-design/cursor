@@ -342,7 +342,7 @@ export class ProductsService {
       include: { category: true, vendor: true }
     });
 
-    console.log('updateProduct - 조회된 상품:', existingProduct ? '상품 존재' : '상품 없음');
+    //console.log('updateProduct - 조회된 상품:', existingProduct ? '상품 존재' : '상품 없음');
     
     if (!existingProduct) {
       throw new Error('상품을 찾을 수 없습니다.');

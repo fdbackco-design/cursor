@@ -131,7 +131,7 @@ const AdminPage = () => {
       try {
         setIsLoadingStats(true);
         const response = await getAdminStats();
-        console.log('관리자 통계 응답:', response);
+        //console.log('관리자 통계 응답:', response);
         
         if (response.success && response.data) {
           setAdminStats(response.data);

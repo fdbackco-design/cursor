@@ -380,9 +380,9 @@ export default function AccountPage() {
 
     setRegistering(true);
     try {
-      console.log('쿠폰 등록 시작:', couponCode);
+      //console.log('쿠폰 등록 시작:', couponCode);
       const response = await couponsApi.registerCoupon(couponCode.trim());
-      console.log('쿠폰 등록 응답:', response);
+      //console.log('쿠폰 등록 응답:', response);
       
       if (response.success) {
         showToast(toast.success('쿠폰 등록 완료', '쿠폰이 성공적으로 등록되었습니다!'));

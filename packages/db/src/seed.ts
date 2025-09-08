@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { PrismaClient, UserRole, DiscountType } from "@prisma/client";
+import { PrismaClient, UserRole, DiscountType } from "./generated/client";
 
 const prisma = new PrismaClient();
 

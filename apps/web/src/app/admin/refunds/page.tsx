@@ -124,7 +124,7 @@ export default function RefundsPage() {
         }
         
         if (refundsData.length > 0) {
-          console.log('첫 번째 환불 데이터:', refundsData[0]);
+          //console.log('첫 번째 환불 데이터:', refundsData[0]);
         }
         
         //console.log('환불 데이터 (after assignment):', refundsData);
@@ -137,7 +137,7 @@ export default function RefundsPage() {
           setTotalPages(Math.ceil(refundsData.length / 20));
         }
       } else {
-        console.log('환불 데이터 없음 또는 오류:', response.error);
+        //console.log('환불 데이터 없음 또는 오류:', response.error);
         setRefunds([]);
         setTotalPages(1);
       }

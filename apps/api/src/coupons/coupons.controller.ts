@@ -254,7 +254,7 @@ export class CouponsController {
   ) {
     try {
       const user = req.user as any;
-      console.log('쿠폰 사용 처리 요청:', { userId: user.id, couponId });
+      //('쿠폰 사용 처리 요청:', { userId: user.id, couponId });
       
       const result = await this.couponsService.useCoupon(user.id, couponId);
       

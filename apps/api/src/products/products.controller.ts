@@ -103,6 +103,9 @@ export class ProductsController {
       // 이미지 파일 처리 - S3 업로드
       let s3ImageData: any[] = [];
       let s3DescriptionImageData: any[] = [];
+
+      console.log('=== DEBUG files ===', files);
+      console.log('=== DEBUG body ===', createProductDto);
       
       if (files?.images && files.images.length > 0) {
         try {

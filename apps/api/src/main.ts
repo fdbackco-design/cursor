@@ -16,11 +16,17 @@ async function bootstrap() {
   // ✅ CORS - 안전하고 유연하게
   app.enableCors({
     origin: (origin, cb) => {
+      console.log('CORS Origin check:', { origin, timestamp: new Date().toISOString() });
+      
       // 서버-서버/헬스체크/프리플라이트 등 Origin이 없는 경우 허용
-      if (!origin) return cb(null, true);
+      if (!origin) {
+        console.log('CORS: No origin, allowing');
+        return cb(null, true);
+      }
 
       try {
         const { hostname } = new URL(origin);
+        console.log('CORS: Parsed hostname:', hostname);
 
         // 고정 화이트리스트
         const allowList = new Set([
@@ -36,12 +42,15 @@ async function bootstrap() {
           /\.feedbackmall\.com$/i.test(hostname) || /\.vercel\.app$/i.test(hostname);
 
         if (allowList.has(hostname) || allowByPattern) {
+          console.log('CORS: Origin allowed:', hostname);
           return cb(null, true);
         }
 
         // ❌ 미허용 Origin: 에러 던지지 말고 false (브라우저만 막힘, 서버는 조용)
+        console.log('CORS: Origin rejected:', hostname);
         return cb(null, false);
-      } catch {
+      } catch (error) {
+        console.log('CORS: Error parsing origin:', error);
         return cb(null, false);
       }
     },

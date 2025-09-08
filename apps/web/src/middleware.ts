@@ -124,9 +124,15 @@ export function middleware(req: NextRequest) {
   // 2) 로그인 여부: access_token만 본다
   const loggedIn = req.cookies.has('access_token');
 
-  // 3) /signin은 로그인 상태면 홈으로
-  if (pathname.startsWith('/signin')) {
-    if (loggedIn) return NextResponse.redirect(new URL('/home', origin));
+  // 3) 공개 페이지들 (로그인 불필요)
+  const publicPages = ['/signin', '/privacy', '/contact', '/delivery', '/return'];
+  const isPublicPage = publicPages.some(page => pathname.startsWith(page));
+  
+  if (isPublicPage) {
+    // /signin은 로그인 상태면 홈으로
+    if (pathname.startsWith('/signin') && loggedIn) {
+      return NextResponse.redirect(new URL('/home', origin));
+    }
     return NextResponse.next();
   }
 

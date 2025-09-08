@@ -42,6 +42,14 @@ export class S3Service {
    */
   async uploadImage(request: S3UploadRequest): Promise<S3UploadResponse> {
     try {
+      console.log('S3Service.uploadImage 시작:', {
+        filename: request.filename,
+        mimeType: request.mimeType,
+        path: request.path,
+        fileType: typeof request.file,
+        fileSize: request.file?.length || 0
+      });
+      
       const { file, filename, mimeType, path = 'products', resizeOptions } = request;
       
       // 파일을 Buffer로 변환
@@ -51,6 +59,11 @@ export class S3Service {
       } else {
         fileBuffer = file;
       }
+      
+      console.log('파일 버퍼 변환 완료:', {
+        bufferSize: fileBuffer.length,
+        bufferType: typeof fileBuffer
+      });
 
       // 이미지 리사이징 (선택사항)
       let processedBuffer = fileBuffer;
@@ -85,6 +98,14 @@ export class S3Service {
       const uniqueFilename = `${uuidv4()}${fileExtension}`;
       const s3Key = `${path}/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${uniqueFilename}`;
 
+      console.log('S3 업로드 준비:', {
+        bucketName: this.bucketName,
+        s3Key,
+        processedBufferSize: processedBuffer.length,
+        mimeType,
+        cdnUrl: this.cdnUrl
+      });
+
       // S3에 업로드
       const command = new PutObjectCommand({
         Bucket: this.bucketName,
@@ -96,7 +117,9 @@ export class S3Service {
         CacheControl: 'public, max-age=31536000, immutable'
       });
 
+      console.log('S3 PutObjectCommand 실행 중...');
       await this.s3Client.send(command);
+      console.log('S3 업로드 성공!');
 
       const cdnUrl = `${this.cdnUrl}/${s3Key}`;
 
@@ -109,6 +132,13 @@ export class S3Service {
         dimensions,
       };
     } catch (error) {
+      console.error('S3 업로드 실패:', {
+        error: error.message,
+        stack: error.stack,
+        filename: request.filename,
+        bucketName: this.bucketName,
+        region: this.configService.get('AWS_REGION')
+      });
       this.logger.error('Failed to upload image to S3:', error);
       throw new Error(`S3 upload failed: ${error.message}`);
     }

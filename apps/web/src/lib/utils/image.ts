@@ -7,18 +7,31 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
  * @param imagePath 이미지 경로 (파일명 또는 전체 URL)
  * @returns 완전한 이미지 URL
  */
-export function getImageUrl(imagePath: string): string {
+export function getImageUrl(imagePath: any): string {
+  // null, undefined, 빈 문자열 처리
+  if (!imagePath) {
+    return '/images/placeholder-product.jpg';
+  }
+
+  // 문자열이 아닌 경우 문자열로 변환
+  const path = typeof imagePath === 'string' ? imagePath : String(imagePath);
+  
+  // 빈 문자열 처리
+  if (path.trim().length === 0) {
+    return '/images/placeholder-product.jpg';
+  }
+
   // 이미 전체 URL인 경우 그대로 반환
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    return imagePath;
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
   }
   
   // 파일명만 있는 경우 API 서버의 uploads 경로와 결합
-  if (imagePath.startsWith('/')) {
-    return `${API_BASE_URL}${imagePath}`;
+  if (path.startsWith('/')) {
+    return `${API_BASE_URL}${path}`;
   }
   
-  return `${API_BASE_URL}/uploads/${imagePath}`;
+  return `${API_BASE_URL}/uploads/${path}`;
 }
 
 /**
@@ -26,8 +39,23 @@ export function getImageUrl(imagePath: string): string {
  * @param s3Image S3 이미지 객체
  * @returns CDN URL
  */
-export function getS3ImageUrl(s3Image: S3Image): string {
-  return s3Image.cdnUrl;
+export function getS3ImageUrl(s3Image: any): string {
+  if (!s3Image || typeof s3Image !== 'object') {
+    return '/images/placeholder-product.jpg';
+  }
+
+  // cdnUrl이 있는 경우
+  if (s3Image.cdnUrl && typeof s3Image.cdnUrl === 'string') {
+    return s3Image.cdnUrl.trim();
+  }
+
+  // s3Key만 있는 경우 CDN URL 생성
+  if (s3Image.s3Key && typeof s3Image.s3Key === 'string') {
+    const cdnBaseUrl = 'https://dbf9mgv9dy7hl.cloudfront.net';
+    return `${cdnBaseUrl}/${s3Image.s3Key}`.trim();
+  }
+
+  return '/images/placeholder-product.jpg';
 }
 
 /**
@@ -35,14 +63,19 @@ export function getS3ImageUrl(s3Image: S3Image): string {
  * @param images 이미지 경로 배열 또는 S3 이미지 배열
  * @returns 완전한 이미지 URL 배열
  */
-export function getProductImageUrls(images: string[] | ProductImages): string[] {
+export function getProductImageUrls(images: any): string[] {
+  // null, undefined, 빈 배열 처리
+  if (!images || !Array.isArray(images) || images.length === 0) {
+    return ['/images/placeholder-product.jpg'];
+  }
+
   // S3 이미지 배열인지 확인
-  if (Array.isArray(images) && images.length > 0 && typeof images[0] === 'object' && 'cdnUrl' in images[0]) {
-    return (images as ProductImages).map(image => getS3ImageUrl(image));
+  if (images.length > 0 && typeof images[0] === 'object' && images[0] !== null) {
+    return images.map((image: any) => getS3ImageUrl(image)).filter(url => url.length > 0);
   }
   
   // 기존 문자열 배열인 경우
-  return (images as string[]).map(image => getImageUrl(image));
+  return images.map((image: any) => getImageUrl(image)).filter(url => url.length > 0);
 }
 
 /**
@@ -50,8 +83,8 @@ export function getProductImageUrls(images: string[] | ProductImages): string[] 
  * @param images 이미지 경로 배열 또는 S3 이미지 배열
  * @returns 첫 번째 이미지의 URL 또는 기본 이미지
  */
-export function getProductMainImageUrl(images: string[] | ProductImages | undefined): string {
-  if (!images || images.length === 0) {
+export function getProductMainImageUrl(images: any): string {
+  if (!images || !Array.isArray(images) || images.length === 0) {
     return '/images/placeholder-product.jpg'; // 기본 이미지
   }
 
@@ -65,8 +98,8 @@ export function getProductMainImageUrl(images: string[] | ProductImages | undefi
  * @param index 이미지 인덱스 (기본값: 0)
  * @returns 썸네일 URL
  */
-export function getProductThumbnailUrl(images: string[] | ProductImages | undefined, index: number = 0): string {
-  if (!images || images.length === 0) {
+export function getProductThumbnailUrl(images: any, index: number = 0): string {
+  if (!images || !Array.isArray(images) || images.length === 0) {
     return '/images/placeholder-product.jpg';
   }
 

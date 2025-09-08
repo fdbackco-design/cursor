@@ -13,9 +13,11 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
 
-  // ✅ CORS - 안전하고 유연하게
+  // ✅ CORS - 개발 환경에서는 모든 Origin 허용
+  const isDevelopment = configService.get('NODE_ENV') !== 'production';
+  
   app.enableCors({
-    origin: (origin, cb) => {
+    origin: isDevelopment ? true : (origin, cb) => {
       console.log('CORS Origin check:', { origin, timestamp: new Date().toISOString() });
       
       // 서버-서버/헬스체크/프리플라이트 등 Origin이 없는 경우 허용

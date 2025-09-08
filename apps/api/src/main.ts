@@ -13,9 +13,38 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
 
-  // ✅ CORS - 임시로 모든 Origin 허용 (운영환경 문제 해결용)
+  // ✅ CORS - 안전하고 유연하게
   app.enableCors({
-    origin: true, // 모든 Origin 허용
+    origin: (origin, cb) => {
+      // 서버-서버/헬스체크/프리플라이트 등 Origin이 없는 경우 허용
+      if (!origin) return cb(null, true);
+
+      try {
+        const { hostname } = new URL(origin);
+
+        // 고정 화이트리스트
+        const allowList = new Set([
+          'feedbackmall.com',
+          'www.feedbackmall.com',
+          'api.feedbackmall.com',
+          'localhost',
+          '127.0.0.1',
+        ]);
+
+        // 패턴 허용: 모든 feedbackmall 서브도메인, vercel 프리뷰
+        const allowByPattern =
+          /\.feedbackmall\.com$/i.test(hostname) || /\.vercel\.app$/i.test(hostname);
+
+        if (allowList.has(hostname) || allowByPattern) {
+          return cb(null, true);
+        }
+
+        // ❌ 미허용 Origin: 에러 던지지 말고 false (브라우저만 막힘, 서버는 조용)
+        return cb(null, false);
+      } catch {
+        return cb(null, false);
+      }
+    },
     credentials: true,
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

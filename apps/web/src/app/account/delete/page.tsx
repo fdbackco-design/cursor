@@ -37,26 +37,62 @@ export default function DeleteAccountPage() {
         showToast(toast.success('회원탈퇴', '회원탈퇴가 완료되었습니다.'));
         
         // 완전한 로그아웃 처리
-        // 1. 모든 쿠키 삭제
-        document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.feedbackmall.com;';
-        document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.feedbackmall.com;';
-        document.cookie = 'user_role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.feedbackmall.com;';
+        // 1. 모든 가능한 쿠키 삭제 (다양한 도메인과 경로)
+        const cookiesToDelete = [
+          'access_token', 'refresh_token', 'user_role', 'auth_token', 'token',
+          'session', 'sessionid', 'user', 'login', 'auth'
+        ];
         
-        // 2. 로컬 스토리지 정리
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_role');
+        const domains = ['', '.feedbackmall.com', '.api.feedbackmall.com'];
+        const paths = ['/', '/api', '/api/v1'];
         
-        // 3. 세션 스토리지도 정리
+        cookiesToDelete.forEach(cookieName => {
+          domains.forEach(domain => {
+            paths.forEach(path => {
+              // 과거 날짜로 만료 설정
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain};`;
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure;`;
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure; samesite=strict;`;
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure; samesite=lax;`;
+            });
+          });
+        });
+        
+        // 2. 로컬 스토리지 완전 정리
+        localStorage.clear();
+        
+        // 3. 세션 스토리지 완전 정리
         sessionStorage.clear();
         
-        // 4. 사용자 상태 초기화
+        // 4. IndexedDB 정리 (있다면)
+        if ('indexedDB' in window) {
+          try {
+            indexedDB.databases().then(databases => {
+              databases.forEach(db => {
+                if (db.name) {
+                  indexedDB.deleteDatabase(db.name);
+                }
+              });
+            });
+          } catch (e) {
+            console.log('IndexedDB cleanup failed:', e);
+          }
+        }
+        
+        // 5. 캐시 정리
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => {
+              caches.delete(name);
+            });
+          });
+        }
+        
+        // 6. 사용자 상태 강제 초기화
         await refetch();
         
-        // 5. 잠시 대기 후 홈페이지로 리다이렉트
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
+        // 7. 즉시 강제 리다이렉트 (새로고침 포함)
+        window.location.replace('/');
       } else {
         showToast(toast.error('회원탈퇴', result.message));
       }

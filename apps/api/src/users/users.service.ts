@@ -233,23 +233,70 @@ export class UsersService {
       
       this.logger.log(`카카오 Admin Key 로드됨: ${kakaoAdminKey.substring(0, 10)}...`);
       
-      const response = await axios.post('https://kapi.kakao.com/v1/user/unlink', null, {
+      // 요청 데이터 준비
+      const requestData = new URLSearchParams({
+        target_id_type: 'user_id',
+        target_id: kakaoSub
+      });
+      
+      const requestHeaders = {
+        'Authorization': `KakaoAK ${kakaoAdminKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      };
+      
+      this.logger.log(`카카오 API 요청 정보:`, {
+        url: 'https://kapi.kakao.com/v1/user/unlink',
         headers: {
-          'Authorization': `KakaoAK ${kakaoAdminKey}`,
+          'Authorization': `KakaoAK ${kakaoAdminKey.substring(0, 10)}...`,
           'Content-Type': 'application/x-www-form-urlencoded'
         },
-        data: new URLSearchParams({
+        data: {
           target_id_type: 'user_id',
           target_id: kakaoSub
-        })
+        }
       });
-
-      this.logger.log(`카카오 연결 끊기 성공: kakaoSub=${kakaoSub}, status=${response.status}`);
       
-      return {
-        success: true,
-        message: '카카오 계정 연결이 해제되었습니다.'
-      };
+      // Admin Key로 먼저 시도
+      try {
+        const response = await axios.post('https://kapi.kakao.com/v1/user/unlink', requestData, {
+          headers: requestHeaders
+        });
+
+        this.logger.log(`카카오 연결 끊기 성공 (Admin Key): kakaoSub=${kakaoSub}, status=${response.status}`);
+        
+        return {
+          success: true,
+          message: '카카오 계정 연결이 해제되었습니다.'
+        };
+      } catch (adminKeyError: any) {
+        this.logger.warn(`Admin Key로 연결 끊기 실패: ${adminKeyError.response?.status} - ${adminKeyError.response?.data?.msg}`);
+        
+        // Admin Key 실패 시 사용자 액세스 토큰으로 시도 (만약 있다면)
+        if (accessToken) {
+          this.logger.log(`사용자 액세스 토큰으로 연결 끊기 시도: kakaoSub=${kakaoSub}`);
+          
+          try {
+            const userResponse = await axios.post('https://kapi.kakao.com/v1/user/unlink', null, {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+              }
+            });
+            
+            this.logger.log(`카카오 연결 끊기 성공 (사용자 토큰): kakaoSub=${kakaoSub}, status=${userResponse.status}`);
+            
+            return {
+              success: true,
+              message: '카카오 계정 연결이 해제되었습니다.'
+            };
+          } catch (userTokenError: any) {
+            this.logger.error(`사용자 토큰으로도 연결 끊기 실패: ${userTokenError.response?.status} - ${userTokenError.response?.data?.msg}`);
+            throw userTokenError;
+          }
+        } else {
+          throw adminKeyError;
+        }
+      }
 
     } catch (error: any) {
       this.logger.error(`카카오 연결 끊기 실패: kakaoSub=${kakaoSub}`, error);

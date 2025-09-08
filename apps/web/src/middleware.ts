@@ -83,12 +83,14 @@ export function middleware(req: NextRequest) {
 
   // 0) Next 내부/정적은 전부 통과
   if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/favicon.ico') ||
-    pathname.startsWith('/robots.txt') ||
-    pathname.startsWith('/sitemap') ||
-    pathname.startsWith('/manifest') ||
-    pathname.match(/\.(png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|otf)$/i)
+    typeof pathname === 'string' && (
+      pathname.startsWith('/_next') ||
+      pathname.startsWith('/favicon.ico') ||
+      pathname.startsWith('/robots.txt') ||
+      pathname.startsWith('/sitemap') ||
+      pathname.startsWith('/manifest') ||
+      pathname.match(/\.(png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|otf)$/i)
+    )
   ) {
     return NextResponse.next();
   }
@@ -126,11 +128,11 @@ export function middleware(req: NextRequest) {
 
   // 3) 공개 페이지들 (로그인 불필요)
   const publicPages = ['/signin', '/privacy', '/contact', '/delivery', '/return'];
-  const isPublicPage = publicPages.some(page => pathname.startsWith(page));
+  const isPublicPage = publicPages.some(page => typeof pathname === 'string' && pathname.startsWith(page));
   
   if (isPublicPage) {
     // /signin은 로그인 상태면 홈으로
-    if (pathname.startsWith('/signin') && loggedIn) {
+    if (typeof pathname === 'string' && pathname.startsWith('/signin') && loggedIn) {
       return NextResponse.redirect(new URL('/home', origin));
     }
     return NextResponse.next();

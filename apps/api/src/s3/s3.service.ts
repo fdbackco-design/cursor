@@ -20,10 +20,6 @@ export class S3Service {
   constructor(private configService: ConfigService) {
     this.s3Client = new S3Client({
       region: this.configService.get('AWS_REGION', 'ap-northeast-2'),
-      credentials: {
-        accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
-        secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
-      },
     });
     
     this.bucketName = this.configService.get('AWS_S3_BUCKET_NAME');
@@ -86,7 +82,8 @@ export class S3Service {
         Body: processedBuffer,
         ContentType: mimeType,
         ContentLength: processedBuffer.length,
-        ACL: 'public-read', // 공개 읽기 권한
+        ServerSideEncryption: 'AES256',  
+        CacheControl: 'public, max-age=31536000, immutable'
       });
 
       await this.s3Client.send(command);

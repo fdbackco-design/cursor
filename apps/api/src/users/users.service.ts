@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import axios from 'axios';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+  
   constructor(private readonly prisma: PrismaService) {}
 
   async getAllUsers(role?: string, excludeSellerUsers: boolean = false) {
@@ -96,7 +99,23 @@ export class UsersService {
         };
       }
 
-      // 3. 트랜잭션으로 익명화 및 소프트 딜리트 실행
+      // 3. 카카오 연결 끊기 (트랜잭션 전에 실행)
+      if (user.kakaoSub) {
+        try {
+          const unlinkResult = await this.unlinkKakaoAccount(user.kakaoSub);
+          if (!unlinkResult.success) {
+            this.logger.warn(`카카오 연결 끊기 실패: ${unlinkResult.message}`);
+            // 카카오 연결 끊기 실패해도 회원탈퇴는 계속 진행
+          } else {
+            this.logger.log(`카카오 연결 끊기 성공: kakaoSub=${user.kakaoSub}`);
+          }
+        } catch (error) {
+          this.logger.error(`카카오 연결 끊기 중 예외 발생:`, error);
+          // 예외가 발생해도 회원탈퇴는 계속 진행
+        }
+      }
+
+      // 4. 트랜잭션으로 익명화 및 소프트 딜리트 실행
       await this.prisma.$transaction(async (tx) => {
         const anonymizedId = `deleted_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const anonymizedEmail = `deleted_${anonymizedId}@deleted.com`;
@@ -184,6 +203,67 @@ export class UsersService {
       return { 
         success: false, 
         message: '회원탈퇴 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.' 
+      };
+    }
+  }
+
+  /**
+   * 카카오 연결 끊기 API 호출
+   * @param kakaoSub 카카오 사용자 ID
+   * @param accessToken 카카오 액세스 토큰 (선택사항)
+   */
+  async unlinkKakaoAccount(kakaoSub: string, accessToken?: string): Promise<{ success: boolean; message: string }> {
+    try {
+      this.logger.log(`카카오 연결 끊기 시작: kakaoSub=${kakaoSub}`);
+      
+      // 카카오 연결 끊기 API 호출
+      const response = await axios.post('https://kapi.kakao.com/v1/user/unlink', null, {
+        headers: {
+          'Authorization': `KakaoAK ${process.env.KAKAO_ADMIN_KEY || process.env.KAKAO_CLIENT_SECRET}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        data: new URLSearchParams({
+          target_id_type: 'user_id',
+          target_id: kakaoSub
+        })
+      });
+
+      this.logger.log(`카카오 연결 끊기 성공: kakaoSub=${kakaoSub}, status=${response.status}`);
+      
+      return {
+        success: true,
+        message: '카카오 계정 연결이 해제되었습니다.'
+      };
+
+    } catch (error: any) {
+      this.logger.error(`카카오 연결 끊기 실패: kakaoSub=${kakaoSub}`, error);
+      
+      // 카카오 API 에러 응답 처리
+      if (error.response) {
+        const { status, data } = error.response;
+        this.logger.error(`카카오 API 에러: ${status} - ${JSON.stringify(data)}`);
+        
+        if (status === 400) {
+          return {
+            success: false,
+            message: '카카오 계정 정보가 올바르지 않습니다.'
+          };
+        } else if (status === 401) {
+          return {
+            success: false,
+            message: '카카오 API 인증에 실패했습니다.'
+          };
+        } else if (status === 403) {
+          return {
+            success: false,
+            message: '카카오 계정 연결 해제 권한이 없습니다.'
+          };
+        }
+      }
+      
+      return {
+        success: false,
+        message: '카카오 계정 연결 해제 중 오류가 발생했습니다.'
       };
     }
   }

@@ -81,9 +81,14 @@ export default function PrivacyPage() {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">4. 제3자 제공</h2>
-              <p className="text-gray-700">
+              <p className="text-gray-700 mb-4">
                 회사는 원칙적으로 이용자 정보를 외부에 제공하지 않습니다. 다만 법령에 따른 요청 등 예외가 있을 수 있습니다.
               </p>
+              <div className="space-y-2 text-gray-700">
+                <p>• 카카오: 회원 인증 및 로그인 서비스 제공(카카오 로그인 이용 시)</p>
+                <p>• 카카오: 알림톡/톡 메시지를 통한 공지 및 안내 발송(마케팅 수신 동의 시)</p>
+                <p>• 법령에 따른 요청이 있는 경우</p>
+              </div>
             </section>
 
             <section className="mb-8">
@@ -95,8 +100,6 @@ export default function PrivacyPage() {
                 <p>• 결제대행: <strong>토스페이먼츠(주)</strong> – 결제 처리 및 환불</p>
                 <p>• 클라우드/저장: <strong>Amazon Web Services(AWS)</strong> – 인프라 운영(S3/EC2 등)</p>
                 <p>• 배송사: 택배사(주문 시 안내) – 배송 업무</p>
-                <p>• 메시지/알림: <strong>카카오(알림톡/톡 메시지)</strong> – 공지/안내 발송</p>
-                <p>• 소셜 로그인: <strong>카카오</strong> – 회원 인증 및 로그인 서비스</p>
               </div>
             </section>
 

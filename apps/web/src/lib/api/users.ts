@@ -56,4 +56,32 @@ export const usersApi = {
       throw error;
     }
   },
+
+  // 회원탈퇴
+  async deleteAccount(): Promise<{ success: boolean; message: string }> {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('로그인이 필요합니다.');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/users/account`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || '회원탈퇴 처리 중 오류가 발생했습니다.');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('회원탈퇴 실패:', error);
+      throw error;
+    }
+  },
 };

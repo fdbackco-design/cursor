@@ -1,5 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Delete, UseGuards, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -17,5 +18,12 @@ export class UsersController {
   @Get('available-for-seller')
   async getAvailableUsersForSeller() {
     return this.usersService.getAvailableUsersForSeller();
+  }
+
+  @Delete('account')
+  @UseGuards(JwtAuthGuard)
+  async deleteUserAccount(@Request() req) {
+    const userId = req.user.id;
+    return this.usersService.deleteUserAccount(userId);
   }
 }

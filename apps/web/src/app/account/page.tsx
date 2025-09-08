@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { User, Settings, ShoppingBag, Heart, MapPin, LogOut, Trash2, Package, ChevronRight, Calendar, Ticket, Plus } from 'lucide-react';
+import { User, Settings, ShoppingBag, Heart, MapPin, LogOut, Trash2, Package, ChevronRight, Calendar, Ticket, Plus, AlertTriangle } from 'lucide-react';
 import { wishlistApi } from '@/lib/api/wishlist';
 import { WishlistItem } from '@/types/wishlist';
 import { ProductCard } from '@/components/products/product-card';
@@ -431,6 +431,7 @@ export default function AccountPage() {
     { id: 'address', label: '배송지', icon: MapPin },
     { id: 'coupons', label: '쿠폰', icon: Ticket },
     { id: 'settings', label: '설정', icon: Settings },
+    { id: 'delete', label: '회원탈퇴', icon: AlertTriangle },
   ];
 
   // 로딩 상태 처리
@@ -949,6 +950,84 @@ export default function AccountPage() {
                     <input type="checkbox" className="sr-only peer" />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                   </label>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case 'delete':
+        return (
+          <div className="space-y-6">
+            <Card className="border-red-200">
+              <CardHeader className="bg-red-50 border-b border-red-200">
+                <CardTitle className="flex items-center gap-2 text-red-800">
+                  <AlertTriangle className="h-6 w-6" />
+                  회원탈퇴
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent className="p-6 space-y-6">
+                {/* 경고 메시지 */}
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-red-800">
+                      <p className="font-semibold mb-2">회원탈퇴 시 주의사항</p>
+                      <ul className="space-y-1 list-disc list-inside">
+                        <li>회원탈퇴는 <strong>되돌릴 수 없습니다</strong></li>
+                        <li>진행 중인 주문이 있는 경우 탈퇴할 수 없습니다</li>
+                        <li>개인정보는 즉시 익명화되며 복구할 수 없습니다</li>
+                        <li>주문/결제 정보는 법적 보관 의무에 따라 보관됩니다</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 탈퇴 처리 방식 안내 */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-blue-900 mb-3">탈퇴 처리 방식</h3>
+                  <div className="space-y-2 text-sm text-blue-800">
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <span><strong>즉시 익명화:</strong> 이름, 이메일, 전화번호, 배송지 등 개인정보</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <span><strong>완전 삭제:</strong> 장바구니, 위시리스트, 카카오 연동 정보</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-orange-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <span><strong>법적 보관:</strong> 주문/결제/배송 정보 (5년간 보관)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 탈퇴 약관 */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-3">탈퇴 약관</h3>
+                  <div className="text-sm text-gray-700 space-y-2">
+                    <p>
+                      회원탈퇴 시 개인정보는 「개인정보 보호법」에 따라 즉시 익명화 처리되며, 
+                      주문/결제 정보는 「전자상거래법」에 따라 5년간 보관됩니다.
+                    </p>
+                    <p>
+                      탈퇴 후에는 동일한 카카오 계정으로 재가입이 가능하지만, 
+                      기존 데이터는 복구되지 않습니다.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 탈퇴 버튼 */}
+                <div className="pt-4">
+                  <Button
+                    variant="destructive"
+                    onClick={() => window.location.href = '/account/delete'}
+                    className="w-full"
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    회원탈퇴 진행하기
+                  </Button>
                 </div>
               </CardContent>
             </Card>

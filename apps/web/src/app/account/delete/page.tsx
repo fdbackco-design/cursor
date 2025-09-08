@@ -37,23 +37,44 @@ export default function DeleteAccountPage() {
         showToast(toast.success('회원탈퇴', '회원탈퇴가 완료되었습니다.'));
         
         // 완전한 로그아웃 처리
-        // 1. 모든 가능한 쿠키 삭제 (다양한 도메인과 경로)
-        const cookiesToDelete = [
-          'access_token', 'refresh_token', 'user_role', 'auth_token', 'token',
-          'session', 'sessionid', 'user', 'login', 'auth'
-        ];
-        
-        const domains = ['', '.feedbackmall.com', '.api.feedbackmall.com'];
-        const paths = ['/', '/api', '/api/v1'];
-        
-        cookiesToDelete.forEach(cookieName => {
+
+        // 1. 현재 존재하는 모든 쿠키 삭제
+        const allCookies = document.cookie.split(';');
+        allCookies.forEach(cookie => {
+          const eqPos = cookie.indexOf('=');
+          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+          
+          // 모든 가능한 조합으로 쿠키 삭제
+          const domains = ['', '.feedbackmall.com', '.api.feedbackmall.com', 'feedbackmall.com'];
+          const paths = ['/', '/api', '/api/v1'];
+          
           domains.forEach(domain => {
             paths.forEach(path => {
-              // 과거 날짜로 만료 설정
+              // 다양한 속성 조합으로 삭제
+              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain};`;
+              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure;`;
+              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure; samesite=strict;`;
+              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure; samesite=lax;`;
+              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; samesite=strict;`;
+              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; samesite=lax;`;
+            });
+          });
+        });
+        
+        // 2. 특정 쿠키들 강제 삭제 (이름으로 직접)
+        const specificCookies = ['access_token', 'refresh_token', 'user_role', 'referral_code', 'auth_token', 'token', 'session', 'sessionid', 'user', 'login', 'auth'];
+        specificCookies.forEach(cookieName => {
+          const domains = ['', '.feedbackmall.com', '.api.feedbackmall.com', 'feedbackmall.com'];
+          const paths = ['/', '/api', '/api/v1'];
+          
+          domains.forEach(domain => {
+            paths.forEach(path => {
               document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain};`;
               document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure;`;
               document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure; samesite=strict;`;
               document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; secure; samesite=lax;`;
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; samesite=strict;`;
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; samesite=lax;`;
             });
           });
         });

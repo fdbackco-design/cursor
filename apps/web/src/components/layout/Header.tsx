@@ -86,7 +86,7 @@ const Header = () => {
                     <>
                       {/* 사용자 정보 표시 */}
                       <span className="hidden lg:block text-sm text-gray-600">
-                        {user?.role === 'BIZ' ? '기업 사용자' : '일반 사용자'}
+                        {user?.name ? `${user.name}님` : (user?.role === 'BIZ' ? '기업 사용자' : '일반 사용자')}
                       </span>
                       
                       {/* 마이페이지 버튼 */}
@@ -235,7 +235,7 @@ const Header = () => {
                   {isAuthenticated ? (
                     <div className="space-y-3">
                       <div className="text-sm text-gray-600 pb-2 border-b border-gray-100">
-                        {user?.role === 'BIZ' ? '기업 사용자' : '일반 사용자'}
+                        {user?.name ? `${user.name}님` : (user?.role === 'BIZ' ? '기업 사용자' : '일반 사용자')}
                       </div>
                       <Link href="/account" onClick={() => setIsMobileMenuOpen(false)}>
                         <Button className="w-full justify-start bg-primary text-white hover:bg-primary/90">

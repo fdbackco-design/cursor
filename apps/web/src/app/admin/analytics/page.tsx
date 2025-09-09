@@ -478,6 +478,11 @@ const AnalyticsPage = () => {
               <CardContent>
                 {loading ? (
                   <div className="text-center py-8">로딩 중...</div>
+                ) : popularProducts.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>해당 기간에 판매된 상품이 없습니다.</p>
+                  </div>
                 ) : (
                   <div className="space-y-4">
                     {popularProducts.slice(0, 10).map((product) => (
@@ -510,6 +515,11 @@ const AnalyticsPage = () => {
               <CardContent>
                 {loading ? (
                   <div className="text-center py-8">로딩 중...</div>
+                ) : productData.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>해당 기간에 판매된 상품이 없습니다.</p>
+                  </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="min-w-full">
@@ -560,6 +570,11 @@ const AnalyticsPage = () => {
 
             {loading ? (
               <div className="text-center py-8">로딩 중...</div>
+            ) : returnRateData.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>해당 기간에 반품 데이터가 없습니다.</p>
+              </div>
             ) : (
               <div className="grid gap-6">
                 {returnRateData.map((product) => (

@@ -219,36 +219,103 @@ export class AnalyticsService {
   async getProductSales(period: string, productId?: string) {
     const { startDate, endDate } = this.getDateRange(period);
 
-    const products = await this.prisma.product.findMany({
+    console.log(`[Analytics] 상품별 매출 조회 시작: period=${period}, productId=${productId || 'all'}`);
+
+    // 실제 OrderItem 데이터를 사용하여 상품별 매출 계산
+    const orderItems = await this.prisma.orderItem.findMany({
       where: {
-        ...(productId ? { id: productId } : {}),
-        isActive: true
-      },
-      include: {
-        vendor: {
-          select: {
-            name: true,
-            code: true
-          }
-        },
-        category: {
-          select: {
-            name: true,
-            slug: true
+        ...(productId ? { productId } : {}),
+        order: {
+          status: {
+            in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'] // 완료된 주문만
+          },
+          createdAt: {
+            gte: startDate,
+            lte: endDate
           }
         }
       },
-      take: 50, // 상위 50개 상품만
-      orderBy: {
-        createdAt: 'desc'
+      include: {
+        product: {
+          include: {
+            vendor: {
+              select: {
+                name: true,
+                code: true
+              }
+            },
+            category: {
+              select: {
+                name: true,
+                slug: true
+              }
+            }
+          }
+        }
       }
     });
 
-    const productSalesData = products.map((product) => {
-      // 임시 매출 데이터 (실제로는 OrderItem 테이블에서 계산)
-      const unitsSold = Math.floor(Math.random() * 100) + 1;
-      const totalRevenue = Number(product.priceB2C) * unitsSold;
-      const returnRate = Math.random() * 0.1; // 0-10% 반품율
+    // 상품별로 집계
+    const productSalesMap = new Map<string, {
+      product: any;
+      unitsSold: number;
+      totalRevenue: number;
+      orderCount: number;
+    }>();
+
+    orderItems.forEach(item => {
+      const productId = item.productId;
+      const existing = productSalesMap.get(productId);
+      
+      if (existing) {
+        existing.unitsSold += item.quantity;
+        existing.totalRevenue += Number(item.finalPrice);
+        existing.orderCount += 1;
+      } else {
+        productSalesMap.set(productId, {
+          product: item.product,
+          unitsSold: item.quantity,
+          totalRevenue: Number(item.finalPrice),
+          orderCount: 1
+        });
+      }
+    });
+
+    // 반품율 계산을 위한 Return 데이터 조회
+    const returns = await this.prisma.return.findMany({
+      where: {
+        order: {
+          createdAt: {
+            gte: startDate,
+            lte: endDate
+          }
+        },
+        ...(productId ? { orderItem: { productId } } : {})
+      },
+      include: {
+        orderItem: {
+          select: {
+            productId: true,
+            quantity: true
+          }
+        }
+      }
+    });
+
+    // 상품별 반품 수량 계산
+    const returnMap = new Map<string, number>();
+    returns.forEach(returnItem => {
+      if (returnItem.orderItem) {
+        const productId = returnItem.orderItem.productId;
+        const quantity = returnItem.orderItem.quantity;
+        returnMap.set(productId, (returnMap.get(productId) || 0) + quantity);
+      }
+    });
+
+    // 결과 데이터 생성
+    const productSalesData = Array.from(productSalesMap.values()).map(({ product, unitsSold, totalRevenue, orderCount }) => {
+      const totalReturns = returnMap.get(product.id) || 0;
+      const returnRate = unitsSold > 0 ? (totalReturns / unitsSold) * 100 : 0;
 
       return {
         id: product.id,
@@ -266,49 +333,126 @@ export class AnalyticsService {
     });
 
     // 매출순으로 정렬
-    return productSalesData.sort((a, b) => b.totalRevenue - a.totalRevenue);
+    const sortedData = productSalesData.sort((a, b) => b.totalRevenue - a.totalRevenue);
+    
+    console.log(`[Analytics] 상품별 매출 조회 완료: ${sortedData.length}개 상품`);
+    
+    return sortedData;
   }
 
   async getPopularProducts(period: string, limit: number) {
+    console.log(`[Analytics] 인기상품 조회 시작: period=${period}, limit=${limit}`);
+    
     const productSales = await this.getProductSales(period);
     
-    return productSales
+    const popularProducts = productSales
       .sort((a, b) => b.unitsSold - a.unitsSold)
       .slice(0, limit)
       .map((product, index) => ({
         rank: index + 1,
         ...product
       }));
+    
+    console.log(`[Analytics] 인기상품 조회 완료: ${popularProducts.length}개 상품`);
+    
+    return popularProducts;
   }
 
   async getReturnRate(period: string, productId?: string) {
     const { startDate, endDate } = this.getDateRange(period);
 
-    const products = await this.prisma.product.findMany({
+    // 실제 OrderItem과 Return 데이터를 사용하여 반품율 계산
+    const orderItems = await this.prisma.orderItem.findMany({
       where: {
-        ...(productId ? { id: productId } : {}),
-        isActive: true
-      },
-      include: {
-        vendor: {
-          select: {
-            name: true
-          }
-        },
-        category: {
-          select: {
-            name: true
+        ...(productId ? { productId } : {}),
+        order: {
+          status: {
+            in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED']
+          },
+          createdAt: {
+            gte: startDate,
+            lte: endDate
           }
         }
       },
-      take: 20
+      include: {
+        product: {
+          include: {
+            vendor: {
+              select: {
+                name: true
+              }
+            },
+            category: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
+        returns: {
+          where: {
+            status: {
+              in: ['APPROVED', 'PROCESSING', 'COMPLETED']
+            }
+          }
+        }
+      }
     });
 
-    const returnRateData = products.map((product) => {
-      // 임시 반품 데이터 (실제로는 Return/Refund 테이블에서 계산)
-      const totalSold = Math.floor(Math.random() * 200) + 10;
-      const totalReturns = Math.floor(Math.random() * Math.min(totalSold * 0.2, 20));
-      const returnRate = (totalReturns / totalSold) * 100;
+    // 상품별로 집계
+    const productReturnMap = new Map<string, {
+      product: any;
+      totalSold: number;
+      totalReturns: number;
+      returnReasons: Map<string, number>;
+    }>();
+
+    orderItems.forEach(item => {
+      const productId = item.productId;
+      const existing = productReturnMap.get(productId);
+      
+      if (existing) {
+        existing.totalSold += item.quantity;
+        existing.totalReturns += item.returns.length;
+        
+        // 반품 사유별 집계
+        item.returns.forEach(returnItem => {
+          const reason = returnItem.reason;
+          existing.returnReasons.set(reason, (existing.returnReasons.get(reason) || 0) + 1);
+        });
+      } else {
+        const returnReasons = new Map<string, number>();
+        item.returns.forEach(returnItem => {
+          const reason = returnItem.reason;
+          returnReasons.set(reason, (returnReasons.get(reason) || 0) + 1);
+        });
+
+        productReturnMap.set(productId, {
+          product: item.product,
+          totalSold: item.quantity,
+          totalReturns: item.returns.length,
+          returnReasons
+        });
+      }
+    });
+
+    // 결과 데이터 생성
+    const returnRateData = Array.from(productReturnMap.values()).map(({ product, totalSold, totalReturns, returnReasons }) => {
+      const returnRate = totalSold > 0 ? (totalReturns / totalSold) * 100 : 0;
+
+      // 반품 사유별 통계 (실제 데이터 기반)
+      const returnReasonsArray = Array.from(returnReasons.entries()).map(([reason, count]) => ({
+        reason: this.categorizeReturnReason(reason),
+        count
+      }));
+
+      // 반품 사유가 없는 경우 기본값 설정
+      if (returnReasonsArray.length === 0 && totalReturns > 0) {
+        returnReasonsArray.push(
+          { reason: '기타', count: totalReturns }
+        );
+      }
 
       return {
         id: product.id,
@@ -318,15 +462,32 @@ export class AnalyticsService {
         totalSold,
         totalReturns,
         returnRate: Math.round(returnRate * 100) / 100,
-        returnReasons: [
-          { reason: '불량/하자', count: Math.floor(totalReturns * 0.4) },
-          { reason: '사이즈/색상 불일치', count: Math.floor(totalReturns * 0.3) },
-          { reason: '단순 변심', count: Math.floor(totalReturns * 0.3) }
-        ]
+        returnReasons: returnReasonsArray
       };
     });
 
     return returnRateData.sort((a, b) => b.returnRate - a.returnRate);
+  }
+
+  // 반품 사유를 카테고리별로 분류하는 헬퍼 메서드
+  private categorizeReturnReason(reason: string): string {
+    const reasonLower = reason.toLowerCase();
+    
+    if (reasonLower.includes('불량') || reasonLower.includes('하자') || reasonLower.includes('defect')) {
+      return '불량/하자';
+    } else if (reasonLower.includes('사이즈') || reasonLower.includes('크기') || reasonLower.includes('size')) {
+      return '사이즈 불일치';
+    } else if (reasonLower.includes('색상') || reasonLower.includes('색깔') || reasonLower.includes('color')) {
+      return '색상 불일치';
+    } else if (reasonLower.includes('변심') || reasonLower.includes('change')) {
+      return '단순 변심';
+    } else if (reasonLower.includes('배송') || reasonLower.includes('delivery')) {
+      return '배송 오류';
+    } else if (reasonLower.includes('포장') || reasonLower.includes('package')) {
+      return '포장 손상';
+    } else {
+      return '기타';
+    }
   }
 
   async getOverview(period: string) {
@@ -337,7 +498,8 @@ export class AnalyticsService {
       totalProducts,
       totalSellers,
       totalVendors,
-      cartItems,
+      orders,
+      orderItems,
       activeProducts,
       previousPeriodProducts
     ] = await Promise.all([
@@ -359,14 +521,39 @@ export class AnalyticsService {
         where: { isActive: true }
       }),
 
-      // 카트 아이템을 통한 주문 추정 (실제 Order 대신)
-      this.prisma.cartItem.findMany({
-        include: {
-          product: {
-            select: {
-              priceB2C: true
+      // 실제 주문 데이터 (완료된 주문만)
+      this.prisma.order.findMany({
+        where: {
+          status: {
+            in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED']
+          },
+          createdAt: {
+            gte: startDate,
+            lte: endDate
+          }
+        },
+        select: {
+          totalAmount: true,
+          createdAt: true
+        }
+      }),
+
+      // 실제 주문 아이템 데이터
+      this.prisma.orderItem.findMany({
+        where: {
+          order: {
+            status: {
+              in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED']
+            },
+            createdAt: {
+              gte: startDate,
+              lte: endDate
             }
           }
+        },
+        select: {
+          finalPrice: true,
+          quantity: true
         }
       }),
 
@@ -392,35 +579,13 @@ export class AnalyticsService {
       })
     ]);
 
-    // 실제 매출 계산 (카트 아이템 기반 추정)
-    let totalRevenue = cartItems.reduce((sum, item) => {
-      return sum + (Number(item.product.priceB2C) * item.quantity);
+    // 실제 매출 계산 (Order 테이블 기반)
+    const totalRevenue = orders.reduce((sum, order) => {
+      return sum + Number(order.totalAmount);
     }, 0);
 
-    // 카트 데이터가 없을 때 상품 가격 기반 추정 매출 생성
-    if (totalRevenue === 0 && totalProducts > 0) {
-      const sampleProducts = await this.prisma.product.findMany({
-        where: { isActive: true },
-        select: { priceB2C: true },
-        take: 5
-      });
-      
-      const avgPrice = sampleProducts.length > 0 
-        ? sampleProducts.reduce((sum, p) => sum + Number(p.priceB2C), 0) / sampleProducts.length
-        : 100000;
-      
-      // 상품 수에 기반한 예상 매출 (상품당 월 평균 2-10개 판매 가정)
-      totalRevenue = Math.floor(avgPrice * totalProducts * (Math.random() * 8 + 2));
-    }
-
-    // 실제 주문 수 (카트 수 기반 추정)
-    const totalCarts = await this.prisma.cart.count();
-    let totalOrders = Math.max(totalCarts, cartItems.length);
-    
-    // 주문 수가 0일 때 매출 기반 추정
-    if (totalOrders === 0 && totalRevenue > 0) {
-      totalOrders = Math.max(1, Math.floor(totalRevenue / 500000)); // 평균 주문액 50만원 가정
-    }
+    // 실제 주문 수
+    const totalOrders = orders.length;
 
     // 평균 주문액 계산
     const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;

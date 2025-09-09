@@ -365,14 +365,14 @@ const OrdersPage = () => {
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/admin" className="text-gray-500 hover:text-gray-700">
+          <div className="flex items-center justify-between h-12 sm:h-16 py-2 sm:py-0">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link href="/admin" className="text-gray-500 hover:text-gray-700 text-sm sm:text-base">
                 ← 뒤로가기
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">주문 관리</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">주문 관리</h1>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex space-x-1 sm:space-x-2">
               <Button 
                 onClick={async () => {
                   try {
@@ -388,7 +388,7 @@ const OrdersPage = () => {
                     showToast(toast.error('로그인 실패', '로그인 실패'));
                   }
                 }}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2"
               >
                 관리자 로그인
               </Button>
@@ -401,12 +401,12 @@ const OrdersPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* 검색 및 필터 */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div className="relative">
+        <Card className="mb-4 sm:mb-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+              <div className="relative sm:col-span-2 lg:col-span-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
@@ -419,14 +419,14 @@ const OrdersPage = () => {
                       handleSearch();
                     }
                   }}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full pl-10 pr-4 py-3 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
                 />
               </div>
               
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="px-3 py-3 sm:px-4 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
               >
                 <option value="all">전체 상태</option>
                 {statuses.map(status => (
@@ -437,7 +437,7 @@ const OrdersPage = () => {
               <select
                 value={selectedVendor}
                 onChange={(e) => setSelectedVendor(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="px-3 py-3 sm:px-4 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
               >
                 <option value="all">전체 벤더</option>
                 {vendors.map(vendor => (
@@ -449,7 +449,7 @@ const OrdersPage = () => {
               
               <Button 
                 variant="outline" 
-                className="flex items-center justify-center"
+                className="flex items-center justify-center min-h-[44px] sm:min-h-[40px] text-sm sm:text-base"
                 onClick={handleSearch}
                 disabled={loading}
               >
@@ -463,31 +463,33 @@ const OrdersPage = () => {
             </div>
             
             {/* 기간 선택 및 엑셀 다운로드 */}
-            <div className="mt-4 flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">기간 선택:</span>
                 </div>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <span className="text-gray-500">~</span>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
+                  />
+                  <span className="text-gray-500">~</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
+                  />
+                </div>
               </div>
               
               <Button 
                 onClick={downloadExcel}
                 disabled={loading}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto min-h-[44px] sm:min-h-[40px] text-sm sm:text-base"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -503,174 +505,284 @@ const OrdersPage = () => {
         {/* 주문 목록 */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex items-center justify-between text-lg sm:text-xl">
               <span>주문 목록 ({totalOrders}개)</span>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
                 <ArrowUpDown className="h-4 w-4" />
-                정렬
+                <span className="hidden sm:inline">정렬</span>
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">주문 정보</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">상품</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">총 금액</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">상태</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">결제수단</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">주문일시</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-900">작업</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={7} className="text-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                        <p className="text-gray-500">주문 목록을 불러오는 중...</p>
-                      </td>
-                    </tr>
-                  ) : filteredOrders.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="text-center py-8">
-                        <p className="text-gray-500">주문이 없습니다.</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredOrders.map((order) => (
-                    <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4">
+          <CardContent className="p-0 sm:p-6">
+            {loading ? (
+              <div className="text-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+                <p className="text-sm sm:text-base text-gray-500">주문 목록을 불러오는 중...</p>
+              </div>
+            ) : filteredOrders.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-sm sm:text-base text-gray-500">주문이 없습니다.</p>
+              </div>
+            ) : (
+              <div className="space-y-4 sm:space-y-0">
+                {/* 데스크톱 테이블 */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-4 font-medium text-gray-900">주문 정보</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900">상품</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900">총 금액</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900">상태</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900">결제수단</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900">주문일시</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900">작업</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredOrders.map((order) => (
+                        <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <ShoppingCart className="h-5 w-5 text-purple-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">{order.orderNumber}</p>
+                                <p className="text-sm text-gray-500">{order.user.name}</p>
+                                <p className="text-sm text-gray-500">{order.user.phoneNumber}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="space-y-1">
+                              {order.items.map((item, index) => (
+                                <div key={item.id} className="flex items-center space-x-2">
+                                  <Package className="h-4 w-4 text-gray-400" />
+                                  <span className="text-sm text-gray-900">
+                                    {item.productName} x {item.quantity}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <p className="font-medium text-gray-900">
+                              ₩{order.totalAmount.toLocaleString()}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              상품: ₩{order.subtotal.toLocaleString()}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              배송: ₩{order.shippingAmount.toLocaleString()}
+                            </p>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-2">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                {getStatusText(order.status)}
+                              </span>
+                              <select
+                                value={order.status}
+                                onChange={(e) => updateOrderStatus(order.orderNumber, e.target.value)}
+                                disabled={updatingStatus[order.orderNumber]}
+                                className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                              >
+                                {statuses.map((status) => (
+                                  <option key={status.value} value={status.value}>
+                                    {status.label}
+                                  </option>
+                                ))}
+                              </select>
+                              {updatingStatus[order.orderNumber] && (
+                                <Loader2 className="h-3 w-3 animate-spin text-purple-600" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-2">
+                              <CreditCard className="h-4 w-4 text-gray-400" />
+                              <span className="text-sm text-gray-900">카드</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="text-sm text-gray-900">
+                              {format(new Date(order.createdAt), 'yyyy-MM-dd')}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {format(new Date(order.createdAt), 'HH:mm')}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openOrderDetail(order)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="outline"
+                                size="sm" 
+                                className="h-8 w-8 p-0"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 모바일 카드 */}
+                <div className="sm:hidden space-y-4 p-4">
+                  {filteredOrders.map((order) => (
+                    <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                      {/* 주문 정보 */}
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <ShoppingCart className="h-5 w-5 text-purple-600" />
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <ShoppingCart className="h-4 w-4 text-purple-600" />
                           </div>
                           <div>
-                              <p className="font-medium text-gray-900">{order.orderNumber}</p>
-                              <p className="text-sm text-gray-500">{order.user.name}</p>
-                              <p className="text-sm text-gray-500">{order.user.phoneNumber}</p>
-                            </div>
+                            <p className="font-medium text-gray-900 text-sm">{order.orderNumber}</p>
+                            <p className="text-xs text-gray-500">{order.user.name}</p>
+                          </div>
                         </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="space-y-1">
-                            {order.items.map((item, index) => (
-                              <div key={item.id} className="flex items-center space-x-2">
-                                <Package className="h-4 w-4 text-gray-400" />
-                                <span className="text-sm text-gray-900">
-                                  {item.productName} x {item.quantity}
-                                </span>
-                              </div>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                          <p className="font-medium text-gray-900">
-                            ₩{order.totalAmount.toLocaleString()}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            상품: ₩{order.subtotal.toLocaleString()}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            배송: ₩{order.shippingAmount.toLocaleString()}
-                          </p>
-                      </td>
-                      <td className="py-3 px-4">
                         <div className="flex items-center space-x-2">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                            {getStatusText(order.status)}
-                          </span>
-                            <select
-                              value={order.status}
-                              onChange={(e) => updateOrderStatus(order.orderNumber, e.target.value)}
-                              disabled={updatingStatus[order.orderNumber]}
-                              className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                            >
-                              {statuses.map((status) => (
-                                <option key={status.value} value={status.value}>
-                                  {status.label}
-                                </option>
-                              ))}
-                            </select>
-                            {updatingStatus[order.orderNumber] && (
-                              <Loader2 className="h-3 w-3 animate-spin text-purple-600" />
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                          <div className="flex items-center space-x-2">
-                            <CreditCard className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm text-gray-900">카드</span>
-                          </div>
-                      </td>
-                      <td className="py-3 px-4">
-                          <div className="text-sm text-gray-900">
-                            {format(new Date(order.createdAt), 'yyyy-MM-dd')}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {format(new Date(order.createdAt), 'HH:mm')}
-                          </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openOrderDetail(order)}
-                              className="h-8 w-8 p-0"
-                            >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openOrderDetail(order)}
+                            className="h-8 w-8 p-0"
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button 
-                              variant="outline"
+                            variant="outline"
                             size="sm" 
-                              className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0"
                           >
-                              <Edit className="h-4 w-4" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                         </div>
-                      </td>
-                    </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+
+                      {/* 상품 정보 */}
+                      <div className="space-y-1">
+                        {order.items.map((item, index) => (
+                          <div key={item.id} className="flex items-center space-x-2">
+                            <Package className="h-3 w-3 text-gray-400" />
+                            <span className="text-xs text-gray-900">
+                              {item.productName} x {item.quantity}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* 금액 정보 */}
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">
+                            ₩{order.totalAmount.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            상품: ₩{order.subtotal.toLocaleString()} | 배송: ₩{order.shippingAmount.toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">
+                            {format(new Date(order.createdAt), 'MM/dd HH:mm')}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 상태 및 결제수단 */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                            {getStatusText(order.status)}
+                          </span>
+                          <div className="flex items-center space-x-1">
+                            <CreditCard className="h-3 w-3 text-gray-400" />
+                            <span className="text-xs text-gray-500">카드</span>
+                          </div>
+                        </div>
+                        <select
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.orderNumber, e.target.value)}
+                          disabled={updatingStatus[order.orderNumber]}
+                          className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        >
+                          {statuses.map((status) => (
+                            <option key={status.value} value={status.value}>
+                              {status.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* 페이지네이션 */}
             {totalPages > 1 && (
-              <div className="mt-6 flex items-center justify-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  이전
-                </Button>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <div className="mt-4 sm:mt-6 px-4 sm:px-0">
+                <div className="flex items-center justify-center space-x-1 sm:space-x-2">
                   <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
+                    variant="outline"
                     size="sm"
-                    onClick={() => handlePageChange(page)}
-                    className="w-10"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 min-h-[36px] sm:min-h-[40px]"
                   >
-                    {page}
+                    이전
                   </Button>
-                ))}
+                  
+                  {/* 모바일에서는 현재 페이지 주변만 표시 */}
+                  <div className="flex space-x-1 sm:space-x-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(page => {
+                        if (totalPages <= 7) return true; // 7페이지 이하면 모두 표시
+                        // 현재 페이지 주변 3페이지씩 표시
+                        return page >= currentPage - 2 && page <= currentPage + 2;
+                      })
+                      .map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className="w-8 h-8 sm:w-10 sm:h-10 text-xs sm:text-sm"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 min-h-[36px] sm:min-h-[40px]"
+                  >
+                    다음
+                  </Button>
+                </div>
                 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  다음
-                </Button>
+                {/* 페이지 정보 */}
+                <div className="text-center mt-2">
+                  <span className="text-xs sm:text-sm text-gray-500">
+                    {currentPage} / {totalPages} 페이지
+                  </span>
+                </div>
               </div>
             )}
           </CardContent>

@@ -433,25 +433,25 @@ export function ProductDetail({ product }: ProductDetailProps) {
       <div className="lg:col-span-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <span className="flex items-center">
+            <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <span className="flex items-center text-lg sm:text-xl">
                   <Star className="h-5 w-5 mr-2 text-yellow-400" />
                   상품 리뷰
                 </span>
                 {reviewStats && (
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600">
                     <div className="flex items-center space-x-1">
-                      <span className="font-medium">{reviewStats.totalReviews}</span>
+                      <span className="font-medium text-base">{reviewStats.totalReviews}</span>
                       <span>개 리뷰</span>
                     </div>
                     {reviewStats.averageRating > 0 ? (
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-2">
                         <div className="flex items-center">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
-                              className={`h-4 w-4 ${
+                              className={`h-4 w-4 sm:h-5 sm:w-5 ${
                                 star <= Math.round(reviewStats.averageRating)
                                   ? 'text-yellow-400 fill-current'
                                   : 'text-gray-300'
@@ -459,15 +459,15 @@ export function ProductDetail({ product }: ProductDetailProps) {
                             />
                           ))}
                         </div>
-                        <span className="font-medium">{reviewStats.averageRating}</span>
+                        <span className="font-medium text-base">{reviewStats.averageRating}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center space-x-1 text-gray-400">
+                      <div className="flex items-center space-x-2 text-gray-400">
                         <div className="flex items-center">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
-                              className="h-4 w-4 text-gray-300"
+                              className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300"
                             />
                           ))}
                         </div>
@@ -481,7 +481,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 variant="outline"
                 size="sm"
                 onClick={toggleReviews}
-                className="flex items-center"
+                className="flex items-center justify-center w-full sm:w-auto min-h-[44px] px-6 py-3 text-sm font-medium"
               >
                 {showReviews ? '리뷰 숨기기' : '리뷰 보기'}
               </Button>
@@ -490,46 +490,50 @@ export function ProductDetail({ product }: ProductDetailProps) {
           {showReviews && (
             <CardContent>
               {reviewsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  <span className="ml-2 text-muted-foreground">리뷰를 불러오는 중...</span>
+                <div className="flex flex-col sm:flex-row items-center justify-center py-8 gap-2">
+                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary"></div>
+                  <span className="text-muted-foreground text-sm sm:text-base">리뷰를 불러오는 중...</span>
                 </div>
               ) : reviewsError ? (
                 <div className="text-center py-8">
-                  <p className="text-red-500 mb-4">{reviewsError}</p>
-                  <Button variant="outline" onClick={loadReviews}>
+                  <p className="text-red-500 mb-4 text-sm sm:text-base">{reviewsError}</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={loadReviews}
+                    className="w-full sm:w-auto min-h-[44px] px-6 py-3 text-sm font-medium"
+                  >
                     다시 시도
                   </Button>
                 </div>
               ) : !reviews || reviews.length === 0 ? (
                 <div className="text-center py-8">
-                  <Star className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-muted-foreground">아직 작성된 리뷰가 없습니다.</p>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <Star className="h-12 w-12 sm:h-16 sm:w-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-muted-foreground text-sm sm:text-base">아직 작성된 리뷰가 없습니다.</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                     첫 번째 리뷰를 작성해보세요!
                   </p>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {reviews.map((review) => (
-                    <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-600">
+                    <div key={review.id} className="border-b border-gray-200 pb-4 sm:pb-6 last:border-b-0">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm sm:text-base font-medium text-gray-600">
                               {review.user?.name?.charAt(0) || 'U'}
                             </span>
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 text-sm sm:text-base truncate">
                               {review.user?.name || '익명'}
                             </p>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
                               <div className="flex items-center">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <Star
                                     key={star}
-                                    className={`h-4 w-4 ${
+                                    className={`h-3 w-3 sm:h-4 sm:w-4 ${
                                       star <= review.rating
                                         ? 'text-yellow-400 fill-current'
                                         : 'text-gray-300'
@@ -537,29 +541,33 @@ export function ProductDetail({ product }: ProductDetailProps) {
                                   />
                                 ))}
                               </div>
-                              <span className="text-sm text-gray-500">
+                              <span className="text-xs sm:text-sm text-gray-500">
                                 {new Date(review.createdAt).toLocaleDateString('ko-KR')}
                               </span>
                             </div>
                           </div>
                         </div>
                         {review.isVerified && (
-                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full self-start sm:self-auto">
                             구매확정
                           </span>
                         )}
                       </div>
                       
                       {review.title && (
-                        <h4 className="font-medium text-gray-900 mb-2">{review.title}</h4>
+                        <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">{review.title}</h4>
                       )}
                       
-                      <p className="text-gray-700 leading-relaxed">{review.content}</p>
+                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{review.content}</p>
                     </div>
                   ))}
                   
                   <div className="text-center pt-4">
-                    <Button variant="outline" onClick={loadReviews}>
+                    <Button 
+                      variant="outline" 
+                      onClick={loadReviews}
+                      className="w-full sm:w-auto min-h-[44px] px-6 py-3 text-sm font-medium"
+                    >
                       더 많은 리뷰 보기
                     </Button>
                   </div>

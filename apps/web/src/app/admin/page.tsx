@@ -240,15 +240,15 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 테스트용 안내 메시지 */}
-      <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6">
+      <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 sm:p-4 mb-4 sm:mb-6">
         <div className="flex">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+            <svg className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           </div>
-          <div className="ml-3">
-            <p className="text-sm">
+          <div className="ml-2 sm:ml-3">
+            <p className="text-xs sm:text-sm">
               <strong>테스트 모드:</strong> 현재 로그인 없이 관리자 페이지에 접근할 수 있습니다. 
               실제 운영 환경에서는 반드시 인증을 활성화해야 합니다.
             </p>
@@ -259,11 +259,11 @@ const AdminPage = () => {
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-2xl font-bold text-gray-900">관리자 대시보드</h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">테스트 모드 - 인증 없음</span>
-              <button className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+          <div className="flex items-center justify-between h-12 sm:h-16 py-2 sm:py-0">
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-900">관리자 대시보드</h1>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">테스트 모드 - 인증 없음</span>
+              <button className="bg-gray-600 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-lg hover:bg-gray-700 transition-colors text-xs sm:text-sm">
                 테스트 모드
               </button>
             </div>
@@ -271,20 +271,20 @@ const AdminPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* 빠른 통계 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           {isLoadingStats ? (
             // 로딩 상태
             Array.from({ length: 4 }).map((_, index) => (
               <Card key={index}>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
-                      <div className="h-8 bg-gray-200 rounded animate-pulse w-16"></div>
+                      <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                      <div className="h-6 sm:h-8 bg-gray-200 rounded animate-pulse w-12 sm:w-16"></div>
                     </div>
-                    <div className="h-4 bg-gray-200 rounded animate-pulse w-12"></div>
+                    <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse w-8 sm:w-12"></div>
                   </div>
                 </CardContent>
               </Card>
@@ -293,19 +293,19 @@ const AdminPage = () => {
             // 실제 데이터
             quickStats.map((stat, index) => (
               <Card key={index}>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                      <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">{stat.title}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{stat.value}</p>
                     </div>
                     <div className="text-right">
-                      <div className={`text-sm font-medium ${
+                      <div className={`text-xs sm:text-sm font-medium ${
                         stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
                       }`}>
                         {stat.change}
                       </div>
-                      <p className="text-xs text-gray-400">전일 대비</p>
+                      <p className="text-xs text-gray-400 hidden sm:block">전일 대비</p>
                     </div>
                   </div>
                 </CardContent>
@@ -315,30 +315,30 @@ const AdminPage = () => {
         </div>
 
         {/* 관리 모듈 그리드 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {adminModules.map((module) => (
             <Link key={module.id} href={module.href}>
               <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className={`${module.color} p-3 rounded-lg`}>
-                      <module.icon className="h-6 w-6 text-white" />
+                <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-6">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className={`${module.color} p-2 sm:p-3 rounded-lg`}>
+                      <module.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">{module.title}</CardTitle>
-                      <CardDescription className="text-sm">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-sm sm:text-lg truncate">{module.title}</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm line-clamp-2">
                         {module.description}
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center justify-between text-sm text-gray-500">
+                <CardContent className="pt-0 p-3 sm:p-6">
+                  <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
                     <span>관리하기</span>
-                    <div className="flex space-x-2">
-                      <Eye className="h-4 w-4" />
-                      <Edit className="h-4 w-4" />
-                      <Plus className="h-4 w-4" />
+                    <div className="flex space-x-1 sm:space-x-2">
+                      <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                     </div>
                   </div>
                 </CardContent>
@@ -348,22 +348,22 @@ const AdminPage = () => {
         </div>
 
         {/* 최근 활동 */}
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">최근 활동</h2>
+        <div className="mt-8 sm:mt-12">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">최근 활동</h2>
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               {isLoadingActivities ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-2 text-gray-600">최근 활동을 불러오는 중...</span>
+                <div className="flex items-center justify-center py-6 sm:py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-sm sm:text-base text-gray-600">최근 활동을 불러오는 중...</span>
                 </div>
               ) : recentActivities.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>최근 활동이 없습니다.</p>
+                <div className="text-center py-6 sm:py-8 text-gray-500">
+                  <Clock className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-300" />
+                  <p className="text-sm sm:text-base">최근 활동이 없습니다.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {recentActivities.map((activity, index) => {
                     const IconComponent = getActivityIcon(activity.action, activity.entityType);
                     const colorClass = getActivityColor(activity.action, activity.entityType);
@@ -371,19 +371,19 @@ const AdminPage = () => {
                     return (
                       <div 
                         key={activity.id} 
-                        className={`flex items-center justify-between py-3 ${
+                        className={`flex items-start sm:items-center justify-between py-2 sm:py-3 ${
                           index < recentActivities.length - 1 ? 'border-b border-gray-100' : ''
                         }`}
                       >
-                        <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-full ${colorClass}`}>
-                            <IconComponent className="h-4 w-4" />
+                        <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                          <div className={`p-1.5 sm:p-2 rounded-full flex-shrink-0 ${colorClass}`}>
+                            <IconComponent className="h-3 w-3 sm:h-4 sm:w-4" />
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 text-sm sm:text-base line-clamp-2">
                               {activity.description || `${activity.action} 작업이 수행되었습니다`}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-1">
                               {(activity.user?.name ?? '시스템')}
                               {activity.user?.email ? ` (${activity.user.email})` : ''}
                               {' - '}
@@ -391,7 +391,7 @@ const AdminPage = () => {
                             </p>
                           </div>
                         </div>
-                        <span className="text-sm text-gray-400">
+                        <span className="text-xs sm:text-sm text-gray-400 flex-shrink-0 ml-2 hidden sm:block">
                           {activity.entityType === 'PRODUCT' && '상품 관리'}
                           {activity.entityType === 'USER' && '사용자 관리'}
                           {activity.entityType === 'SELLER' && '셀러 관리'}

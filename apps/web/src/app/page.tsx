@@ -154,26 +154,26 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative h-[380px] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-lg mx-6 my-6 overflow-hidden">
+      <section className="relative h-[280px] sm:h-[320px] md:h-[380px] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-lg mx-3 sm:mx-6 my-3 sm:my-6 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 to-gray-900/60 z-10"></div>
         {/* 배경 이미지가 없을 때를 대비한 패턴 */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:15px_15px] sm:bg-[length:20px_20px]"></div>
         </div>
-        <div className="relative z-20 h-full flex items-center px-6">
-          <div className="max-w-2xl">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4">
+        <div className="relative z-20 h-full flex items-center px-4 sm:px-6">
+          <div className="max-w-2xl w-full">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-3 sm:mb-4 drop-shadow-lg">
               호이드 오브제<br />
               무선청소기 출시
             </h1>
-            <p className="text-lg text-gray-200 mb-8">
+            <p className="text-sm sm:text-base md:text-lg text-gray-200 mb-6 sm:mb-8 drop-shadow-md">
               당신의 일상을 품격있게 청소하다
             </p>
-            <div className="flex gap-4">
-              <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 text-sm sm:text-base w-full sm:w-auto">
                 자세히 보기
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 text-sm sm:text-base w-full sm:w-auto">
                 구매하기
               </Button>
             </div>

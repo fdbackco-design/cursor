@@ -118,43 +118,43 @@ const AnalyticsPage = () => {
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/admin" className="text-gray-500 hover:text-gray-700">
+          <div className="flex items-center justify-between h-12 sm:h-16 py-2 sm:py-0">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link href="/admin" className="text-gray-500 hover:text-gray-700 text-sm sm:text-base">
                 ← 뒤로가기
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">판매량 분석</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">판매량 분석</h1>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-xs sm:text-sm"
               >
                 {periods.map(period => (
                   <option key={period.value} value={period.value}>{period.label}</option>
                 ))}
               </select>
-              <Button onClick={loadAnalyticsData} variant="outline" size="sm">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                새로고침
+              <Button onClick={loadAnalyticsData} variant="outline" size="sm" className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2">
+                <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">새로고침</span>
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* 전체 통계 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mb-6 sm:mb-8">
           {loading ? (
             // 로딩 스켈레톤
             Array.from({ length: 5 }).map((_, index) => (
               <Card key={index}>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-8 bg-gray-200 rounded w-20"></div>
+                    <div className="h-3 sm:h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-6 sm:h-8 bg-gray-200 rounded w-16 sm:w-20"></div>
                   </div>
                 </CardContent>
               </Card>
@@ -162,19 +162,19 @@ const AnalyticsPage = () => {
           ) : overview ? (
             <>
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">총 매출</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">총 매출</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">
                         {formatCurrency(overview.totalRevenue)}
                       </p>
                     </div>
-                    <div className="p-3 bg-green-100 rounded-lg">
-                      <DollarSign className="h-6 w-6 text-green-600" />
+                    <div className="p-2 sm:p-3 bg-green-100 rounded-lg">
+                      <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-green-600" />
                     </div>
                   </div>
-                  <div className={`mt-2 flex items-center text-sm ${getGrowthColor(overview.monthlyGrowth || 0)}`}>
+                  <div className={`mt-1 sm:mt-2 flex items-center text-xs sm:text-sm ${getGrowthColor(overview.monthlyGrowth || 0)}`}>
                     {getGrowthIcon(overview.monthlyGrowth || 0)}
                     {(overview.monthlyGrowth || 0) >= 0 ? '+' : ''}{(overview.monthlyGrowth || 0).toFixed(1)}%
                   </div>
@@ -182,58 +182,58 @@ const AnalyticsPage = () => {
               </Card>
 
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">총 주문</p>
-                      <p className="text-2xl font-bold text-gray-900">{overview.totalOrders}건</p>
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">총 주문</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{overview.totalOrders}건</p>
                     </div>
-                    <div className="p-3 bg-blue-100 rounded-lg">
-                      <ShoppingCart className="h-6 w-6 text-blue-600" />
+                    <div className="p-2 sm:p-3 bg-blue-100 rounded-lg">
+                      <ShoppingCart className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">총 상품</p>
-                      <p className="text-2xl font-bold text-gray-900">{overview.totalProducts}개</p>
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">총 상품</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{overview.totalProducts}개</p>
                     </div>
-                    <div className="p-3 bg-purple-100 rounded-lg">
-                      <Package className="h-6 w-6 text-purple-600" />
+                    <div className="p-2 sm:p-3 bg-purple-100 rounded-lg">
+                      <Package className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">평균 주문액</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">평균 주문액</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">
                         {formatCurrency(overview.averageOrderValue)}
                       </p>
                     </div>
-                    <div className="p-3 bg-yellow-100 rounded-lg">
-                      <TrendingUp className="h-6 w-6 text-yellow-600" />
+                    <div className="p-2 sm:p-3 bg-yellow-100 rounded-lg">
+                      <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-yellow-600" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">활성 셀러</p>
-                      <p className="text-2xl font-bold text-gray-900">{overview.totalSellers}명</p>
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">활성 셀러</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{overview.totalSellers}명</p>
                     </div>
-                    <div className="p-3 bg-indigo-100 rounded-lg">
-                      <Users className="h-6 w-6 text-indigo-600" />
+                    <div className="p-2 sm:p-3 bg-indigo-100 rounded-lg">
+                      <Users className="h-4 w-4 sm:h-6 sm:w-6 text-indigo-600" />
                     </div>
                   </div>
                 </CardContent>
@@ -243,13 +243,13 @@ const AnalyticsPage = () => {
         </div>
 
         {/* 탭 네비게이션 */}
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-8">
+        <div className="border-b border-gray-200 mb-4 sm:mb-6">
+          <nav className="-mb-px flex space-x-2 sm:space-x-8 overflow-x-auto">
             {[
-              { id: 'seller', label: '셀러별 매출', icon: Users },
-              { id: 'vendor', label: '벤더별 매출', icon: Package },
-              { id: 'product', label: '상품별 매출 & 인기상품', icon: Award },
-              { id: 'return', label: '반품율 분석', icon: AlertTriangle }
+              { id: 'seller', label: '셀러별 매출', icon: Users, shortLabel: '셀러' },
+              { id: 'vendor', label: '벤더별 매출', icon: Package, shortLabel: '벤더' },
+              { id: 'product', label: '상품별 매출 & 인기상품', icon: Award, shortLabel: '상품' },
+              { id: 'return', label: '반품율 분석', icon: AlertTriangle, shortLabel: '반품' }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -260,10 +260,11 @@ const AnalyticsPage = () => {
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
+                  } whitespace-nowrap py-2 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 flex-shrink-0`}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{tab.label}</span>
+                  <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden">{tab.shortLabel}</span>
                 </button>
               );
             })}
@@ -272,26 +273,26 @@ const AnalyticsPage = () => {
 
         {/* 탭 콘텐츠 */}
         {activeTab === 'seller' && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">셀러별 매출 분석</h2>
-              <Button onClick={loadAnalyticsData} variant="outline" size="sm">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                새로고침
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">셀러별 매출 분석</h2>
+              <Button onClick={loadAnalyticsData} variant="outline" size="sm" className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2">
+                <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">새로고침</span>
               </Button>
             </div>
             {loading ? (
               <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, index) => (
                   <Card key={index}>
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                       <div className="animate-pulse space-y-4">
-                        <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-                        <div className="grid grid-cols-4 gap-4">
-                          <div className="h-8 bg-gray-200 rounded"></div>
-                          <div className="h-8 bg-gray-200 rounded"></div>
-                          <div className="h-8 bg-gray-200 rounded"></div>
-                          <div className="h-8 bg-gray-200 rounded"></div>
+                        <div className="h-4 sm:h-6 bg-gray-200 rounded w-1/3"></div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                          <div className="h-6 sm:h-8 bg-gray-200 rounded"></div>
+                          <div className="h-6 sm:h-8 bg-gray-200 rounded"></div>
+                          <div className="h-6 sm:h-8 bg-gray-200 rounded"></div>
+                          <div className="h-6 sm:h-8 bg-gray-200 rounded"></div>
                         </div>
                       </div>
                     </CardContent>
@@ -301,73 +302,73 @@ const AnalyticsPage = () => {
             ) : (
               sellerData.map((seller) => (
             <Card key={seller.id}>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                      <BarChart3 className="h-5 w-5 text-teal-600" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-teal-600" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{seller.name}</h3>
-                      <p className="text-sm text-gray-500">{seller.category}</p>
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900">{seller.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-500">{seller.category}</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <span className={`text-sm font-medium ${getGrowthColor(seller.monthlyGrowth || 0)}`}>
+                  <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-4">
+                    <span className={`text-xs sm:text-sm font-medium ${getGrowthColor(seller.monthlyGrowth || 0)}`}>
                       {getGrowthIcon(seller.monthlyGrowth || 0)}
                       {(seller.monthlyGrowth || 0) >= 0 ? '+' : ''}{seller.monthlyGrowth || 0}%
                     </span>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2">
                       상세보기
                     </Button>
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-600">총 매출</p>
-                    <p className="text-2xl font-bold text-gray-900">
+              <CardContent className="p-4 sm:p-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+                  <div className="space-y-1 sm:space-y-2">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">총 매출</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-900">
                       {formatCurrency(seller.totalSales)}
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-600">총 주문</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                  <div className="space-y-1 sm:space-y-2">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">총 주문</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-900">
                       {seller.totalOrders}건
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-600">등록 상품</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                  <div className="space-y-1 sm:space-y-2">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">등록 상품</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-900">
                       {seller.totalProducts}개
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-600">평균 주문액</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                  <div className="space-y-1 sm:space-y-2">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">평균 주문액</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-900">
                       {formatCurrency(seller.averageOrderValue)}
                     </p>
                   </div>
                 </div>
 
                 {/* 월별 매출 차트 (간단한 바 차트) */}
-                <div className="mt-6">
-                  <p className="text-sm font-medium text-gray-600 mb-3">월별 매출 추이</p>
-                  <div className="flex items-end space-x-1 h-32">
+                <div className="mt-4 sm:mt-6">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-2 sm:mb-3">월별 매출 추이</p>
+                  <div className="flex items-end space-x-1 h-24 sm:h-32 overflow-x-auto">
                     {seller.salesByMonth.map((monthlySales, index) => {
                       const maxSales = Math.max(...seller.salesByMonth);
                       const height = (monthlySales / maxSales) * 100;
                       return (
-                        <div key={index} className="flex-1 flex flex-col items-center">
+                        <div key={index} className="flex-1 flex flex-col items-center min-w-[20px] sm:min-w-0">
                           <div 
                             className="w-full bg-teal-500 rounded-t"
                             style={{ height: `${height}%` }}
                           />
-                          <span className="text-xs text-gray-500 mt-1">
+                          <span className="text-xs text-gray-500 mt-1 text-center">
                             {index + 1}월
                           </span>
                         </div>
@@ -384,65 +385,65 @@ const AnalyticsPage = () => {
 
         {/* 벤더별 매출 탭 */}
         {activeTab === 'vendor' && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">벤더별 매출 분석</h2>
-              <Button onClick={loadAnalyticsData} variant="outline" size="sm">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                새로고침
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">벤더별 매출 분석</h2>
+              <Button onClick={loadAnalyticsData} variant="outline" size="sm" className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2">
+                <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">새로고침</span>
               </Button>
             </div>
             {loading ? (
-              <div className="text-center py-8">로딩 중...</div>
+              <div className="text-center py-8 text-sm sm:text-base">로딩 중...</div>
             ) : (
-              <div className="grid gap-6">
+              <div className="grid gap-4 sm:gap-6">
                 {vendorData.map((vendor) => (
                   <Card key={vendor.id}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
+                    <CardHeader className="p-4 sm:p-6">
+                      <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Package className="h-5 w-5 text-blue-600" />
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Package className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">{vendor.name}</h3>
-                            <p className="text-sm text-gray-500">코드: {vendor.code}</p>
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900">{vendor.name}</h3>
+                            <p className="text-xs sm:text-sm text-gray-500">코드: {vendor.code}</p>
                           </div>
                         </div>
-                        <div className={`text-sm font-medium ${getGrowthColor(vendor.monthlyGrowth || 0)}`}>
+                        <div className={`text-xs sm:text-sm font-medium ${getGrowthColor(vendor.monthlyGrowth || 0)}`}>
                           {getGrowthIcon(vendor.monthlyGrowth || 0)}
                           {(vendor.monthlyGrowth || 0) >= 0 ? '+' : ''}{(vendor.monthlyGrowth || 0).toFixed(1)}%
                         </div>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-gray-600">총 매출</p>
-                          <p className="text-2xl font-bold text-gray-900">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+                        <div className="space-y-1 sm:space-y-2">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600">총 매출</p>
+                          <p className="text-lg sm:text-2xl font-bold text-gray-900">
                             {formatCurrency(vendor.totalSales)}
                           </p>
                         </div>
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-gray-600">총 주문</p>
-                          <p className="text-2xl font-bold text-gray-900">{vendor.totalOrders}건</p>
+                        <div className="space-y-1 sm:space-y-2">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600">총 주문</p>
+                          <p className="text-lg sm:text-2xl font-bold text-gray-900">{vendor.totalOrders}건</p>
                         </div>
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-gray-600">등록 상품</p>
-                          <p className="text-2xl font-bold text-gray-900">{vendor.totalProducts}개</p>
+                        <div className="space-y-1 sm:space-y-2">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600">등록 상품</p>
+                          <p className="text-lg sm:text-2xl font-bold text-gray-900">{vendor.totalProducts}개</p>
                         </div>
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-gray-600">평균 주문액</p>
-                          <p className="text-2xl font-bold text-gray-900">
+                        <div className="space-y-1 sm:space-y-2">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600">평균 주문액</p>
+                          <p className="text-lg sm:text-2xl font-bold text-gray-900">
                             {formatCurrency(vendor.averageOrderValue)}
                           </p>
                         </div>
                       </div>
-                      <div className="mt-4">
-                        <p className="text-sm font-medium text-gray-600 mb-2">인기 상품</p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <div className="mt-3 sm:mt-4">
+                        <p className="text-xs sm:text-sm font-medium text-gray-600 mb-2">인기 상품</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                           {vendor.topProducts.map((product, index) => (
-                            <div key={index} className="bg-gray-50 p-2 rounded text-sm text-gray-700">
+                            <div key={index} className="bg-gray-50 p-2 rounded text-xs sm:text-sm text-gray-700">
                               {product}
                             </div>
                           ))}

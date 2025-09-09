@@ -465,20 +465,20 @@ export default function AccountPage() {
     switch (activeTab) {
       case 'profile':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>기본 정보</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">기본 정보</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">이름</label>
                     <input
                       type="text"
                       value={user?.name || ''}
                       readOnly
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                      className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm sm:text-base"
                     />
                   </div>
                   <div>
@@ -487,7 +487,7 @@ export default function AccountPage() {
                       type="email"
                       value={user?.email || ''}
                       readOnly
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                      className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm sm:text-base"
                     />
                   </div>
                   <div>
@@ -496,7 +496,7 @@ export default function AccountPage() {
                       type="text"
                       value={user.role === 'BIZ' ? '기업 사용자' : '일반 사용자'}
                       readOnly
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                      className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm sm:text-base"
                     />
                   </div>
                   <div>
@@ -505,7 +505,7 @@ export default function AccountPage() {
                       type="text"
                       value={new Date().toLocaleDateString('ko-KR')}
                       readOnly
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                      className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm sm:text-base"
                     />
                   </div>
                 </div>
@@ -516,11 +516,11 @@ export default function AccountPage() {
 
       case 'orders':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>주문 내역</span>
+                <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <span className="text-lg sm:text-xl">주문 내역</span>
                   {orders.length > 0 && (
                     <span className="text-sm text-gray-500">
                       총 {orders.length}개 주문
@@ -531,25 +531,25 @@ export default function AccountPage() {
               <CardContent>
                 {ordersLoading ? (
                   <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-500">주문 내역을 불러오는 중...</p>
+                    <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-sm sm:text-base text-gray-500">주문 내역을 불러오는 중...</p>
                   </div>
                 ) : orders.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {orders.map((order) => (
                       <div
                         key={order.id}
-                        className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200"
+                        className="border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow duration-200"
                       >
                         {/* 주문 헤더 */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <h3 className="font-semibold text-gray-900">
-                                주문번호: {order.orderNumber}
-                              </h3>
-                              <div className="flex items-center text-sm text-gray-500 mt-1">
-                                <Calendar className="h-4 w-4 mr-1" />
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+                              주문번호: {order.orderNumber}
+                            </h3>
+                            <div className="flex items-center text-xs sm:text-sm text-gray-500 mt-1">
+                              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
+                              <span className="truncate">
                                 {new Date(order.createdAt).toLocaleDateString('ko-KR', {
                                   year: 'numeric',
                                   month: 'long',
@@ -557,27 +557,29 @@ export default function AccountPage() {
                                   hour: '2-digit',
                                   minute: '2-digit',
                                 })}
-                              </div>
+                              </span>
                             </div>
                           </div>
-                          <div className="flex items-center space-x-3">
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                ORDER_STATUS_COLORS[order.status as keyof typeof ORDER_STATUS_COLORS] ||
-                                'text-gray-600 bg-gray-50'
-                              }`}
-                            >
-                              {ORDER_STATUS_LABELS[order.status as keyof typeof ORDER_STATUS_LABELS] || order.status}
-                            </span>
-                            {(() => {
-                              const returnStatus = getReturnStatus(order);
-                              return returnStatus ? (
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${returnStatus.color}`}>
-                                  {returnStatus.text}
-                                </span>
-                              ) : null;
-                            })()}
-                            <span className="font-semibold text-lg text-gray-900">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                            <div className="flex flex-wrap gap-2">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  ORDER_STATUS_COLORS[order.status as keyof typeof ORDER_STATUS_COLORS] ||
+                                  'text-gray-600 bg-gray-50'
+                                }`}
+                              >
+                                {ORDER_STATUS_LABELS[order.status as keyof typeof ORDER_STATUS_LABELS] || order.status}
+                              </span>
+                              {(() => {
+                                const returnStatus = getReturnStatus(order);
+                                return returnStatus ? (
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${returnStatus.color}`}>
+                                    {returnStatus.text}
+                                  </span>
+                                ) : null;
+                              })()}
+                            </div>
+                            <span className="font-semibold text-base sm:text-lg text-gray-900">
                               {order.totalAmount.toLocaleString()}원
                             </span>
                           </div>
@@ -586,8 +588,8 @@ export default function AccountPage() {
                         {/* 주문 상품 목록 */}
                         <div className="space-y-3">
                           {order.items.slice(0, 2).map((item) => (
-                            <div key={item.id} className="flex items-center space-x-4">
-                              <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                            <div key={item.id} className="flex items-start space-x-3 sm:space-x-4">
+                              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                 {item.product.images && Array.isArray(item.product.images) && item.product.images.length > 0 ? (
                                   <img
                                     src={getImageUrl(item.product.images[0])}
@@ -596,13 +598,13 @@ export default function AccountPage() {
                                   />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
-                                    <Package className="h-6 w-6 text-gray-400" />
+                                    <Package className="h-4 w-4 sm:h-6 sm:w-6 text-gray-400" />
                                   </div>
                                 )}
                               </div>
-                              <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">{item.product.name}</h4>
-                                <p className="text-sm text-gray-500">
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-medium text-gray-900 text-sm sm:text-base line-clamp-2">{item.product.name}</h4>
+                                <p className="text-xs sm:text-sm text-gray-500 mt-1">
                                   {item.quantity}개 × {item.unitPrice.toLocaleString()}원
                                 </p>
                                 {item.returns && item.returns.length > 0 && (
@@ -627,8 +629,8 @@ export default function AccountPage() {
                                   </div>
                                 )}
                               </div>
-                              <div className="text-right">
-                                <p className="font-medium text-gray-900">
+                              <div className="text-right flex-shrink-0">
+                                <p className="font-medium text-gray-900 text-sm sm:text-base">
                                   {item.totalPrice.toLocaleString()}원
                                 </p>
                               </div>
@@ -646,7 +648,7 @@ export default function AccountPage() {
                         <div className="mt-4 pt-4 border-t border-gray-100">
                           <Button
                             variant="outline"
-                            className="w-full"
+                            className="w-full min-h-[44px] sm:min-h-[40px] text-sm sm:text-base"
                             onClick={() => {
                               window.location.href = `/orders/${order.orderNumber}`;
                             }}
@@ -660,8 +662,8 @@ export default function AccountPage() {
 
                     {/* 페이지네이션 */}
                     {ordersTotalPages > 1 && (
-                      <div className="flex justify-center mt-6">
-                        <div className="flex space-x-2">
+                      <div className="flex justify-center mt-4 sm:mt-6">
+                        <div className="flex space-x-1 sm:space-x-2">
                           {Array.from({ length: ordersTotalPages }, (_, i) => i + 1).map((page) => (
                             <button
                               key={page}
@@ -669,7 +671,7 @@ export default function AccountPage() {
                                 setOrdersPage(page);
                                 loadOrders(page);
                               }}
-                              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                              className={`px-2 py-2 sm:px-3 sm:py-2 rounded-md text-xs sm:text-sm font-medium min-h-[36px] sm:min-h-[40px] ${
                                 ordersPage === page
                                   ? 'bg-blue-600 text-white'
                                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -684,10 +686,10 @@ export default function AccountPage() {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>아직 주문 내역이 없습니다.</p>
-                    <p className="text-sm mt-2">상품을 주문하면 여기에 표시됩니다.</p>
-                    <Button className="mt-4" asChild>
+                    <ShoppingBag className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-sm sm:text-base">아직 주문 내역이 없습니다.</p>
+                    <p className="text-xs sm:text-sm mt-2">상품을 주문하면 여기에 표시됩니다.</p>
+                    <Button className="mt-4 min-h-[44px] sm:min-h-[40px] text-sm sm:text-base" asChild>
                       <a href="/home">쇼핑하러 가기</a>
                     </Button>
                   </div>
@@ -699,11 +701,11 @@ export default function AccountPage() {
 
       case 'wishlist':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>찜 목록</span>
+                <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <span className="text-lg sm:text-xl">찜 목록</span>
                   {wishlist.length > 0 && (
                     <span className="text-sm text-gray-500">
                       총 {wishlist.length}개 상품
@@ -714,11 +716,11 @@ export default function AccountPage() {
               <CardContent>
                 {wishlistLoading ? (
                   <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-500">찜목록을 불러오는 중...</p>
+                    <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-sm sm:text-base text-gray-500">찜목록을 불러오는 중...</p>
                   </div>
                 ) : wishlist.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {wishlist.map((item) => (
                       <div key={item.id} className="relative">
                         <ProductCard product={{
@@ -738,7 +740,7 @@ export default function AccountPage() {
                         }} />
                         <button
                           onClick={() => removeFromWishlist(item.productId)}
-                          className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+                          className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200 min-h-[36px] min-w-[36px] flex items-center justify-center"
                           title="찜하기 제거"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -748,9 +750,9 @@ export default function AccountPage() {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <Heart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>찜한 상품이 없습니다.</p>
-                    <p className="text-sm mt-2">상품을 찜하면 여기에 표시됩니다.</p>
+                    <Heart className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-sm sm:text-base">찜한 상품이 없습니다.</p>
+                    <p className="text-xs sm:text-sm mt-2">상품을 찜하면 여기에 표시됩니다.</p>
                   </div>
                 )}
               </CardContent>
@@ -760,19 +762,19 @@ export default function AccountPage() {
 
       case 'address':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>배송지 관리</span>
-                  <Button onClick={openAddModal}>
+                <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <span className="text-lg sm:text-xl">배송지 관리</span>
+                  <Button onClick={openAddModal} className="w-full sm:w-auto min-h-[44px] sm:min-h-[40px] text-sm sm:text-base">
                     배송지 추가
                   </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {addresses.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     {addresses.map((address) => (
                       <AddressCard
                         key={address.id}
@@ -786,10 +788,10 @@ export default function AccountPage() {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <MapPin className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>등록된 배송지가 없습니다.</p>
-                    <p className="text-sm mt-2">첫 번째 배송지를 추가해보세요.</p>
-                    <Button className="mt-4" onClick={openAddModal}>
+                    <MapPin className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-sm sm:text-base">등록된 배송지가 없습니다.</p>
+                    <p className="text-xs sm:text-sm mt-2">첫 번째 배송지를 추가해보세요.</p>
+                    <Button className="mt-4 min-h-[44px] sm:min-h-[40px] text-sm sm:text-base" onClick={openAddModal}>
                       배송지 추가
                     </Button>
                   </div>
@@ -801,33 +803,34 @@ export default function AccountPage() {
 
       case 'coupons':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* 쿠폰 등록 카드 */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Plus className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
                   쿠폰 등록
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
                   <input
                     type="text"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                     placeholder="쿠폰 코드를 입력하세요"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     disabled={registering}
                   />
                   <Button 
                     onClick={handleRegisterCoupon}
                     disabled={registering || !couponCode.trim()}
+                    className="w-full sm:w-auto min-h-[44px] sm:min-h-[40px] text-sm sm:text-base"
                   >
                     {registering ? '등록 중...' : '등록'}
                   </Button>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-xs sm:text-sm text-gray-500 mt-2">
                   쿠폰 코드를 입력하여 새 쿠폰을 등록하세요.
                 </p>
               </CardContent>
@@ -836,38 +839,38 @@ export default function AccountPage() {
             {/* 내 쿠폰 목록 */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Ticket className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Ticket className="h-4 w-4 sm:h-5 sm:w-5" />
                   내 쿠폰 ({coupons.length}개)
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {couponsLoading ? (
                   <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">쿠폰 목록을 불러오는 중...</p>
+                    <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-sm sm:text-base text-gray-600">쿠폰 목록을 불러오는 중...</p>
                   </div>
                 ) : coupons.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {coupons.map((userCoupon) => {
                       const coupon = userCoupon.coupon;
                       return (
                         <div
                           key={userCoupon.id}
-                          className={`p-4 border rounded-lg ${
+                          className={`p-3 sm:p-4 border rounded-lg ${
                             coupon.isUsable 
                               ? 'border-green-200 bg-green-50' 
                               : 'border-gray-200 bg-gray-50'
                           }`}
                         >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <h3 className="font-semibold text-gray-900">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                                <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                                   {coupon.name}
                                 </h3>
                                 <span
-                                  className={`px-2 py-1 text-xs rounded-full ${
+                                  className={`px-2 py-1 text-xs rounded-full self-start ${
                                     coupon.isUsable
                                       ? 'bg-green-100 text-green-800'
                                       : 'bg-gray-100 text-gray-600'
@@ -876,10 +879,10 @@ export default function AccountPage() {
                                   {couponUtils.getStatusText(coupon)}
                                 </span>
                               </div>
-                              <p className="text-gray-600 text-sm mb-2">
+                              <p className="text-gray-600 text-xs sm:text-sm mb-2 line-clamp-2">
                                 {coupon.description}
                               </p>
-                              <div className="flex items-center gap-4 text-sm">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
                                 <span className="font-medium text-blue-600">
                                   {couponUtils.getDiscountText(coupon)}
                                 </span>
@@ -893,8 +896,8 @@ export default function AccountPage() {
                                 </span>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <div className="text-lg font-bold text-gray-900 mb-1">
+                            <div className="text-left sm:text-right flex-shrink-0">
+                              <div className="text-base sm:text-lg font-bold text-gray-900 mb-1">
                                 {coupon.code}
                               </div>
                               {coupon.maxUses && (
@@ -910,9 +913,9 @@ export default function AccountPage() {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <Ticket className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>등록된 쿠폰이 없습니다.</p>
-                    <p className="text-sm mt-2">쿠폰 코드를 입력하여 새 쿠폰을 등록해보세요.</p>
+                    <Ticket className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-sm sm:text-base">등록된 쿠폰이 없습니다.</p>
+                    <p className="text-xs sm:text-sm mt-2">쿠폰 코드를 입력하여 새 쿠폰을 등록해보세요.</p>
                   </div>
                 )}
               </CardContent>
@@ -924,10 +927,10 @@ export default function AccountPage() {
 
       case 'settings':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>계정 설정</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">계정 설정</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
@@ -941,12 +944,12 @@ export default function AccountPage() {
                   </label>
                 </div> */}
                 
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <h3 className="font-medium">SMS 알림</h3>
-                    <p className="text-sm text-gray-600">배송 및 주문 상태 알림</p>
+                <div className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm sm:text-base">SMS 알림</h3>
+                    <p className="text-xs sm:text-sm text-gray-600">배송 및 주문 상태 알림</p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                     <input type="checkbox" className="sr-only peer" />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                   </label>
@@ -958,21 +961,21 @@ export default function AccountPage() {
 
       case 'delete':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <Card className="border-red-200">
               <CardHeader className="bg-red-50 border-b border-red-200">
-                <CardTitle className="flex items-center gap-2 text-red-800">
-                  <AlertTriangle className="h-6 w-6" />
+                <CardTitle className="flex items-center gap-2 text-red-800 text-lg sm:text-xl">
+                  <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6" />
                   회원탈퇴
                 </CardTitle>
               </CardHeader>
               
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {/* 경고 메시지 */}
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
                   <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm text-red-800">
+                    <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs sm:text-sm text-red-800">
                       <p className="font-semibold mb-2">회원탈퇴 시 주의사항</p>
                       <ul className="space-y-1 list-disc list-inside">
                         <li>회원탈퇴는 <strong>되돌릴 수 없습니다</strong></li>
@@ -985,9 +988,9 @@ export default function AccountPage() {
                 </div>
 
                 {/* 탈퇴 처리 방식 안내 */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-900 mb-3">탈퇴 처리 방식</h3>
-                  <div className="space-y-2 text-sm text-blue-800">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                  <h3 className="font-semibold text-blue-900 mb-3 text-sm sm:text-base">탈퇴 처리 방식</h3>
+                  <div className="space-y-2 text-xs sm:text-sm text-blue-800">
                     <div className="flex items-start gap-2">
                       <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
                       <span><strong>즉시 익명화:</strong> 이름, 이메일, 전화번호, 배송지 등 개인정보</span>
@@ -1004,9 +1007,9 @@ export default function AccountPage() {
                 </div>
 
                 {/* 탈퇴 약관 */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-3">탈퇴 약관</h3>
-                  <div className="text-sm text-gray-700 space-y-2">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4">
+                  <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">탈퇴 약관</h3>
+                  <div className="text-xs sm:text-sm text-gray-700 space-y-2">
                     <p>
                       회원탈퇴 시 개인정보는 「개인정보 보호법」에 따라 즉시 익명화 처리되며, 
                       주문/결제 정보는 「전자상거래법」에 따라 5년간 보관됩니다.
@@ -1023,7 +1026,7 @@ export default function AccountPage() {
                   <Button
                     variant="destructive"
                     onClick={() => window.location.href = '/account/delete'}
-                    className="w-full"
+                    className="w-full min-h-[44px] sm:min-h-[40px] text-sm sm:text-base"
                   >
                     <AlertTriangle className="h-4 w-4 mr-2" />
                     회원탈퇴 진행하기
@@ -1040,17 +1043,44 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">마이페이지</h1>
-          <p className="text-gray-600 mt-2">계정 정보를 관리하고 주문 내역을 확인하세요.</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">마이페이지</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-2">계정 정보를 관리하고 주문 내역을 확인하세요.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* 사이드바 */}
-          <div className="lg:col-span-1">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8">
+          {/* 모바일 탭 네비게이션 */}
+          <div className="lg:hidden">
+            <Card>
+              <CardContent className="p-2">
+                <div className="grid grid-cols-2 gap-1">
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex flex-col items-center px-3 py-3 text-center text-xs font-medium rounded-lg transition-colors duration-200 ${
+                          activeTab === tab.id
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4 mb-1" />
+                        <span className="leading-tight">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 데스크톱 사이드바 */}
+          <div className="hidden lg:block lg:col-span-1">
             <Card>
               <CardContent className="p-0">
                 <nav className="space-y-1">

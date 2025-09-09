@@ -68,15 +68,27 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
 
-  const swagger = new DocumentBuilder()
-    .setTitle('E-commerce API')
-    .setDescription('E-commerce API - MVP Skeleton')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .addTag('App')
-    .build();
-  const document = SwaggerModule.createDocument(app, swagger);
-  SwaggerModule.setup('docs', app, document);
+  // Swagger 문서는 개발 환경에서만 활성화
+  const nodeEnv = configService.get('NODE_ENV', 'development');
+  if (nodeEnv === 'development') {
+    const swagger = new DocumentBuilder()
+      .setTitle('E-commerce API')
+      .setDescription('E-commerce API - MVP Skeleton')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .addTag('App')
+      .build();
+    const document = SwaggerModule.createDocument(app, swagger);
+    SwaggerModule.setup('docs', app, document);
+  } else {
+    // 프로덕션 환경에서는 404 응답
+    app.use('/docs', (req, res) => {
+      res.status(404).json({ 
+        message: 'API documentation is not available in production',
+        statusCode: 404 
+      });
+    });
+  }
 
   // /health
   const server = app.getHttpAdapter().getInstance();

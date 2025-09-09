@@ -392,10 +392,10 @@ const OrdersPage = () => {
               >
                 관리자 로그인
               </Button>
-            <Button className="bg-purple-600 hover:bg-purple-700">
+            {/* <Button className="bg-purple-600 hover:bg-purple-700">
               <Plus className="h-4 w-4 mr-2" />
               새 주문 등록
-            </Button>
+            </Button> */}
             </div>
           </div>
         </div>

@@ -42,13 +42,13 @@ export class S3Service {
    */
   async uploadImage(request: S3UploadRequest): Promise<S3UploadResponse> {
     try {
-      console.log('S3Service.uploadImage 시작:', {
-        filename: request.filename,
-        mimeType: request.mimeType,
-        path: request.path,
-        fileType: typeof request.file,
-        fileSize: request.file?.length || 0
-      });
+      // console.log('S3Service.uploadImage 시작:', {
+      //   filename: request.filename,
+      //   mimeType: request.mimeType,
+      //   path: request.path,
+      //   fileType: typeof request.file,
+      //   fileSize: request.file?.length || 0
+      // });
       
       const { file, filename, mimeType, path = 'products', resizeOptions } = request;
       
@@ -60,10 +60,10 @@ export class S3Service {
         fileBuffer = file;
       }
       
-      console.log('파일 버퍼 변환 완료:', {
-        bufferSize: fileBuffer.length,
-        bufferType: typeof fileBuffer
-      });
+      // console.log('파일 버퍼 변환 완료:', {
+      //   bufferSize: fileBuffer.length,
+      //   bufferType: typeof fileBuffer
+      // });
 
       // 이미지 리사이징 (선택사항)
       let processedBuffer = fileBuffer;
@@ -98,13 +98,13 @@ export class S3Service {
       const uniqueFilename = `${uuidv4()}${fileExtension}`;
       const s3Key = `${path}/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${uniqueFilename}`;
 
-      console.log('S3 업로드 준비:', {
-        bucketName: this.bucketName,
-        s3Key,
-        processedBufferSize: processedBuffer.length,
-        mimeType,
-        cdnUrl: this.cdnUrl
-      });
+      // console.log('S3 업로드 준비:', {
+      //   bucketName: this.bucketName,
+      //   s3Key,
+      //   processedBufferSize: processedBuffer.length,
+      //   mimeType,
+      //   cdnUrl: this.cdnUrl
+      // });
 
       // S3에 업로드
       const command = new PutObjectCommand({
@@ -117,9 +117,9 @@ export class S3Service {
         CacheControl: 'public, max-age=31536000, immutable'
       });
 
-      console.log('S3 PutObjectCommand 실행 중...');
+      //console.log('S3 PutObjectCommand 실행 중...');
       await this.s3Client.send(command);
-      console.log('S3 업로드 성공!');
+      //console.log('S3 업로드 성공!');
 
       const cdnUrl = `${this.cdnUrl}/${s3Key}`;
 

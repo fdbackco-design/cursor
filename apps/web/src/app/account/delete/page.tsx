@@ -74,7 +74,7 @@ export default function DeleteAccountPage() {
               });
             });
           } catch (e) {
-            console.log('IndexedDB cleanup failed:', e);
+            //console.log('IndexedDB cleanup failed:', e);
           }
         }
         

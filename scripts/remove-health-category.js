@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function removeHealthCategory() {
   try {
-    console.log('건강기능식품 카테고리 및 관련 데이터 제거 시작...');
+    //console.log('건강기능식품 카테고리 및 관련 데이터 제거 시작...');
 
     // 1. 건강기능식품 카테고리 찾기
     const healthCategory = await prisma.category.findFirst({
@@ -18,7 +18,7 @@ async function removeHealthCategory() {
     });
 
     if (healthCategory) {
-      console.log(`건강기능식품 카테고리 발견: ${healthCategory.name} (ID: ${healthCategory.id})`);
+      //console.log(`건강기능식품 카테고리 발견: ${healthCategory.name} (ID: ${healthCategory.id})`);
 
       // 2. 해당 카테고리의 상품들 찾기
       const healthProducts = await prisma.product.findMany({
@@ -27,13 +27,13 @@ async function removeHealthCategory() {
         }
       });
 
-      console.log(`건강기능식품 상품 ${healthProducts.length}개 발견`);
+      //console.log(`건강기능식품 상품 ${healthProducts.length}개 발견`);
 
       // 3. 상품들의 SKU 출력
       if (healthProducts.length > 0) {
-        console.log('제거될 상품들:');
+        //console.log('제거될 상품들:');
         healthProducts.forEach(product => {
-          console.log(`- ${product.name} (SKU: ${product.sku})`);
+          //console.log(`- ${product.name} (SKU: ${product.sku})`);
         });
       }
 
@@ -44,7 +44,7 @@ async function removeHealthCategory() {
             categoryId: healthCategory.id
           }
         });
-        console.log(`${healthProducts.length}개의 건강기능식품 상품이 삭제되었습니다.`);
+        //console.log(`${healthProducts.length}개의 건강기능식품 상품이 삭제되었습니다.`);
       }
 
       // 5. 건강기능식품 관련 벤더 찾기 및 삭제
@@ -59,9 +59,9 @@ async function removeHealthCategory() {
       });
 
       if (healthVendors.length > 0) {
-        console.log(`건강기능식품 관련 벤더 ${healthVendors.length}개 발견`);
+        //console.log(`건강기능식품 관련 벤더 ${healthVendors.length}개 발견`);
         healthVendors.forEach(vendor => {
-          console.log(`- ${vendor.name} (Code: ${vendor.code})`);
+          //console.log(`- ${vendor.name} (Code: ${vendor.code})`);
         });
 
         await prisma.vendor.deleteMany({
@@ -73,7 +73,7 @@ async function removeHealthCategory() {
             ]
           }
         });
-        console.log(`${healthVendors.length}개의 건강기능식품 관련 벤더가 삭제되었습니다.`);
+        //console.log(`${healthVendors.length}개의 건강기능식품 관련 벤더가 삭제되었습니다.`);
       }
 
       // 6. 카테고리 삭제
@@ -82,12 +82,12 @@ async function removeHealthCategory() {
           id: healthCategory.id
         }
       });
-      console.log('건강기능식품 카테고리가 삭제되었습니다.');
+      //console.log('건강기능식품 카테고리가 삭제되었습니다.');
     } else {
-      console.log('건강기능식품 카테고리를 찾을 수 없습니다.');
+      //console.log('건강기능식품 카테고리를 찾을 수 없습니다.');
     }
 
-    console.log('건강기능식품 카테고리 및 관련 데이터 제거 완료!');
+    //console.log('건강기능식품 카테고리 및 관련 데이터 제거 완료!');
   } catch (error) {
     console.error('오류 발생:', error);
   } finally {

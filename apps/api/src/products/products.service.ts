@@ -453,15 +453,15 @@ export class ProductsService {
   async uploadImagesForNewProduct(
     imageFiles: Array<{ buffer: Buffer; originalname: string; mimetype: string }>
   ): Promise<ProductImages> {
-    console.log('uploadImagesForNewProduct 시작:', imageFiles.length, '개 파일');
+    //console.log('uploadImagesForNewProduct 시작:', imageFiles.length, '개 파일');
     
     const uploadPromises = imageFiles.map(async (file, index) => {
-      console.log(`파일 ${index + 1} 처리 시작:`, {
-        originalname: file.originalname,
-        mimetype: file.mimetype,
-        bufferSize: file.buffer?.length || 0,
-        bufferType: typeof file.buffer
-      });
+      // console.log(`파일 ${index + 1} 처리 시작:`, {
+      //   originalname: file.originalname,
+      //   mimetype: file.mimetype,
+      //   bufferSize: file.buffer?.length || 0,
+      //   bufferType: typeof file.buffer
+      // });
       
       const uploadRequest: S3UploadRequest = {
         file: file.buffer,
@@ -470,9 +470,9 @@ export class ProductsService {
         path: 'products/temp',
       };
 
-      console.log('S3Service.uploadImage 호출:', uploadRequest);
+      //console.log('S3Service.uploadImage 호출:', uploadRequest);
       const result = await this.s3Service.uploadImage(uploadRequest);
-      console.log('S3Service.uploadImage 결과:', result);
+      //console.log('S3Service.uploadImage 결과:', result);
       
       return {
         s3Key: result.s3Key,
@@ -484,7 +484,7 @@ export class ProductsService {
     });
 
     const results = await Promise.all(uploadPromises);
-    console.log('uploadImagesForNewProduct 완료:', results.length, '개 결과');
+    //console.log('uploadImagesForNewProduct 완료:', results.length, '개 결과');
     return results;
   }
 

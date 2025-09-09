@@ -61,7 +61,7 @@ export const usersApi = {
   async deleteAccount(): Promise<{ success: boolean; message: string }> {
     try {
       const url = `${API_BASE_URL}/api/v1/users/account`;
-      console.log('회원탈퇴 API 호출:', url);
+      //console.log('회원탈퇴 API 호출:', url);
       
       const response = await fetch(url, {
         method: 'DELETE',
@@ -71,7 +71,7 @@ export const usersApi = {
         },
       });
       
-      console.log('회원탈퇴 API 응답:', response.status, response.statusText);
+      //console.log('회원탈퇴 API 응답:', response.status, response.statusText);
       
       if (!response.ok) {
         if (response.status === 401) {

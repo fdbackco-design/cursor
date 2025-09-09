@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { Plus, Search, Edit, Trash2, ToggleLeft, ToggleRight, Percent, DollarSign, Truck, Calendar, Users, ShoppingBag } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, ToggleLeft, ToggleRight, Percent, DollarSign, Truck, Calendar, Users, ShoppingBag, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { couponsApi, Coupon } from '@/lib/api/coupons';
 import { useToast, toast } from '@/components/ui/toast';
@@ -152,9 +152,17 @@ export default function CouponsPage() {
       <div className="max-w-7xl mx-auto">
         {/* 헤더 */}
         <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">쿠폰 관리</h1>
-            <p className="text-gray-600 mt-1">할인 쿠폰을 생성하고 관리하세요</p>
+          <div className="flex items-center space-x-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">쿠폰 관리</h1>
+              <p className="text-gray-600 mt-1">할인 쿠폰을 생성하고 관리하세요</p>
+            </div>
+            <Link href="/admin">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                관리자 메인
+              </Button>
+            </Link>
           </div>
           <Link href="/admin/coupons/new">
             <Button className="bg-blue-600 hover:bg-blue-700">

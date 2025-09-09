@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
 import { Button } from '@repo/ui';
-import { Clock, Check, X, User, Mail, Calendar, Hash } from 'lucide-react';
+import { Clock, Check, X, User, Mail, Calendar, Hash, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 interface User {
   id: string;
@@ -116,8 +117,18 @@ const UsersPage = () => {
       <div className="max-w-7xl mx-auto">
         {/* 헤더 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">사용자 승인 관리</h1>
-          <p className="text-gray-600">신규 가입 사용자의 승인 및 관리 (테스트 모드)</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">사용자 승인 관리</h1>
+              <p className="text-gray-600">신규 가입 사용자의 승인 및 관리 (테스트 모드)</p>
+            </div>
+            <Link href="/admin">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                관리자 메인
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* 통계 카드 */}

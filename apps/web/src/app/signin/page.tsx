@@ -258,11 +258,11 @@ function SignInPageInner() {
   // 이미 로그인된 사용자는 리다이렉트 중이므로 로딩 표시
   if (isAuthenticated && user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4 py-8 sm:py-12">
         <Card className="w-full max-w-md">
-          <CardContent className="text-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">이미 로그인되어 있습니다. 홈으로 이동합니다...</p>
+          <CardContent className="text-center py-6 sm:py-8 px-4 sm:px-6">
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-primary mx-auto mb-3 sm:mb-4"></div>
+            <p className="text-sm sm:text-base text-gray-600">이미 로그인되어 있습니다. 홈으로 이동합니다...</p>
           </CardContent>
         </Card>
       </div>
@@ -270,27 +270,27 @@ function SignInPageInner() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4 py-8 sm:py-12">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <MessageCircle className="h-6 w-6 text-primary" />
+        <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-8 pb-4 sm:pb-6">
+          <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+            <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl">로그인</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl sm:text-2xl">로그인</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             카카오 계정으로 간편하게 로그인하세요
           </CardDescription>
         </CardHeader>
         
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-4 sm:px-6 pb-6 sm:pb-8">
           {/* 추천인 코드 입력 */}
           <div className="space-y-2">
-            <label htmlFor="referralCode" className="text-sm font-medium text-gray-700">
+            <label htmlFor="referralCode" className="text-xs sm:text-sm font-medium text-gray-700">
               추천인 코드 <span className="text-red-500">*</span>
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
-                <Gift className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Gift className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
                 <input
                   id="referralCode"
                   type="text"
@@ -302,7 +302,7 @@ function SignInPageInner() {
                     setVerificationStatus('idle');
                   }}
                   onBlur={handleReferralCodeBlur}
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+                  className={`w-full pl-8 sm:pl-10 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                     error ? 'border-red-300 focus:ring-red-500' : 
                     verificationStatus === 'valid' ? 'border-green-300 focus:ring-green-500' :
                     verificationStatus === 'invalid' ? 'border-red-300 focus:ring-red-500' :
@@ -315,7 +315,7 @@ function SignInPageInner() {
                 disabled={!isReferralCodeValid || isVerifying}
                 variant="outline"
                 size="sm"
-                className="whitespace-nowrap"
+                className="whitespace-nowrap text-xs sm:text-sm w-full sm:w-auto"
               >
                 {isVerifying ? '확인 중...' : '확인'}
               </Button>
@@ -323,26 +323,26 @@ function SignInPageInner() {
             
             {/* 검증 상태 표시 */}
             {verificationStatus === 'valid' && (
-              <div className="flex items-center gap-2 text-sm text-green-600">
-                <CheckCircle className="h-4 w-4" />
-                유효한 추천인 코드입니다
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-green-600">
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="flex-1">유효한 추천인 코드입니다</span>
                 {urlRef && autoVerificationDone && (
-                  <span className="text-blue-600 ml-2">(자동 로그인 진행 중...)</span>
+                  <span className="text-blue-600 text-xs">(자동 로그인 진행 중...)</span>
                 )}
               </div>
             )}
             
             {verificationStatus === 'invalid' && (
-              <div className="flex items-center gap-2 text-sm text-red-600">
-                <XCircle className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-red-600">
+                <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                 유효하지 않은 추천인 코드입니다
               </div>
             )}
             
             {/* URL ref 자동 검증 상태 */}
             {urlRef && !autoVerificationDone && (
-              <div className="flex items-center gap-2 text-sm text-blue-600">
-                <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-600">
+                <div className="animate-spin h-3 w-3 sm:h-4 sm:w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
                 URL 추천인 코드 검증 중...
               </div>
             )}
@@ -353,8 +353,8 @@ function SignInPageInner() {
             
             {/* 에러 메시지 */}
             {error && (
-              <div className="flex items-center gap-2 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-red-600">
+                <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                 {error}
               </div>
             )}
@@ -363,7 +363,7 @@ function SignInPageInner() {
           {/* URL 에러 메시지 */}
           {urlError === 'login_failed' && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">
+              <p className="text-xs sm:text-sm text-red-600">
                 로그인에 실패했습니다. 다시 시도해주세요.
               </p>
             </div>
@@ -371,7 +371,7 @@ function SignInPageInner() {
 
           {urlError === 'invalid_referral' && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">
+              <p className="text-xs sm:text-sm text-red-600">
                 유효하지 않은 추천인 코드입니다. 다시 확인해주세요.
               </p>
             </div>
@@ -380,7 +380,7 @@ function SignInPageInner() {
           {/* 성공 메시지 */}
           {loginSuccess === 'success' && (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-600">
+              <p className="text-xs sm:text-sm text-green-600">
                 로그인에 성공했습니다! 환영합니다.
               </p>
               <p className="text-xs text-green-500 mt-1">
@@ -392,7 +392,7 @@ function SignInPageInner() {
           <Button 
             onClick={() => handleKakaoLogin()}
             disabled={isLoading || !canProceedToLogin}
-            className={`w-full text-black disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`w-full text-black disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${
               canProceedToLogin 
                 ? 'bg-yellow-500 hover:bg-yellow-600' 
                 : 'bg-gray-300 cursor-not-allowed'
@@ -403,7 +403,7 @@ function SignInPageInner() {
               '로그인 중...'
             ) : (
               <>
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"/>
                 </svg>
                 카카오로 로그인
@@ -411,7 +411,7 @@ function SignInPageInner() {
             )}
           </Button>
           
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-xs sm:text-sm text-muted-foreground">
             <p>계정이 없으신가요?</p>
             <p>카카오 로그인으로 자동 가입됩니다</p>
           </div>
@@ -425,10 +425,10 @@ function SignInPageInner() {
 export default function SignInPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 px-4 py-8 sm:py-12">
         <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">페이지 로딩 중...</p>
+          <div className="animate-spin h-8 w-8 sm:h-10 sm:w-10 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3 sm:mb-4"></div>
+          <p className="text-sm sm:text-base text-gray-600">페이지 로딩 중...</p>
         </div>
       </div>
     }>

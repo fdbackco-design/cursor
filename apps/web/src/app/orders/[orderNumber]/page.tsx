@@ -358,34 +358,48 @@ export default function OrderDetailPage() {
   const currentStep = getStatusStep(order.status);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* 헤더 */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Button 
             variant="ghost" 
             onClick={goBack}
-            className="mb-4"
+            className="mb-3 sm:mb-4 text-sm"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             돌아가기
           </Button>
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">주문 상세</h1>
-              <p className="text-gray-600 mt-2">주문번호: {order.orderNumber}</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">주문 상세</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2 truncate">주문번호: {order.orderNumber}</p>
             </div>
-            <div className="text-right">
-              <span
-                className={`px-4 py-2 rounded-full text-sm font-medium ${
-                  ORDER_STATUS_COLORS[order.status as keyof typeof ORDER_STATUS_COLORS] ||
-                  'text-gray-600 bg-gray-50'
-                }`}
-              >
-                {ORDER_STATUS_LABELS[order.status as keyof typeof ORDER_STATUS_LABELS] || order.status}
-              </span>
-              <p className="text-sm text-gray-500 mt-2">
+            <div className="flex flex-col sm:items-end gap-3">
+              <div className="flex items-center gap-3">
+                <span
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${
+                    ORDER_STATUS_COLORS[order.status as keyof typeof ORDER_STATUS_COLORS] ||
+                    'text-gray-600 bg-gray-50'
+                  }`}
+                >
+                  {ORDER_STATUS_LABELS[order.status as keyof typeof ORDER_STATUS_LABELS] || order.status}
+                </span>
+                {/* 주문 취소 버튼 */}
+                {canCancelOrder() && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleCancelOrder}
+                    className="text-xs sm:text-sm"
+                  >
+                    <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    취소
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs sm:text-sm text-gray-500">
                 {new Date(order.createdAt).toLocaleDateString('ko-KR', {
                   year: 'numeric',
                   month: 'long',
@@ -394,57 +408,44 @@ export default function OrderDetailPage() {
                   minute: '2-digit',
                 })}
               </p>
-              
-              {/* 주문 취소 버튼 */}
-              {canCancelOrder() && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleCancelOrder}
-                  className="mt-3"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  주문 취소
-                </Button>
-              )}
             </div>
           </div>
         </div>
 
         {/* 주문 진행 상황 */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Truck className="h-5 w-5 mr-2" />
+        <Card className="mb-6 sm:mb-8">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center text-base sm:text-lg">
+              <Truck className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               배송 진행 상황
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between overflow-x-auto">
               {['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'].map((status, index) => {
                 const isCompleted = index <= currentStep;
                 const isCurrent = index === currentStep;
                 
                 return (
-                  <div key={status} className="flex flex-col items-center flex-1">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  <div key={status} className="flex flex-col items-center flex-1 min-w-[60px] sm:min-w-[80px]">
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
                       isCompleted 
                         ? 'bg-blue-600 text-white' 
                         : 'bg-gray-200 text-gray-400'
                     }`}>
                       {isCompleted ? (
-                        <CheckCircle className="h-5 w-5" />
+                        <CheckCircle className="h-3 w-3 sm:h-5 sm:w-5" />
                       ) : (
-                        <span className="text-sm font-medium">{index + 1}</span>
+                        <span className="text-xs sm:text-sm font-medium">{index + 1}</span>
                       )}
                     </div>
-                    <p className={`text-xs mt-2 text-center ${
+                    <p className={`text-xs mt-1 sm:mt-2 text-center leading-tight ${
                       isCurrent ? 'font-medium text-blue-600' : 'text-gray-500'
                     }`}>
                       {ORDER_STATUS_LABELS[status as keyof typeof ORDER_STATUS_LABELS]}
                     </p>
                     {index < 4 && (
-                      <div className={`h-1 w-full mt-4 ${
+                      <div className={`h-1 w-full mt-2 sm:mt-4 ${
                         index < currentStep ? 'bg-blue-600' : 'bg-gray-200'
                       }`} />
                     )}
@@ -455,22 +456,22 @@ export default function OrderDetailPage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* 왼쪽 컬럼 */}
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-6 lg:space-y-8">
             {/* 주문 상품 정보 */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Package className="h-5 w-5 mr-2" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center text-base sm:text-lg">
+                  <Package className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   주문 상품
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-4 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
                   {order.items.map((item) => (
-                    <div key={item.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                      <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                    <div key={item.id} className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 border border-gray-200 rounded-lg">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                         {item.product.images && Array.isArray(item.product.images) && item.product.images.length > 0 ? (
                           <img
                             src={getImageUrl(item.product.images[0])}
@@ -479,34 +480,34 @@ export default function OrderDetailPage() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-6 w-6 text-gray-400" />
+                            <Package className="h-4 w-4 sm:h-6 sm:w-6 text-gray-400" />
                           </div>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-gray-900">{item.product.name}</h4>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <h4 className="font-medium text-gray-900 text-sm sm:text-base line-clamp-2">{item.product.name}</h4>
                           {(() => {
                             const returnStatus = getItemReturnStatus(item);
                             return returnStatus ? (
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium border ${returnStatus.color}`}>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium border ${returnStatus.color} self-start sm:self-auto`}>
                                 {returnStatus.text}
                               </span>
                             ) : null;
                           })()}
                         </div>
                         {item.product.category && (
-                          <p className="text-sm text-gray-500">{item.product.category.name}</p>
+                          <p className="text-xs sm:text-sm text-gray-500 mt-1">{item.product.category.name}</p>
                         )}
-                        <div className="flex items-center justify-between mt-2">
-                          <p className="text-sm text-gray-600">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-2 gap-2">
+                          <p className="text-xs sm:text-sm text-gray-600">
                             수량: {item.quantity}개
                           </p>
-                          <div className="text-right">
-                            <p className="text-sm text-gray-500">
+                          <div className="text-left sm:text-right">
+                            <p className="text-xs sm:text-sm text-gray-500">
                               {item.unitPrice.toLocaleString()}원 × {item.quantity}
                             </p>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-gray-900 text-sm sm:text-base">
                               {item.totalPrice.toLocaleString()}원
                             </p>
                           </div>
@@ -540,7 +541,7 @@ export default function OrderDetailPage() {
                               variant="outline"
                               size="sm"
                               onClick={openReviewModal}
-                              className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                              className="text-blue-600 border-blue-600 hover:bg-blue-50 text-xs sm:text-sm w-full sm:w-auto"
                             >
                               리뷰 작성
                             </Button>
@@ -552,28 +553,28 @@ export default function OrderDetailPage() {
                 </div>
                 
                 {/* 주문 금액 요약 */}
-                <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-gray-600">상품 금액</span>
-                      <span>{Number(order.subtotal).toLocaleString()}원</span>
+                      <span className="font-medium">{Number(order.subtotal).toLocaleString()}원</span>
                     </div>
                     {Number(order.discountAmount) > 0 && (
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs sm:text-sm">
                         <span className="text-gray-600">할인 금액</span>
-                        <span className="text-red-500">-{Number(order.discountAmount).toLocaleString()}원</span>
+                        <span className="text-red-500 font-medium">-{Number(order.discountAmount).toLocaleString()}원</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-gray-600">배송비</span>
-                      <span>
+                      <span className="font-medium">
                         {Number(order.shippingAmount) === 0 
                           ? '무료' 
                           : `${Number(order.shippingAmount).toLocaleString()}원`
                         }
                       </span>
                     </div>
-                    <div className="flex justify-between text-lg font-semibold pt-2 border-t border-gray-200">
+                    <div className="flex justify-between text-base sm:text-lg font-semibold pt-2 border-t border-gray-200">
                       <span>총 결제 금액</span>
                       <span className="text-blue-600">{Number(order.totalAmount).toLocaleString()}원</span>
                     </div>
@@ -584,36 +585,36 @@ export default function OrderDetailPage() {
 
             {/* 배송지 정보 */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <MapPin className="h-5 w-5 mr-2" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center text-base sm:text-lg">
+                  <MapPin className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   배송지 정보
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <div className="space-y-3">
                   {order.shippingAddress?.receiver_name && (
                     <div className="flex items-center">
-                      <User className="h-4 w-4 text-gray-400 mr-3" />
-                      <span className="font-medium">{order.shippingAddress.receiver_name}</span>
+                      <User className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0" />
+                      <span className="font-medium text-sm sm:text-base">{order.shippingAddress.receiver_name}</span>
                     </div>
                   )}
                   {order.shippingAddress?.phone && (
                     <div className="flex items-center">
-                      <Phone className="h-4 w-4 text-gray-400 mr-3" />
-                      <span>{order.shippingAddress.phone}</span>
+                      <Phone className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0" />
+                      <span className="text-sm sm:text-base">{order.shippingAddress.phone}</span>
                     </div>
                   )}
                   {order.shippingAddress?.base_address && (
                     <div className="flex items-start">
-                      <MapPin className="h-4 w-4 text-gray-400 mr-3 mt-1" />
-                      <div>
-                        <p>{order.shippingAddress.base_address}</p>
+                      <MapPin className="h-4 w-4 text-gray-400 mr-3 mt-1 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm sm:text-base break-words">{order.shippingAddress.base_address}</p>
                         {order.shippingAddress.detail_address && (
-                          <p className="text-gray-600">{order.shippingAddress.detail_address}</p>
+                          <p className="text-gray-600 text-sm sm:text-base break-words">{order.shippingAddress.detail_address}</p>
                         )}
                         {order.shippingAddress.zone_number && (
-                          <p className="text-sm text-gray-500 mt-1">
+                          <p className="text-xs sm:text-sm text-gray-500 mt-1">
                             우편번호: {order.shippingAddress.zone_number}
                           </p>
                         )}
@@ -626,29 +627,29 @@ export default function OrderDetailPage() {
           </div>
 
           {/* 오른쪽 컬럼 */}
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-6 lg:space-y-8">
             {/* 주문자 정보 */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="h-5 w-5 mr-2" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center text-base sm:text-lg">
+                  <User className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   주문자 정보
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <div className="space-y-3">
                   <div className="flex items-center">
-                    <User className="h-4 w-4 text-gray-400 mr-3" />
-                    <span className="font-medium">{order.user?.name || user?.name}</span>
+                    <User className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0" />
+                    <span className="font-medium text-sm sm:text-base">{order.user?.name || user?.name}</span>
                   </div>
                   <div className="flex items-center">
-                    <Mail className="h-4 w-4 text-gray-400 mr-3" />
-                    <span>{order.user?.email || user?.email}</span>
+                    <Mail className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0" />
+                    <span className="text-sm sm:text-base break-all">{order.user?.email || user?.email}</span>
                   </div>
                   {(order.user?.phoneNumber || user?.phoneNumber) && (
                     <div className="flex items-center">
-                      <Phone className="h-4 w-4 text-gray-400 mr-3" />
-                      <span>{order.user?.phoneNumber || user?.phoneNumber}</span>
+                      <Phone className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0" />
+                      <span className="text-sm sm:text-base">{order.user?.phoneNumber || user?.phoneNumber}</span>
                     </div>
                   )}
                 </div>
@@ -657,25 +658,25 @@ export default function OrderDetailPage() {
 
             {/* 결제 정보 */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CreditCard className="h-5 w-5 mr-2" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center text-base sm:text-lg">
+                  <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   결제 정보
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">결제 방법</span>
-                    <span className="font-medium">토스페이먼츠</span>
+                    <span className="text-gray-600 text-sm sm:text-base">결제 방법</span>
+                    <span className="font-medium text-sm sm:text-base">토스페이먼츠</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">결제 상태</span>
-                    <span className="font-medium text-green-600">결제 완료</span>
+                    <span className="text-gray-600 text-sm sm:text-base">결제 상태</span>
+                    <span className="font-medium text-green-600 text-sm sm:text-base">결제 완료</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">결제 일시</span>
-                    <span>
+                    <span className="text-gray-600 text-sm sm:text-base">결제 일시</span>
+                    <span className="text-sm sm:text-base">
                       {new Date(order.createdAt).toLocaleDateString('ko-KR', {
                         month: 'long',
                         day: 'numeric',
@@ -685,8 +686,8 @@ export default function OrderDetailPage() {
                     </span>
                   </div>
                   <div className="flex justify-between pt-3 border-t border-gray-200">
-                    <span className="font-medium">총 결제 금액</span>
-                    <span className="font-semibold text-lg text-blue-600">
+                    <span className="font-medium text-sm sm:text-base">총 결제 금액</span>
+                    <span className="font-semibold text-base sm:text-lg text-blue-600">
                       {order.totalAmount.toLocaleString()}원
                     </span>
                   </div>
@@ -828,31 +829,31 @@ export default function OrderDetailPage() {
         </div>
 
         {/* 하단 액션 버튼 */}
-        <div className="mt-8 flex justify-center space-x-4">
+        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
           {/* 디버깅: 현재 주문 상태 표시
           <div className="text-sm text-gray-500 mb-2">
             현재 주문 상태: {order.status} ({ORDER_STATUS_LABELS[order.status as keyof typeof ORDER_STATUS_LABELS]})
           </div> */}
           
           {order.status === 'PENDING' && (
-            <Button variant="destructive">
+            <Button variant="destructive" className="w-full sm:w-auto text-sm">
               주문 취소
             </Button>
           )}
           {(order.status === 'DELIVERED' || order.status === 'SHIPPED') && hasAvailableItemsForReturn() && (
             <>
-              <Button variant="outline" onClick={openReturnModal}>
+              <Button variant="outline" onClick={openReturnModal} className="w-full sm:w-auto text-sm">
                 <RotateCcw className="h-4 w-4 mr-2" />
                 교환/반품 신청
               </Button>
               {order.status === 'DELIVERED' && (
-                <Button onClick={openReviewModal}>
+                <Button onClick={openReviewModal} className="w-full sm:w-auto text-sm">
                   리뷰 작성
                 </Button>
               )}
             </>
           )}
-          <Button variant="outline" onClick={() => window.print()}>
+          <Button variant="outline" onClick={() => window.print()} className="w-full sm:w-auto text-sm">
             주문서 인쇄
           </Button>
         </div>

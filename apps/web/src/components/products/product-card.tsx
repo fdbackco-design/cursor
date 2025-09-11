@@ -187,15 +187,22 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="space-y-1 sm:space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs sm:text-sm font-medium text-gray-600">{priceDisplay.text}</span>
-              {priceDisplay.price ? (
-                <span className="text-sm sm:text-base font-extrabold text-gray-900">
-                  {priceDisplay.price}
-                </span>
-              ) : (
-                <span className="text-xs sm:text-sm text-gray-400">
-                  {priceDisplay.text}
-                </span>
-              )}
+              <div className="flex items-center gap-1">
+                {priceDisplay.price ? (
+                  <span className="text-sm sm:text-base font-extrabold text-gray-900">
+                    {priceDisplay.price}
+                  </span>
+                ) : (
+                  <span className="text-xs sm:text-sm text-gray-400">
+                    {priceDisplay.text}
+                  </span>
+                )}
+                {product.comparePrice && product.comparePrice > (user?.role === 'BIZ' ? product.priceB2B : product.priceB2C) && (
+                  <span className="text-xs text-gray-500 line-through">
+                    {formatPriceWithCurrency(product.comparePrice)}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>

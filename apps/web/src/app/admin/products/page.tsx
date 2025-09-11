@@ -221,17 +221,17 @@ const ProductsPage = () => {
               <div className="space-y-4 sm:space-y-0">
                 {/* 데스크톱 테이블 */}
                 <div className="hidden sm:block overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full table-fixed">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-medium text-gray-900">상품명</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900">카테고리</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900">가격</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900">재고</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900">벤더</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900">상태</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900">등록일</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900">작업</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-1/4">상품명</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">카테고리</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-24">가격</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-16">재고</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">벤더</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">상태</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">등록일</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-24">작업</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -239,7 +239,7 @@ const ProductsPage = () => {
                         <tr key={product.id!} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="py-3 px-4">
                             <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                              <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
                                 {product.images && product.images.length > 0 ? (
                                   <img
                                     src={getImageUrl(product.images[0] || '')}
@@ -250,14 +250,14 @@ const ProductsPage = () => {
                                   <Package className="h-5 w-5 text-gray-500" />
                                 )}
                               </div>
-                              <div>
-                                <p className="font-medium text-gray-900">{product.name}</p>
-                                <p className="text-sm text-gray-500">SKU: {product.sku}</p>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-gray-900 truncate">{product.name}</p>
+                                <p className="text-sm text-gray-500 truncate">SKU: {product.sku}</p>
                               </div>
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">
                               {product.category?.name || '카테고리 없음'}
                             </span>
                           </td>
@@ -283,10 +283,10 @@ const ProductsPage = () => {
                             </span>
                           </td>
                           <td className="py-3 px-4">
-                            <span className="text-sm text-gray-900">{product.vendor?.name || '벤더 없음'}</span>
+                            <span className="text-sm text-gray-900 whitespace-nowrap truncate block">{product.vendor?.name || '벤더 없음'}</span>
                           </td>
                           <td className="py-3 px-4">
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-2 whitespace-nowrap">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 product.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                               }`}>
@@ -300,8 +300,8 @@ const ProductsPage = () => {
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <span className="text-sm text-gray-500">
-                              {new Date(product.createdAt).toLocaleDateString('ko-KR')}
+                            <span className="text-sm text-gray-500 whitespace-nowrap">
+                              {new Date(product.createdAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
                             </span>
                           </td>
                           <td className="py-3 px-4">
@@ -421,7 +421,7 @@ const ProductsPage = () => {
                           )}
                         </div>
                         <span className="text-xs text-gray-500">
-                          {new Date(product.createdAt).toLocaleDateString('ko-KR')}
+                          {new Date(product.createdAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
                         </span>
                       </div>
                     </div>

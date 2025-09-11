@@ -287,9 +287,16 @@ export function ProductDetail({ product }: ProductDetailProps) {
         {/* Price */}
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <span className="text-3xl font-bold text-primary">
-              {formatPriceWithCurrency(displayPrice)}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-3xl font-bold text-primary">
+                {formatPriceWithCurrency(displayPrice)}
+              </span>
+              {product.comparePrice && product.comparePrice > displayPrice && (
+                <span className="text-lg text-gray-500 line-through">
+                  {formatPriceWithCurrency(product.comparePrice)}
+                </span>
+              )}
+            </div>
             {discount > 0 && (
               <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-medium">
                 {discount}% 할인
@@ -297,15 +304,39 @@ export function ProductDetail({ product }: ProductDetailProps) {
             )}
           </div>
           
-          {/* {product.comparePrice && (
-            <p className="text-muted-foreground line-through">
-              {product.comparePrice.toLocaleString()}원
-            </p>
-          )}
+          {/* B2B와 B2C 가격 모두 표시 */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">B2B:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold text-gray-900">
+                  {formatPriceWithCurrency(product.priceB2B)}
+                </span>
+                {product.comparePrice && product.comparePrice > product.priceB2B && (
+                  <span className="text-sm text-gray-500 line-through">
+                    {formatPriceWithCurrency(product.comparePrice)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">B2C:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold text-gray-900">
+                  {formatPriceWithCurrency(product.priceB2C)}
+                </span>
+                {product.comparePrice && product.comparePrice > product.priceB2C && (
+                  <span className="text-sm text-gray-500 line-through">
+                    {formatPriceWithCurrency(product.comparePrice)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
           
           <p className="text-sm text-muted-foreground">
-            {priceLabel} • 재고: {product.stockQuantity}개
-          </p> */}
+            재고: {product.stockQuantity}개
+          </p>
         </div>
 
         {/* Quantity */}

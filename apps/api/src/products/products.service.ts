@@ -274,7 +274,7 @@ export class ProductsService {
         height: nHeight,
 
         images,                       // Json
-        descriptionImages,            // Json
+        descriptionImages: descriptionImages?.filter(img => img !== undefined && img !== null) || [],            // Json
         tags: tagsArr,                // Json
         metadata: metaObj,            // Json
 
@@ -401,7 +401,7 @@ export class ProductsService {
         width: width !== undefined ? (width ? parseFloat(width) : null) : existingProduct.width,
         height: height !== undefined ? (height ? parseFloat(height) : null) : existingProduct.height,
         images: images !== undefined ? images : existingProduct.images,
-        descriptionImages: descriptionImages !== undefined ? descriptionImages : existingProduct.descriptionImages,
+        descriptionImages: descriptionImages !== undefined ? descriptionImages.filter(img => img !== undefined && img !== null) : existingProduct.descriptionImages,
         categoryId: categoryRecord.id,
         vendorId: vendorRecord?.id || null,
         isActive: isActive !== undefined ? (isActive === 'true' || isActive === true) : existingProduct.isActive,

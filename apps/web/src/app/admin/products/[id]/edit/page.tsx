@@ -314,7 +314,7 @@ const EditProductPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  상품 설명 *
+                  상품 설명 *(필수입력: 배송 기한은 영업일 기준 5일 이내입니다.) 
                 </label>
                 <textarea
                   name="description"

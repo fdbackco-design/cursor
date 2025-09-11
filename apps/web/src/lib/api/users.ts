@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export interface User {
   id: string;
@@ -24,7 +24,7 @@ export const usersApi = {
       if (excludeSellerUsers) params.append('excludeSellerUsers', 'true');
       
       const queryString = params.toString();
-      const url = `${API_BASE_URL}/users${queryString ? `?${queryString}` : ''}`;
+      const url = `${API_BASE_URL}/api/v1/users${queryString ? `?${queryString}` : ''}`;
       
       const response = await fetch(url);
       
@@ -43,7 +43,7 @@ export const usersApi = {
   // 셀러 등록 가능한 사용자 조회 (아직 셀러로 등록되지 않은 사용자)
   async getAvailableUsersForSeller(): Promise<User[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/available-for-seller`);
+      const response = await fetch(`${API_BASE_URL}/api/v1/users/available-for-seller`);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

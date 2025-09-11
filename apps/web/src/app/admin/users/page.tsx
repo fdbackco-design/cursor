@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
 import { Button } from '@repo/ui';
-import { Clock, Check, X, User, Mail, Calendar, Hash, ArrowLeft } from 'lucide-react';
+import { Clock, Check, X, User, Mail, Calendar, Hash, ArrowLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 
 interface User {
@@ -40,6 +40,7 @@ const UsersPage = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('all');
   const [referralFilter, setReferralFilter] = useState<string>('all');
+  const [searchCode, setSearchCode] = useState<string>('');
 
   useEffect(() => {
     fetchUsers();
@@ -105,6 +106,11 @@ const UsersPage = () => {
   };
 
   const filteredUsers = users.filter(user => {
+    // 검색 코드 필터 (최우선)
+    if (searchCode.trim()) {
+      return user.referrerCodeUsed?.toLowerCase().includes(searchCode.toLowerCase());
+    }
+    
     // 승인 상태 필터
     if (filter === 'pending') return !user.approve;
     if (filter === 'approved') return user.approve;
@@ -137,16 +143,46 @@ const UsersPage = () => {
       <div className="max-w-7xl mx-auto">
         {/* 헤더 */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex items-center gap-4">
-            <Link href="/admin">
-              <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2">
-                <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
-                관리자 메인
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-2">사용자 승인 관리</h1>
-              <p className="text-sm sm:text-base text-gray-600">신규 가입 사용자의 승인 및 관리</p>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-center gap-4">
+              <Link href="/admin">
+                <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2">
+                  <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+                  관리자 메인
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-2">사용자 승인 관리</h1>
+                <p className="text-sm sm:text-base text-gray-600">신규 가입 사용자의 승인 및 관리</p>
+              </div>
+            </div>
+            
+            {/* 추천인 코드 검색 */}
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="추천인 코드 검색 (예: WELCOME10)"
+                  value={searchCode}
+                  onChange={(e) => setSearchCode(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      // 엔터 키를 누르면 검색 실행 (이미 실시간 검색이므로 추가 로직 불필요)
+                      e.currentTarget.blur(); // 포커스 해제
+                    }
+                  }}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+                {searchCode && (
+                  <button
+                    onClick={() => setSearchCode('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -191,72 +227,104 @@ const UsersPage = () => {
           </Card>
         </div>
 
-        {/* 필터 */}
-        <div className="mb-4 sm:mb-6">
-          <div className="space-y-4">
-            {/* 승인 상태 필터 */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">승인 상태</h3>
-              <div className="flex flex-wrap gap-2">
+        {/* 검색 결과 정보 */}
+        {searchCode.trim() && (
+          <div className="mb-4 sm:mb-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Search className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-900">
+                      "{searchCode}" 추천인 코드 검색 결과
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                      {filteredUsers.length}명의 사용자를 찾았습니다
+                    </p>
+                  </div>
+                </div>
                 <Button
-                  variant={filter === 'all' ? 'default' : 'outline'}
-                  onClick={() => setFilter('all')}
-                  className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSearchCode('')}
+                  className="text-blue-600 border-blue-300 hover:bg-blue-100"
                 >
-                  전체 ({users.length})
+                  <X className="h-4 w-4 mr-1" />
+                  검색 초기화
                 </Button>
-                <Button
-                  variant={filter === 'pending' ? 'default' : 'outline'}
-                  onClick={() => setFilter('pending')}
-                  className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
-                >
-                  승인 대기 ({pendingCount})
-                </Button>
-                <Button
-                  variant={filter === 'approved' ? 'default' : 'outline'}
-                  onClick={() => setFilter('approved')}
-                  className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
-                >
-                  승인 완료 ({approvedCount})
-                </Button>
-              </div>
-            </div>
-            
-            {/* 추천인 코드 필터 */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">추천인 코드</h3>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={referralFilter === 'all' ? 'default' : 'outline'}
-                  onClick={() => setReferralFilter('all')}
-                  className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
-                >
-                  전체 ({users.length})
-                </Button>
-                <Button
-                  variant={referralFilter === 'none' ? 'default' : 'outline'}
-                  onClick={() => setReferralFilter('none')}
-                  className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
-                >
-                  추천인 미사용 ({noReferralUserCount})
-                </Button>
-                {referralCodes.map((code) => {
-                  const count = users.filter(u => u.referrerCodeUsed === code.code).length;
-                  return (
-                    <Button
-                      key={code.id}
-                      variant={referralFilter === code.code ? 'default' : 'outline'}
-                      onClick={() => setReferralFilter(code.code)}
-                      className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
-                    >
-                      {code.code} ({count})
-                    </Button>
-                  );
-                })}
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* 필터 */}
+        {!searchCode.trim() && (
+          <div className="mb-4 sm:mb-6">
+            <div className="space-y-4">
+              {/* 승인 상태 필터 */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">승인 상태</h3>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={filter === 'all' ? 'default' : 'outline'}
+                    onClick={() => setFilter('all')}
+                    className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                  >
+                    전체 ({users.length})
+                  </Button>
+                  <Button
+                    variant={filter === 'pending' ? 'default' : 'outline'}
+                    onClick={() => setFilter('pending')}
+                    className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                  >
+                    승인 대기 ({pendingCount})
+                  </Button>
+                  <Button
+                    variant={filter === 'approved' ? 'default' : 'outline'}
+                    onClick={() => setFilter('approved')}
+                    className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                  >
+                    승인 완료 ({approvedCount})
+                  </Button>
+                </div>
+              </div>
+              
+              {/* 추천인 코드 필터 */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">추천인 코드</h3>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={referralFilter === 'all' ? 'default' : 'outline'}
+                    onClick={() => setReferralFilter('all')}
+                    className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                  >
+                    전체 ({users.length})
+                  </Button>
+                  <Button
+                    variant={referralFilter === 'none' ? 'default' : 'outline'}
+                    onClick={() => setReferralFilter('none')}
+                    className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                  >
+                    추천인 미사용 ({noReferralUserCount})
+                  </Button>
+                  {referralCodes.map((code) => {
+                    const count = users.filter(u => u.referrerCodeUsed === code.code).length;
+                    return (
+                      <Button
+                        key={code.id}
+                        variant={referralFilter === code.code ? 'default' : 'outline'}
+                        onClick={() => setReferralFilter(code.code)}
+                        className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                      >
+                        {code.code} ({count})
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 사용자 목록 */}
         <div className="grid gap-4 sm:gap-6">
@@ -353,14 +421,16 @@ const UsersPage = () => {
           <div className="text-center py-8 sm:py-12">
             <Clock className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
             <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
-              {filter === 'pending' ? '승인 대기 중인 사용자가 없습니다' : 
+              {searchCode.trim() ? `"${searchCode}" 추천인 코드를 사용한 사용자가 없습니다` :
+               filter === 'pending' ? '승인 대기 중인 사용자가 없습니다' : 
                filter === 'approved' ? '승인된 사용자가 없습니다' : 
                referralFilter === 'none' ? '추천인을 사용하지 않은 사용자가 없습니다' :
                referralFilter !== 'all' ? `"${referralFilter}" 추천인 코드를 사용한 사용자가 없습니다` :
                '사용자가 없습니다'}
             </h3>
             <p className="text-sm sm:text-base text-gray-500">
-              {filter === 'pending' ? '새로운 사용자 가입을 기다려주세요' : 
+              {searchCode.trim() ? '다른 추천인 코드를 검색해보세요' :
+               filter === 'pending' ? '새로운 사용자 가입을 기다려주세요' : 
                filter === 'approved' ? '아직 승인된 사용자가 없습니다' : 
                referralFilter === 'none' ? '모든 사용자가 추천인 코드를 사용했습니다' :
                referralFilter !== 'all' ? '다른 추천인 코드를 선택해보세요' :

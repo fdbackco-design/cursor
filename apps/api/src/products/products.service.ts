@@ -336,7 +336,9 @@ export class ProductsService {
       tags,
       metadata,
       images,
-      descriptionImages
+      descriptionImages,
+      deletedImageIndexes,
+      deletedDescriptionImageIndexes
     } = updateProductDto;
 
     // 기존 상품 조회
@@ -385,6 +387,70 @@ export class ProductsService {
       }
     }
 
+    // 기존 이미지에서 삭제된 이미지 처리
+    let finalImages = existingProduct.images as any[] || [];
+    let finalDescriptionImages = existingProduct.descriptionImages as any[] || [];
+
+    // 삭제된 이미지 인덱스 처리 (내림차순으로 정렬하여 뒤에서부터 삭제)
+    if (deletedImageIndexes && Array.isArray(deletedImageIndexes) && deletedImageIndexes.length > 0) {
+      const sortedIndexes = [...deletedImageIndexes].sort((a, b) => b - a);
+      for (const index of sortedIndexes) {
+        if (index >= 0 && index < finalImages.length) {
+          // S3에서 이미지 삭제
+          const imageToDelete = finalImages[index];
+          if (imageToDelete && imageToDelete.s3Key) {
+            try {
+              await this.s3Service.deleteImage(imageToDelete.s3Key);
+            } catch (error) {
+              console.error('S3 이미지 삭제 실패:', error);
+            }
+          }
+          // 배열에서 제거
+          finalImages.splice(index, 1);
+        }
+      }
+    }
+
+    // 삭제된 설명 이미지 인덱스 처리
+    if (deletedDescriptionImageIndexes && Array.isArray(deletedDescriptionImageIndexes) && deletedDescriptionImageIndexes.length > 0) {
+      const sortedIndexes = [...deletedDescriptionImageIndexes].sort((a, b) => b - a);
+      for (const index of sortedIndexes) {
+        if (index >= 0 && index < finalDescriptionImages.length) {
+          // S3에서 이미지 삭제
+          const imageToDelete = finalDescriptionImages[index];
+          if (imageToDelete && imageToDelete.s3Key) {
+            try {
+              await this.s3Service.deleteImage(imageToDelete.s3Key);
+            } catch (error) {
+              console.error('S3 설명 이미지 삭제 실패:', error);
+            }
+          }
+          // 배열에서 제거
+          finalDescriptionImages.splice(index, 1);
+        }
+      }
+    }
+
+    // 새로 추가된 이미지가 있으면 기존 이미지에 추가
+    if (images && Array.isArray(images) && images.length > 0) {
+      const newImages = images.map(filename => ({
+        filename,
+        url: `/uploads/${filename}`,
+        s3Key: null // 로컬 파일이므로 S3 키는 null
+      }));
+      finalImages = [...finalImages, ...newImages];
+    }
+
+    // 새로 추가된 설명 이미지가 있으면 기존 설명 이미지에 추가
+    if (descriptionImages && Array.isArray(descriptionImages) && descriptionImages.length > 0) {
+      const newDescriptionImages = descriptionImages.map(filename => ({
+        filename,
+        url: `/uploads/${filename}`,
+        s3Key: null // 로컬 파일이므로 S3 키는 null
+      }));
+      finalDescriptionImages = [...finalDescriptionImages, ...newDescriptionImages];
+    }
+
     // 상품 업데이트
     const product = await this.prisma.product.update({
       where: { id },
@@ -400,8 +466,8 @@ export class ProductsService {
         length: length !== undefined ? (length ? parseFloat(length) : null) : existingProduct.length,
         width: width !== undefined ? (width ? parseFloat(width) : null) : existingProduct.width,
         height: height !== undefined ? (height ? parseFloat(height) : null) : existingProduct.height,
-        images: images !== undefined ? images : existingProduct.images,
-        descriptionImages: descriptionImages !== undefined ? descriptionImages.filter(img => img !== undefined && img !== null) : existingProduct.descriptionImages,
+        images: finalImages,
+        descriptionImages: finalDescriptionImages,
         categoryId: categoryRecord.id,
         vendorId: vendorRecord?.id || null,
         isActive: isActive !== undefined ? (isActive === 'true' || isActive === true) : existingProduct.isActive,

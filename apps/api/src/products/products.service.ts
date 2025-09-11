@@ -281,8 +281,8 @@ export class ProductsService {
         categoryId: categoryRecord.id,
         vendorId: vendorRecord?.id ?? null,
 
-        isActive: !!isActive,
-        isFeatured: !!isFeatured,
+        isActive: isActive === 'true' || isActive === true,
+        isFeatured: isFeatured === 'true' || isFeatured === true,
 
         stockQuantity: intStock,
         lowStockThreshold: intLowStock,
@@ -404,8 +404,8 @@ export class ProductsService {
         descriptionImages: descriptionImages !== undefined ? descriptionImages : existingProduct.descriptionImages,
         categoryId: categoryRecord.id,
         vendorId: vendorRecord?.id || null,
-        isActive: isActive !== undefined ? isActive : existingProduct.isActive,
-        isFeatured: isFeatured !== undefined ? isFeatured : existingProduct.isFeatured,
+        isActive: isActive !== undefined ? (isActive === 'true' || isActive === true) : existingProduct.isActive,
+        isFeatured: isFeatured !== undefined ? (isFeatured === 'true' || isFeatured === true) : existingProduct.isFeatured,
         stockQuantity: stockQuantity !== undefined ? Number(stockQuantity) : existingProduct.stockQuantity,
         lowStockThreshold: lowStockThreshold !== undefined ? (lowStockThreshold ? Number(lowStockThreshold) : null) : existingProduct.lowStockThreshold,
         tags: tags !== undefined ? (tags ? JSON.parse(tags) : []) : existingProduct.tags,

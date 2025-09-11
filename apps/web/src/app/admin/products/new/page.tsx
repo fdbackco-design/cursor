@@ -120,9 +120,8 @@ const NewProductPage = () => {
       category: formData.category,    // ← 카테고리 이름
       vendor: formData.vendor || '',
 
-      isActive: !!formData.isActive,     // ← boolean 확정
-      isFeatured: !!formData.isFeatured, // ← boolean 확정
-      
+      isActive: Boolean(formData.isActive),
+      isFeatured: Boolean(formData.isFeatured),
       stockQuantity: Number(formData.stockQuantity),
       lowStockThreshold: formData.lowStockThreshold ? Number(formData.lowStockThreshold) : 0,
 

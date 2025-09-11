@@ -414,7 +414,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 {product.descriptionImages.map((image, index) => (
                   <div key={index} className="w-full">
                     <img
-                      src={getProductThumbnailUrl(product.images, index)}
+                      src={getProductThumbnailUrl(product.descriptionImages, index)}
                       alt={`${product.name} 상세 이미지 ${index + 1}`}
                       className="w-full h-auto rounded-lg shadow-sm"
                       loading="lazy"

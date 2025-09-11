@@ -116,10 +116,6 @@ export default function HomePage() {
       primaryButton: {
         text: '할인 상품 보기',
         onClick: () => router.push('/category/kitchen')
-      },
-      secondaryButton: {
-        text: '카탈로그 다운로드',
-        onClick: () => {}
       }
     },
   ];

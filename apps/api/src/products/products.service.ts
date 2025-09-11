@@ -433,22 +433,14 @@ export class ProductsService {
 
     // 새로 추가된 이미지가 있으면 기존 이미지에 추가
     if (images && Array.isArray(images) && images.length > 0) {
-      const newImages = images.map(filename => ({
-        filename,
-        url: `/uploads/${filename}`,
-        s3Key: null // 로컬 파일이므로 S3 키는 null
-      }));
-      finalImages = [...finalImages, ...newImages];
+      // images는 이미 S3Image 객체 배열이므로 그대로 추가
+      finalImages = [...finalImages, ...images];
     }
 
     // 새로 추가된 설명 이미지가 있으면 기존 설명 이미지에 추가
     if (descriptionImages && Array.isArray(descriptionImages) && descriptionImages.length > 0) {
-      const newDescriptionImages = descriptionImages.map(filename => ({
-        filename,
-        url: `/uploads/${filename}`,
-        s3Key: null // 로컬 파일이므로 S3 키는 null
-      }));
-      finalDescriptionImages = [...finalDescriptionImages, ...newDescriptionImages];
+      // descriptionImages는 이미 S3Image 객체 배열이므로 그대로 추가
+      finalDescriptionImages = [...finalDescriptionImages, ...descriptionImages];
     }
 
     // 상품 업데이트

@@ -181,6 +181,34 @@ export class PaymentsService {
             }
           });
 
+          // 재고 차감 처리
+          for (const item of cart.items) {
+            const product = await tx.product.findUnique({
+              where: { id: item.productId },
+              select: { stockQuantity: true, name: true }
+            });
+
+            if (!product) {
+              throw new Error(`상품을 찾을 수 없습니다: ${item.productId}`);
+            }
+
+            if (product.stockQuantity < item.quantity) {
+              throw new Error(`재고가 부족합니다. 상품: ${product.name}, 요청 수량: ${item.quantity}, 현재 재고: ${product.stockQuantity}`);
+            }
+
+            // 재고 차감
+            await tx.product.update({
+              where: { id: item.productId },
+              data: {
+                stockQuantity: {
+                  decrement: item.quantity
+                }
+              }
+            });
+
+            this.logger.log(`재고 차감 완료: productId=${item.productId}, quantity=${item.quantity}`);
+          }
+
           // 장바구니 비우기
           await tx.cartItem.deleteMany({
             where: { cartId: cart.id }

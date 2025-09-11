@@ -120,7 +120,35 @@ export class OrdersService {
           )
         );
 
-        // 4. 주문 생성이 성공한 후 쿠폰 사용 처리 (소프트 딜리트)
+        // 4. 재고 차감 처리
+        for (const item of createOrderDto.items) {
+          const product = await prisma.product.findUnique({
+            where: { id: item.productId },
+            select: { stockQuantity: true, name: true }
+          });
+
+          if (!product) {
+            throw new Error(`상품을 찾을 수 없습니다: ${item.productId}`);
+          }
+
+          if (product.stockQuantity < item.quantity) {
+            throw new Error(`재고가 부족합니다. 상품: ${product.name}, 요청 수량: ${item.quantity}, 현재 재고: ${product.stockQuantity}`);
+          }
+
+          // 재고 차감
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: {
+                decrement: item.quantity
+              }
+            }
+          });
+
+          this.logger.log(`재고 차감 완료: productId=${item.productId}, quantity=${item.quantity}`);
+        }
+
+        // 5. 주문 생성이 성공한 후 쿠폰 사용 처리 (소프트 딜리트)
         if (userCouponToProcess) {
           this.logger.log(`쿠폰 사용 처리 시작: couponId=${userCouponToProcess.id}, userId=${userId}`);
           

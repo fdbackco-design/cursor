@@ -82,6 +82,12 @@ export function ProductCard({ product }: ProductCardProps) {
       return;
     }
 
+    // 재고 확인
+    if (product.stockQuantity <= 0) {
+      showToast(toast.error('품절', '현재 재고가 없어 구매할 수 없습니다.'));
+      return;
+    }
+
     setCartLoading(true);
     try {
       await cartApi.addToCart({
@@ -158,6 +164,13 @@ export function ProductCard({ product }: ProductCardProps) {
                 <span className="text-xs font-semibold text-gray-700">{product.brand}</span>
               </div>
             )}
+            
+            {/* 품절 배지 */}
+            {product.stockQuantity <= 0 && (
+              <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-red-500 text-white px-2 py-1 rounded-full">
+                <span className="text-xs font-semibold">품절</span>
+              </div>
+            )}
           </div>
           <div className="px-3 sm:px-4">
             <CardTitle className="text-sm font-medium text-gray-900 leading-tight group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
@@ -205,12 +218,16 @@ export function ProductCard({ product }: ProductCardProps) {
             </Button>
             <Button 
               size="sm" 
-              className="flex-1 bg-gray-900 text-white hover:bg-gray-800 text-xs sm:text-sm"
+              className={`flex-1 text-xs sm:text-sm ${
+                product.stockQuantity <= 0 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-gray-900 text-white hover:bg-gray-800'
+              }`}
               onClick={addToCart}
-              disabled={cartLoading}
+              disabled={cartLoading || product.stockQuantity <= 0}
             >
               <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              {cartLoading ? '추가중...' : '장바구니'}
+              {cartLoading ? '추가중...' : product.stockQuantity <= 0 ? '품절' : '장바구니'}
             </Button>
           </div>
         </CardFooter>

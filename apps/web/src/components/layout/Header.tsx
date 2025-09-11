@@ -203,9 +203,9 @@ const Header = () => {
           </div>
         </div>
 
-        {/* 모바일 메뉴 */}
+        {/* 모바일 메뉴 - 화면 하단 고정 */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-b border-gray-200">
+          <div className="md:hidden fixed bottom-0 left-0 w-full bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50">
             <div className="px-4 py-4 space-y-4">
               {/* 모바일 검색바 */}
               <form 

@@ -219,7 +219,7 @@ export class AnalyticsService {
   async getProductSales(period: string, productId?: string) {
     const { startDate, endDate } = this.getDateRange(period);
 
-    console.log(`[Analytics] 상품별 매출 조회 시작: period=${period}, productId=${productId || 'all'}`);
+    //console.log(`[Analytics] 상품별 매출 조회 시작: period=${period}, productId=${productId || 'all'}`);
 
     // 실제 OrderItem 데이터를 사용하여 상품별 매출 계산
     const orderItems = await this.prisma.orderItem.findMany({
@@ -335,13 +335,13 @@ export class AnalyticsService {
     // 매출순으로 정렬
     const sortedData = productSalesData.sort((a, b) => b.totalRevenue - a.totalRevenue);
     
-    console.log(`[Analytics] 상품별 매출 조회 완료: ${sortedData.length}개 상품`);
+    //console.log(`[Analytics] 상품별 매출 조회 완료: ${sortedData.length}개 상품`);
     
     return sortedData;
   }
 
   async getPopularProducts(period: string, limit: number) {
-    console.log(`[Analytics] 인기상품 조회 시작: period=${period}, limit=${limit}`);
+    //console.log(`[Analytics] 인기상품 조회 시작: period=${period}, limit=${limit}`);
     
     const productSales = await this.getProductSales(period);
     
@@ -353,7 +353,7 @@ export class AnalyticsService {
         ...product
       }));
     
-    console.log(`[Analytics] 인기상품 조회 완료: ${popularProducts.length}개 상품`);
+    //console.log(`[Analytics] 인기상품 조회 완료: ${popularProducts.length}개 상품`);
     
     return popularProducts;
   }

@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://feedbackmall.com';
 
 // 중복 요청 방지를 위한 캐시
 const pendingRequests = new Map<string, Promise<ApiResponse<any>>>();

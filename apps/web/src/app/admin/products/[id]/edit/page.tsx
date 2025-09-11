@@ -218,10 +218,10 @@ const EditProductPage = () => {
         productData.deletedDescriptionImageIndexes = deletedDescriptionImageIndexes;
       }
 
-      console.log('최종 전송 데이터:', productData);
-      console.log('전송할 productId:', productId);
-      console.log('삭제된 이미지 인덱스:', deletedImageIndexes);
-      console.log('삭제된 설명 이미지 인덱스:', deletedDescriptionImageIndexes);
+      // console.log('최종 전송 데이터:', productData);
+      // console.log('전송할 productId:', productId);
+      // console.log('삭제된 이미지 인덱스:', deletedImageIndexes);
+      // console.log('삭제된 설명 이미지 인덱스:', deletedDescriptionImageIndexes);
       
       await updateProduct(productId, productData);
       showToast(toast.success('상품 수정 완료', '상품이 성공적으로 수정되었습니다.'));

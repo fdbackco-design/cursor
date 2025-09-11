@@ -1,6 +1,6 @@
 import { WishlistResponse, AddToWishlistRequest, RemoveFromWishlistRequest } from '@/types/wishlist';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://feedbackmall.com';
 
 export const wishlistApi = {
   // 찜목록 조회

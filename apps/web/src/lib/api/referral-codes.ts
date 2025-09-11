@@ -1,6 +1,6 @@
 import { ReferralCode, CreateReferralCodeDto, UpdateReferralCodeDto } from '@/types/referral-code';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://feedbackmall.com';
 
 export const referralCodesApi = {
   // 추천 코드 생성

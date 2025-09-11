@@ -290,7 +290,7 @@ const UsersPage = () => {
               </div>
               
               {/* 추천인 코드 필터 */}
-              <div>
+              {/* <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-2">추천인 코드</h3>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -321,7 +321,7 @@ const UsersPage = () => {
                     );
                   })}
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         )}

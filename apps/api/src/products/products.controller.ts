@@ -187,10 +187,10 @@ export class ProductsController {
     // console.log('Controller - 받은 ID:', id);
     // console.log('Controller - 받은 DTO:', updateProductDto);
     try {
-      // 이미지 파일 처리 (files가 undefined일 수 있음)
-      const imageUrls = files?.images ? files.images.map(file => file.filename) : undefined;
-      const descriptionImageUrls = files?.descriptionImages ? files.descriptionImages.map(file => file.filename) : undefined;
-      
+      // 이미지 파일 처리 - S3 업로드
+      let s3ImageData: any[] = [];
+      let s3DescriptionImageData: any[] = [];
+
       // JSON 문자열로 전송된 삭제 인덱스 파싱
       let deletedImageIndexes = [];
       let deletedDescriptionImageIndexes = [];
@@ -211,10 +211,35 @@ export class ProductsController {
         }
       }
 
+      // 새 이미지들을 S3에 업로드
+      if (files?.images && files.images.length > 0) {
+        try {
+          console.log('S3 이미지 업로드 시작:', files.images.length, '개 파일');
+          s3ImageData = await this.productsService.uploadImagesForNewProduct(files.images);
+          console.log('S3 이미지 업로드 성공:', s3ImageData.length, '개');
+        } catch (error) {
+          console.error('S3 이미지 업로드 실패:', error);
+          // S3 업로드 실패 시 빈 배열로 폴백
+          s3ImageData = [];
+        }
+      }
+      
+      if (files?.descriptionImages && files.descriptionImages.length > 0) {
+        try {
+          console.log('S3 설명 이미지 업로드 시작:', files.descriptionImages.length, '개 파일');
+          s3DescriptionImageData = await this.productsService.uploadImagesForNewProduct(files.descriptionImages);
+          console.log('S3 설명 이미지 업로드 성공:', s3DescriptionImageData.length, '개');
+        } catch (error) {
+          console.error('S3 설명 이미지 업로드 실패:', error);
+          // S3 업로드 실패 시 빈 배열로 폴백
+          s3DescriptionImageData = [];
+        }
+      }
+
       const productData = {
         ...updateProductDto,
-        images: imageUrls,
-        descriptionImages: descriptionImageUrls,
+        images: s3ImageData,
+        descriptionImages: s3DescriptionImageData,
         deletedImageIndexes,
         deletedDescriptionImageIndexes
       };

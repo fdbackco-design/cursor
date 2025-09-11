@@ -304,39 +304,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
             )}
           </div>
           
-          {/* B2B와 B2C 가격 모두 표시 */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">B2B:</span>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold text-gray-900">
-                  {formatPriceWithCurrency(product.priceB2B)}
-                </span>
-                {product.comparePrice && product.comparePrice > product.priceB2B && (
-                  <span className="text-sm text-gray-500 line-through">
-                    {formatPriceWithCurrency(product.comparePrice)}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">B2C:</span>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold text-gray-900">
-                  {formatPriceWithCurrency(product.priceB2C)}
-                </span>
-                {product.comparePrice && product.comparePrice > product.priceB2C && (
-                  <span className="text-sm text-gray-500 line-through">
-                    {formatPriceWithCurrency(product.comparePrice)}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          <p className="text-sm text-muted-foreground">
-            재고: {product.stockQuantity}개
-          </p>
         </div>
 
         {/* Quantity */}

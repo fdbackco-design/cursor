@@ -51,6 +51,10 @@ const EditProductPage = () => {
     descriptionImages: [] as File[]
   });
 
+  // 삭제할 이미지 인덱스들을 추적
+  const [deletedImageIndexes, setDeletedImageIndexes] = useState<number[]>([]);
+  const [deletedDescriptionImageIndexes, setDeletedDescriptionImageIndexes] = useState<number[]>([]);
+
   // 기존 상품 데이터 로드
   useEffect(() => {
     const loadProduct = async () => {
@@ -125,6 +129,15 @@ const EditProductPage = () => {
     }));
   };
 
+  // 기존 이미지 삭제 함수
+  const removeExistingImage = (index: number, type: 'images' | 'descriptionImages') => {
+    if (type === 'images') {
+      setDeletedImageIndexes(prev => [...prev, index]);
+    } else {
+      setDeletedDescriptionImageIndexes(prev => [...prev, index]);
+    }
+  };
+
   const addTag = () => {
     const newTag = prompt('새 태그를 입력하세요:');
     if (newTag && newTag.trim()) {
@@ -197,6 +210,10 @@ const EditProductPage = () => {
       // 새로 업로드된 이미지만 포함
       if (formData.images.length > 0) productData.images = formData.images;
       if (formData.descriptionImages.length > 0) productData.descriptionImages = formData.descriptionImages;
+      
+      // 삭제된 이미지 인덱스 포함
+      if (deletedImageIndexes.length > 0) productData.deletedImageIndexes = deletedImageIndexes;
+      if (deletedDescriptionImageIndexes.length > 0) productData.deletedDescriptionImageIndexes = deletedDescriptionImageIndexes;
 
       // console.log('최종 전송 데이터:', productData);
       // console.log('전송할 productId:', productId);
@@ -623,12 +640,21 @@ const EditProductPage = () => {
                   <h4 className="text-sm font-medium text-gray-700 mb-2">기존 이미지</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {product.images.map((image, index) => (
-                      <div key={index} className="relative">
+                      <div key={index} className={`relative ${deletedImageIndexes.includes(index) ? 'opacity-50' : ''}`}>
                         <img
                           src={getImageUrl(image)}
                           alt={`기존 이미지 ${index + 1}`}
                           className="w-full h-24 object-cover rounded-lg"
                         />
+                        {!deletedImageIndexes.includes(index) && (
+                          <button
+                            type="button"
+                            onClick={() => removeExistingImage(index, 'images')}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -688,12 +714,21 @@ const EditProductPage = () => {
                   <h4 className="text-sm font-medium text-gray-700 mb-2">기존 이미지</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {product.descriptionImages.map((image, index) => (
-                      <div key={index} className="relative">
+                      <div key={index} className={`relative ${deletedDescriptionImageIndexes.includes(index) ? 'opacity-50' : ''}`}>
                         <img
                           src={getImageUrl(image)}
                           alt={`기존 상세 이미지 ${index + 1}`}
                           className="w-full h-24 object-cover rounded-lg"
                         />
+                        {!deletedDescriptionImageIndexes.includes(index) && (
+                          <button
+                            type="button"
+                            onClick={() => removeExistingImage(index, 'descriptionImages')}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>

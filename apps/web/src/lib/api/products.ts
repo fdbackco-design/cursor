@@ -267,6 +267,8 @@ export const updateProduct = async (id: string, productData: {
   metadata?: any;
   images?: File[];
   descriptionImages?: File[];
+  deletedImageIndexes?: number[];
+  deletedDescriptionImageIndexes?: number[];
 }) => {
 
   try {

@@ -2,13 +2,11 @@
 
 import Link from 'next/link';
 import { Button } from '@repo/ui';
-import { Search, LogIn, User, LogOut, Settings, Menu, X, Truck, ShoppingCart } from 'lucide-react';
+import { Search, LogIn, User, LogOut, Settings, Truck, ShoppingCart } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
 
 const Header = () => {
   const { user, isAuthenticated, loading } = useAuth();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 
 
@@ -164,20 +162,8 @@ const Header = () => {
               )}
             </div>
 
-            {/* 모바일 메뉴 버튼 */}
-            <div className="md:hidden flex items-center space-x-2">
-              {/* 모바일 검색 버튼 */}
-              <Link href="/search">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                >
-                  <Search className="h-5 w-5" />
-                </Button>
-              </Link>
-              
-              {/* 모바일 장바구니 버튼 */}
+            {/* 모바일 장바구니 버튼만 표시 */}
+            <div className="md:hidden flex items-center">
               {isAuthenticated && (
                 <Link href="/cart">
                   <Button 
@@ -189,99 +175,10 @@ const Header = () => {
                   </Button>
                 </Link>
               )}
-              
-              {/* 모바일 메뉴 토글 */}
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
             </div>
           </div>
         </div>
 
-        {/* 모바일 메뉴 - 화면 하단 고정 */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden fixed bottom-0 left-0 w-full bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50">
-            <div className="px-4 py-4 space-y-4">
-              {/* 모바일 검색바 */}
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  const query = formData.get('search') as string;
-                  if (query.trim()) {
-                    window.location.href = `/search?q=${encodeURIComponent(query.trim())}`;
-                  }
-                  setIsMobileMenuOpen(false);
-                }}
-                className="relative"
-              >
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  name="search"
-                  placeholder="상품명, 브랜드, 카테고리로 검색"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                />
-              </form>
-
-              {/* 로그인 상태에 따른 메뉴 */}
-              {!loading && (
-                <>
-                  {isAuthenticated ? (
-                    <div className="space-y-3">
-                      <div className="text-sm text-gray-600 pb-2 border-b border-gray-100">
-                        {user?.name ? `${user.name}님` : (user?.role === 'BIZ' ? '기업 사용자' : '일반 사용자')}
-                      </div>
-                      <Link href="/account" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Button className="w-full justify-start bg-primary text-white hover:bg-primary/90">
-                          <User className="h-4 w-4 mr-3" />
-                          마이페이지
-                        </Button>
-                      </Link>
-                      <Link href="/delivery" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Button variant="outline" className="w-full justify-start">
-                          <Truck className="h-4 w-4 mr-3" />
-                          배송
-                        </Button>
-                      </Link>
-                      {isAuthenticated && user && user.role === 'ADMIN' && (
-                        <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                          <Button variant="outline" className="w-full justify-start">
-                            <Settings className="h-4 w-4 mr-3" />
-                            관리자
-                          </Button>
-                        </Link>
-                      )}
-                      <Button 
-                        onClick={() => {
-                          handleLogout();
-                          setIsMobileMenuOpen(false);
-                        }}
-                        variant="outline" 
-                        className="w-full justify-start text-red-600 border-red-300 hover:bg-red-50"
-                      >
-                        <LogOut className="h-4 w-4 mr-3" />
-                        로그아웃
-                      </Button>
-                    </div>
-                  ) : (
-                    <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button className="w-full bg-gray-900 text-white hover:bg-gray-800">
-                        <LogIn className="h-4 w-4 mr-3" />
-                        로그인
-                      </Button>
-                    </Link>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        )}
       </header>
 
 
@@ -310,6 +207,61 @@ const Header = () => {
           </div>
         </div>
       </nav>
+
+      {/* 모바일 하단 고정 네비게이션 바 */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50">
+        <div className="flex items-center justify-around h-16 px-2">
+          {/* 검색 */}
+          <Link href="/search" className="flex flex-col items-center justify-center flex-1 py-2">
+            <Search className="h-5 w-5 text-gray-600 mb-1" />
+            <span className="text-xs text-gray-600">검색</span>
+          </Link>
+
+          {/* 마이페이지 */}
+          {!loading && (
+            <>
+              {isAuthenticated ? (
+                <Link href="/account" className="flex flex-col items-center justify-center flex-1 py-2">
+                  <User className="h-5 w-5 text-gray-600 mb-1" />
+                  <span className="text-xs text-gray-600">마이페이지</span>
+                </Link>
+              ) : (
+                <Link href="/signin" className="flex flex-col items-center justify-center flex-1 py-2">
+                  <LogIn className="h-5 w-5 text-gray-600 mb-1" />
+                  <span className="text-xs text-gray-600">로그인</span>
+                </Link>
+              )}
+            </>
+          )}
+
+          {/* 배송 */}
+          {isAuthenticated && (
+            <Link href="/delivery" className="flex flex-col items-center justify-center flex-1 py-2">
+              <Truck className="h-5 w-5 text-gray-600 mb-1" />
+              <span className="text-xs text-gray-600">배송</span>
+            </Link>
+          )}
+
+          {/* 관리자 (ADMIN만) */}
+          {isAuthenticated && user && user.role === 'ADMIN' && (
+            <Link href="/admin" className="flex flex-col items-center justify-center flex-1 py-2">
+              <Settings className="h-5 w-5 text-gray-600 mb-1" />
+              <span className="text-xs text-gray-600">관리자</span>
+            </Link>
+          )}
+
+          {/* 로그아웃 (로그인된 사용자만) */}
+          {isAuthenticated && (
+            <button 
+              onClick={handleLogout}
+              className="flex flex-col items-center justify-center flex-1 py-2"
+            >
+              <LogOut className="h-5 w-5 text-red-600 mb-1" />
+              <span className="text-xs text-red-600">로그아웃</span>
+            </button>
+          )}
+        </div>
+      </div>
     </>
   );
 };

@@ -6,6 +6,24 @@ import { CreateReferralCodeDto, UpdateReferralCodeDto } from './dto';
 export class ReferralCodesService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // 모든 추천 코드 목록 조회
+  async getAllReferralCodes() {
+    return await this.prisma.referralCode.findMany({
+      include: {
+        seller: {
+          select: {
+            id: true,
+            companyName: true,
+            representativeName: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+  }
+
   // 추천 코드 상세 조회
   async getReferralCodeById(id: string) {
     return await this.prisma.referralCode.findUnique({

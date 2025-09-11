@@ -6,6 +6,27 @@ import { CreateReferralCodeDto, UpdateReferralCodeDto } from './dto';
 export class ReferralCodesController {
   constructor(private readonly referralCodesService: ReferralCodesService) {}
 
+  // 모든 추천 코드 목록 조회
+  @Get()
+  async getAllReferralCodes() {
+    try {
+      const referralCodes = await this.referralCodesService.getAllReferralCodes();
+      return {
+        success: true,
+        message: '추천 코드 목록을 성공적으로 불러왔습니다.',
+        data: referralCodes,
+      };
+    } catch (error) {
+      console.error('추천 코드 목록 조회 에러:', error);
+      return {
+        success: false,
+        message: '추천 코드 목록을 불러오는데 실패했습니다.',
+        data: null,
+        error: error.message,
+      };
+    }
+  }
+
   // 추천 코드 상세 조회
   @Get(':id')
   async getReferralCodeById(@Param('id') id: string) {

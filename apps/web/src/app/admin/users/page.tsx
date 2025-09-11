@@ -69,8 +69,13 @@ const UsersPage = () => {
         credentials: 'include',
       });
       if (response.ok) {
-        const data = await response.json();
-        setReferralCodes(data);
+        const result = await response.json();
+        // API 응답에서 data 필드 안의 배열을 추출
+        if (result.success && result.data) {
+          setReferralCodes(result.data);
+        } else {
+          console.error('추천인 코드 목록 조회 실패:', result.message);
+        }
       }
     } catch (error) {
       console.error('추천인 코드 목록 조회 실패:', error);

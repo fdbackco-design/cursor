@@ -10,7 +10,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { cartApi } from '@/lib/api/cart';
 import { wishlistApi } from '@/lib/api/wishlist';
 import { reviewsApi, Review } from '@/lib/api/reviews';
-import { deleteProductImage } from '@/lib/api/products';
 import { useToast, toast } from '@/components/ui/toast';
 
 import { Product } from '@/types/product';
@@ -51,9 +50,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
     ? Math.min(selectedImage, product.images.length - 1) 
     : 0;
   
-  // 사용자 역할 확인 - 실제 앱에서는 context/state에서 가져옴
-  const userRole = user?.role || 'CONSUMER';
-  const isAdmin = userRole === 'ADMIN';
+  // Mock user role - in real app, get from context/state
+  const userRole = 'CONSUMER';
   
   // Show consumer price by default for MVP
   const displayPrice = product.priceB2C;
@@ -70,23 +68,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
     setImageError(true);
   };
 
-  // 이미지 삭제 함수 (관리자만 사용 가능)
-  const handleDeleteImage = async (imageIndex: number) => {
-    if (!isAdmin) {
-      showToast(toast.warning('권한 없음', '이미지 삭제 권한이 없습니다.'));
-      return;
-    }
-
-    try {
-      await deleteProductImage(product.id, imageIndex);
-      showToast(toast.success('이미지 삭제', '이미지가 삭제되었습니다.'));
-      // 페이지 새로고침으로 변경사항 반영
-      window.location.reload();
-    } catch (error) {
-      console.error('이미지 삭제 실패:', error);
-      showToast(toast.error('삭제 실패', '이미지 삭제에 실패했습니다.'));
-    }
-  };
 
   // 찜하기 상태 확인
   useEffect(() => {
@@ -265,16 +246,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 />
               )}
               
-              {/* 관리자용 메인 이미지 삭제 버튼 */}
-              {isAdmin && product.images.length > 0 && (
-                <button
-                  onClick={() => handleDeleteImage(safeSelectedImage)}
-                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors z-10"
-                  title="현재 이미지 삭제"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -290,33 +261,19 @@ export function ProductDetail({ product }: ProductDetailProps) {
         {product.images && product.images.length > 1 && (
           <div className="flex gap-2 overflow-x-auto">
             {product.images.map((image, index) => (
-              <div key={index} className="relative">
-                <button
-                  onClick={() => handleImageSelect(index)}
-                  className={`w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0 transition-all duration-200 ${
-                    safeSelectedImage === index ? 'ring-2 ring-primary scale-105' : 'ring-1 ring-gray-200 hover:ring-gray-300'
-                  }`}
-                >
-                  <img
-                    src={getProductThumbnailUrl(product.images, index)}
-                    alt={`${product.name} 썸네일 ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-                {/* 관리자용 이미지 삭제 버튼 */}
-                {isAdmin && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteImage(index);
-                    }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors z-10"
-                    title="이미지 삭제"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
+              <button
+                key={index}
+                onClick={() => handleImageSelect(index)}
+                className={`w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0 transition-all duration-200 ${
+                  safeSelectedImage === index ? 'ring-2 ring-primary scale-105' : 'ring-1 ring-gray-200 hover:ring-gray-300'
+                }`}
+              >
+                <img
+                  src={getProductThumbnailUrl(product.images, index)}
+                  alt={`${product.name} 썸네일 ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
             ))}
           </div>
         )}

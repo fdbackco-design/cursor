@@ -356,26 +356,3 @@ export const deleteProduct = async (id: string) => {
     throw error;
   }
 };
-
-// 상품 이미지 삭제
-export const deleteProductImage = async (productId: string, imageIndex: number) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/products/${productId}/images/${imageIndex}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error('이미지 삭제에 실패했습니다. ' + errorText);
-    }
-
-    const result = await response.json();
-    return result;
-  } catch (error) {
-    console.error('이미지 삭제 API 호출 실패:', error);
-    throw error;
-  }
-};

@@ -191,10 +191,32 @@ export class ProductsController {
       const imageUrls = files?.images ? files.images.map(file => file.filename) : undefined;
       const descriptionImageUrls = files?.descriptionImages ? files.descriptionImages.map(file => file.filename) : undefined;
       
+      // JSON 문자열로 전송된 삭제 인덱스 파싱
+      let deletedImageIndexes = [];
+      let deletedDescriptionImageIndexes = [];
+      
+      if (updateProductDto.deletedImageIndexes) {
+        try {
+          deletedImageIndexes = JSON.parse(updateProductDto.deletedImageIndexes);
+        } catch (error) {
+          console.error('deletedImageIndexes 파싱 실패:', error);
+        }
+      }
+      
+      if (updateProductDto.deletedDescriptionImageIndexes) {
+        try {
+          deletedDescriptionImageIndexes = JSON.parse(updateProductDto.deletedDescriptionImageIndexes);
+        } catch (error) {
+          console.error('deletedDescriptionImageIndexes 파싱 실패:', error);
+        }
+      }
+
       const productData = {
         ...updateProductDto,
         images: imageUrls,
-        descriptionImages: descriptionImageUrls
+        descriptionImages: descriptionImageUrls,
+        deletedImageIndexes,
+        deletedDescriptionImageIndexes
       };
 
       const product = await this.productsService.updateProduct(id, productData);

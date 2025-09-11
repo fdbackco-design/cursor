@@ -317,6 +317,15 @@ export const updateProduct = async (id: string, productData: {
       });
     }
 
+    // 삭제된 이미지 인덱스 추가
+    if (productData.deletedImageIndexes && Array.isArray(productData.deletedImageIndexes) && productData.deletedImageIndexes.length > 0) {
+      formData.append('deletedImageIndexes', JSON.stringify(productData.deletedImageIndexes));
+    }
+    
+    if (productData.deletedDescriptionImageIndexes && Array.isArray(productData.deletedDescriptionImageIndexes) && productData.deletedDescriptionImageIndexes.length > 0) {
+      formData.append('deletedDescriptionImageIndexes', JSON.stringify(productData.deletedDescriptionImageIndexes));
+    }
+
 
 
     const response = await fetch(`${API_BASE_URL}/api/v1/products/${id}`, {

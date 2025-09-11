@@ -207,16 +207,21 @@ const EditProductPage = () => {
       if (JSON.stringify(formData.tags) !== JSON.stringify(product.tags || [])) productData.tags = formData.tags;
       if (JSON.stringify(formData.metadata) !== JSON.stringify(product.metadata || {})) productData.metadata = formData.metadata;
       
-      // 새로 업로드된 이미지만 포함
-      if (formData.images.length > 0) productData.images = formData.images;
-      if (formData.descriptionImages.length > 0) productData.descriptionImages = formData.descriptionImages;
+      // 이미지 관련 데이터는 항상 포함 (삭제나 추가가 있을 때)
+      if (formData.images.length > 0 || deletedImageIndexes.length > 0) {
+        productData.images = formData.images;
+        productData.deletedImageIndexes = deletedImageIndexes;
+      }
       
-      // 삭제된 이미지 인덱스 포함
-      if (deletedImageIndexes.length > 0) productData.deletedImageIndexes = deletedImageIndexes;
-      if (deletedDescriptionImageIndexes.length > 0) productData.deletedDescriptionImageIndexes = deletedDescriptionImageIndexes;
+      if (formData.descriptionImages.length > 0 || deletedDescriptionImageIndexes.length > 0) {
+        productData.descriptionImages = formData.descriptionImages;
+        productData.deletedDescriptionImageIndexes = deletedDescriptionImageIndexes;
+      }
 
-      // console.log('최종 전송 데이터:', productData);
-      // console.log('전송할 productId:', productId);
+      console.log('최종 전송 데이터:', productData);
+      console.log('전송할 productId:', productId);
+      console.log('삭제된 이미지 인덱스:', deletedImageIndexes);
+      console.log('삭제된 설명 이미지 인덱스:', deletedDescriptionImageIndexes);
       
       await updateProduct(productId, productData);
       showToast(toast.success('상품 수정 완료', '상품이 성공적으로 수정되었습니다.'));

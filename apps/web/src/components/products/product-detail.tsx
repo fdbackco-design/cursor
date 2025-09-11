@@ -55,7 +55,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   
   // Show consumer price by default for MVP
   const displayPrice = product.priceB2C;
-  const priceLabel = '일반 가격';
+  const priceLabel = '회원 가격';
   const discount = product.comparePrice ? Math.round(((product.comparePrice - displayPrice) / product.comparePrice) * 100) : 0;
 
   const handleImageLoad = () => {

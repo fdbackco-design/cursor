@@ -115,12 +115,12 @@ export function ProductCard({ product }: ProductCardProps) {
     
     if (user?.role === 'BIZ') {
       return { 
-        text: 'B2B 가격', 
+        text: '기업전용 가격', 
         price: formatPriceWithCurrency(product.priceB2B)
       };
     } else {
       return { 
-        text: '일반 가격', 
+        text: '회원 가격', 
         price: formatPriceWithCurrency(product.priceB2C)
       };
     }

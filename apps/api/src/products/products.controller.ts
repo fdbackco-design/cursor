@@ -138,8 +138,8 @@ export class ProductsController {
         stockQuantity: Number(createProductDto.stockQuantity),
         lowStockThreshold: createProductDto.lowStockThreshold ? Number(createProductDto.lowStockThreshold) : undefined,
         // 불린 필드 변환
-        isActive: createProductDto.isActive !== undefined ? Boolean(createProductDto.isActive) : true,
-        isFeatured: createProductDto.isFeatured !== undefined ? Boolean(createProductDto.isFeatured) : false,
+        isActive: createProductDto.isActive !== undefined ? (createProductDto.isActive === 'true') : true,
+        isFeatured: createProductDto.isFeatured !== undefined ? (createProductDto.isFeatured === 'true') : false,
         // S3 이미지 객체 배열
         images: s3ImageData,
         descriptionImages: s3DescriptionImageData

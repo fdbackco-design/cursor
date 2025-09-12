@@ -34,9 +34,15 @@ const ProductsPage = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const data = await productsApi.getAllProducts();
-      // API 응답이 배열인지 확인하고, 그렇지 않으면 빈 배열로 설정
-      setProducts(Array.isArray(data) ? data : []);
+      // 관리자 페이지에서는 모든 상품을 가져오기 위해 매우 큰 limit 설정
+      const result = await productsApi.getProducts({ limit: 10000 });
+      if (result.success && result.data && Array.isArray(result.data.products)) {
+        setProducts(result.data.products);
+      } else {
+        // fallback으로 getAllProducts 사용
+        const data = await productsApi.getAllProducts();
+        setProducts(Array.isArray(data) ? data : []);
+      }
     } catch (error) {
       console.error('상품 로드 실패:', error);
       showToast(toast.error('상품 로드 실패', '상품을 불러오는데 실패했습니다.'));

@@ -383,11 +383,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
             {/* 결제하기 버튼 */}
             <Button
               size="lg"
-              className="ml-auto bg-black text-white hover:bg-gray-800 px-8"
+              className="ml-auto bg-black text-white hover:bg-gray-800 h-32 px-24 py-8 text-2xl font-bold"
               onClick={handleDirectPayment}
               disabled={product.stockQuantity === 0}
             >
-              <CreditCard className="h-4 w-4 mr-2" />
+              <CreditCard className="h-12 w-12 mr-4" />
               결제하기
             </Button>
           </div>

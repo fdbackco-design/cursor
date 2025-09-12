@@ -284,26 +284,29 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         </CardContent>
         
-        <CardFooter className="pt-0 px-3 sm:px-4 pb-3 sm:pb-4">
-          {/* 모바일: 세로 배치, 데스크톱: 가로 배치 */}
-          <div className="flex flex-col sm:flex-row gap-2 w-full">
+        <CardFooter className="pt-0 px-2 sm:px-4 pb-3 sm:pb-4">
+          {/* 모바일: 세로 배치, 태블릿: 2열, 데스크톱: 3열 */}
+          <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2 w-full">
             <Button 
               size="sm" 
               variant="outline"
-              className={`w-full sm:flex-1 border-gray-300 hover:border-red-500 transition-colors duration-200 text-xs sm:text-sm ${
+              className={`w-full border-gray-300 hover:border-red-500 transition-colors duration-200 text-xs ${
                 isWishlisted ? 'text-red-500 border-red-500' : 'text-gray-700'
               }`}
               onClick={toggleWishlist}
               disabled={wishlistLoading}
             >
               <Heart 
-                className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${isWishlisted ? 'fill-current' : ''}`} 
+                className={`h-3 w-3 mr-1 ${isWishlisted ? 'fill-current' : ''}`} 
               />
-              {wishlistLoading ? '처리중...' : (isWishlisted ? '찜됨' : '찜하기')}
+              <span className="hidden xs:inline">
+                {wishlistLoading ? '처리중...' : (isWishlisted ? '찜됨' : '찜하기')}
+              </span>
+              <span className="xs:hidden">찜</span>
             </Button>
             <Button 
               size="sm" 
-              className={`w-full sm:flex-1 text-xs sm:text-sm ${
+              className={`w-full text-xs ${
                 product.stockQuantity <= 0 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-gray-900 text-white hover:bg-gray-800'
@@ -311,12 +314,17 @@ export function ProductCard({ product }: ProductCardProps) {
               onClick={addToCart}
               disabled={cartLoading || product.stockQuantity <= 0}
             >
-              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              {cartLoading ? '추가중...' : product.stockQuantity <= 0 ? '품절' : '장바구니'}
+              <ShoppingCart className="h-3 w-3 mr-1" />
+              <span className="hidden xs:inline">
+                {cartLoading ? '추가중...' : product.stockQuantity <= 0 ? '품절' : '장바구니'}
+              </span>
+              <span className="xs:hidden">
+                {cartLoading ? '추가중...' : product.stockQuantity <= 0 ? '품절' : '장바구니'}
+              </span>
             </Button>
             <Button 
               size="sm" 
-              className={`w-full sm:flex-1 text-xs sm:text-sm ${
+              className={`w-full sm:col-span-2 lg:col-span-1 text-xs ${
                 product.stockQuantity <= 0 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -324,8 +332,13 @@ export function ProductCard({ product }: ProductCardProps) {
               onClick={handleDirectPayment}
               disabled={product.stockQuantity <= 0}
             >
-              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              {product.stockQuantity <= 0 ? '품절' : '결제하기'}
+              <CreditCard className="h-3 w-3 mr-1" />
+              <span className="hidden xs:inline">
+                {product.stockQuantity <= 0 ? '품절' : '결제하기'}
+              </span>
+              <span className="xs:hidden">
+                {product.stockQuantity <= 0 ? '품절' : '결제'}
+              </span>
             </Button>
           </div>
         </CardFooter>

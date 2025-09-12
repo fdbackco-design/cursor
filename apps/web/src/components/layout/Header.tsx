@@ -185,7 +185,13 @@ const Header = () => {
       {/* 카테고리 네비게이션 */}
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center space-x-4 sm:space-x-8 h-10 sm:h-12 overflow-x-auto">
+          <div className="flex items-center space-x-3 sm:space-x-6 h-10 sm:h-12 overflow-x-auto">
+            <Link 
+              href="/category/all" 
+              className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
+            >
+              전체상품
+            </Link>
             <Link 
               href="/category/home-appliances" 
               className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
@@ -203,6 +209,24 @@ const Header = () => {
               className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
             >
               전자제품
+            </Link>
+            <Link 
+              href="/category/cosmetics" 
+              className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
+            >
+              화장품
+            </Link>
+            <Link 
+              href="/category/miscellaneous" 
+              className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
+            >
+              잡화
+            </Link>
+            <Link 
+              href="/category/sports" 
+              className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
+            >
+              스포츠용품
             </Link>
           </div>
         </div>

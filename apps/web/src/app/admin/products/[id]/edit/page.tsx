@@ -22,6 +22,17 @@ const EditProductPage = () => {
   
   // 임시로 하드코딩된 상품 ID로 테스트
   const testProductId = 'cmerxdqvf00024q5ppjoeufkn';
+
+  // 카테고리 옵션들
+  const categoryOptions = [
+    { value: '전체상품', label: '전체상품' },
+    { value: '생활가전', label: '생활가전' },
+    { value: '주방용품', label: '주방용품' },
+    { value: '전자제품', label: '전자제품' },
+    { value: '화장품', label: '화장품' },
+    { value: '잡화', label: '잡화' },
+    { value: '스포츠용품', label: '스포츠용품' }
+  ];
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -431,14 +442,20 @@ const EditProductPage = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     카테고리 *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                  >
+                    <option value="">카테고리를 선택하세요</option>
+                    {categoryOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>

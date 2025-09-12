@@ -93,6 +93,22 @@ export default function HomePage() {
     p.category?.name === '전자제품' ||
     p.category?.name === '전자'
   ).slice(0, 3);
+  const cosmeticsProducts = safeProducts.filter(p => 
+    p.category?.slug === 'cosmetics' || 
+    p.category?.name === '화장품' ||
+    p.category?.name === '뷰티'
+  ).slice(0, 3);
+  const miscellaneousProducts = safeProducts.filter(p => 
+    p.category?.slug === 'miscellaneous' || 
+    p.category?.name === '잡화' ||
+    p.category?.name === '기타'
+  ).slice(0, 3);
+  const sportsProducts = safeProducts.filter(p => 
+    p.category?.slug === 'sports' || 
+    p.category?.name === '스포츠용품' ||
+    p.category?.name === '스포츠'
+  ).slice(0, 3);
+  const allProducts = safeProducts.slice(0, 6); // 전체 상품 중 6개
 
   // 슬라이더 데이터
   const heroSlides = [
@@ -182,6 +198,27 @@ export default function HomePage() {
             <p className="text-base sm:text-lg text-gray-600">다양한 카테고리의 제품들을 확인해보세요</p>
           </div>
           
+          {/* 전체상품 */}
+          <div className="mb-8 sm:mb-12 lg:mb-16">
+            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">전체상품</h3>
+              <Link href="/category/all" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
+                더보기 →
+              </Link>
+            </div>
+            {allProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {allProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 sm:py-12">
+                <p className="text-gray-500">상품이 없습니다.</p>
+              </div>
+            )}
+          </div>
+
           {/* 생활가전 */}
           <div className="mb-8 sm:mb-12 lg:mb-16">
             <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
@@ -226,7 +263,7 @@ export default function HomePage() {
 
 
           {/* 전자제품 */}
-          <div>
+          <div className="mb-8 sm:mb-12 lg:mb-16">
             <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900">전자제품</h3>
               <Link href="/category/electronics" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
@@ -242,6 +279,69 @@ export default function HomePage() {
             ) : (
               <div className="text-center py-8 sm:py-12">
                 <p className="text-gray-500">전자제품이 없습니다.</p>
+              </div>
+            )}
+          </div>
+
+          {/* 화장품 */}
+          <div className="mb-8 sm:mb-12 lg:mb-16">
+            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">화장품</h3>
+              <Link href="/category/cosmetics" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
+                더보기 →
+              </Link>
+            </div>
+            {cosmeticsProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {cosmeticsProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 sm:py-12">
+                <p className="text-gray-500">화장품이 없습니다.</p>
+              </div>
+            )}
+          </div>
+
+          {/* 잡화 */}
+          <div className="mb-8 sm:mb-12 lg:mb-16">
+            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">잡화</h3>
+              <Link href="/category/miscellaneous" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
+                더보기 →
+              </Link>
+            </div>
+            {miscellaneousProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {miscellaneousProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 sm:py-12">
+                <p className="text-gray-500">잡화가 없습니다.</p>
+              </div>
+            )}
+          </div>
+
+          {/* 스포츠용품 */}
+          <div>
+            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">스포츠용품</h3>
+              <Link href="/category/sports" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
+                더보기 →
+              </Link>
+            </div>
+            {sportsProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {sportsProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 sm:py-12">
+                <p className="text-gray-500">스포츠용품이 없습니다.</p>
               </div>
             )}
           </div>

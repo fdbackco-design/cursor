@@ -47,7 +47,7 @@ const NewProductPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState('');
 
-  const categories = ['생활가전', '주방용품', '의류', '전자제품', '도서', '스포츠용품'];
+  const categories = ['전체상품', '생활가전', '주방용품', '전자제품', '화장품', '잡화', '스포츠용품'];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

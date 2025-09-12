@@ -285,11 +285,12 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardContent>
         
         <CardFooter className="pt-0 px-3 sm:px-4 pb-3 sm:pb-4">
-          <div className="flex gap-1.5 sm:gap-2 w-full">
+          {/* 모바일: 세로 배치, 데스크톱: 가로 배치 */}
+          <div className="flex flex-col sm:flex-row gap-2 w-full">
             <Button 
               size="sm" 
               variant="outline"
-              className={`flex-1 border-gray-300 hover:border-red-500 transition-colors duration-200 text-xs sm:text-sm ${
+              className={`w-full sm:flex-1 border-gray-300 hover:border-red-500 transition-colors duration-200 text-xs sm:text-sm ${
                 isWishlisted ? 'text-red-500 border-red-500' : 'text-gray-700'
               }`}
               onClick={toggleWishlist}
@@ -302,7 +303,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </Button>
             <Button 
               size="sm" 
-              className={`flex-1 text-xs sm:text-sm ${
+              className={`w-full sm:flex-1 text-xs sm:text-sm ${
                 product.stockQuantity <= 0 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-gray-900 text-white hover:bg-gray-800'
@@ -315,7 +316,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </Button>
             <Button 
               size="sm" 
-              className={`flex-1 text-xs sm:text-sm ${
+              className={`w-full sm:flex-1 text-xs sm:text-sm ${
                 product.stockQuantity <= 0 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-blue-600 text-white hover:bg-blue-700'

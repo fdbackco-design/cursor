@@ -104,7 +104,7 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   // 바로 결제하기
-  const handleDirectPayment = (e: React.MouseEvent) => {
+  const handleDirectPayment = async (e: React.MouseEvent) => {
     e.preventDefault(); // Link 클릭 방지
     e.stopPropagation(); // 이벤트 버블링 방지
     
@@ -118,20 +118,44 @@ export function ProductCard({ product }: ProductCardProps) {
       return;
     }
 
-    // 상품 정보를 URL 파라미터로 전달하여 결제 페이지로 이동
-    const productData = {
-      id: product.id,
-      name: product.name,
-      price: user?.role === 'BIZ' ? product.priceB2B : product.priceB2C,
-      quantity: 1,
-      image: getProductMainImageUrl(product)
-    };
+    try {
+      // 상품 상세 정보를 가져와서 실제 이미지 URL을 얻습니다
+      const response = await fetch(`https://feedbackmall.com/api/v1/products/${product.id}`);
+      let actualImageUrl = getProductMainImageUrl(product.images);
+      
+      if (response.ok) {
+        const productDetail = await response.json();
+        if (productDetail.success && productDetail.data) {
+          actualImageUrl = getProductMainImageUrl(productDetail.data.images);
+        }
+      }
 
-    const queryParams = new URLSearchParams({
-      product: JSON.stringify(productData)
-    });
+      // 상품 정보를 URL 파라미터로 전달하여 결제 페이지로 이동
+      const productData = {
+        id: product.id,
+        name: product.name,
+        price: user?.role === 'BIZ' ? product.priceB2B : product.priceB2C,
+        quantity: 1,
+        image: actualImageUrl
+      };
 
-    window.location.href = `/checkout?${queryParams.toString()}`;
+      // 디버깅을 위한 로그
+      console.log('Product data for checkout:', {
+        productId: product.id,
+        productName: product.name,
+        productImages: product.images,
+        actualImageUrl: actualImageUrl
+      });
+
+      const queryParams = new URLSearchParams({
+        product: JSON.stringify(productData)
+      });
+
+      window.location.href = `/checkout?${queryParams.toString()}`;
+    } catch (error) {
+      console.error('상품 정보 가져오기 실패:', error);
+      showToast(toast.error('오류', '상품 정보를 가져오는 중 오류가 발생했습니다.'));
+    }
   };
   
   // 가격 표시 로직

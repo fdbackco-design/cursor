@@ -80,6 +80,7 @@ export default function CheckoutPage() {
       if (productParam) {
         try {
           const productData = JSON.parse(productParam);
+          console.log('Parsed product data in checkout:', productData);
           setDirectProduct(productData);
         } catch (error) {
           console.error('상품 정보 파싱 실패:', error);

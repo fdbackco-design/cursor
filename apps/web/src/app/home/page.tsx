@@ -10,6 +10,7 @@ import { Product } from '@/types/product';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ImageSlider } from '@/components/ui/ImageSlider';
+import { getImageUrl } from '@/lib/utils/image';
 
 export default function HomePage() {
   const { user, isAuthenticated } = useAuth();
@@ -77,7 +78,7 @@ export default function HomePage() {
   
 
   
-  const mdPicks = safeProducts.filter(p => p.isFeatured).slice(0, 3);
+  const mdPicks = safeProducts.filter(p => p.isFeatured); // 모든 추천 상품 가져오기
   const homeAppliances = safeProducts.filter(p => 
     p.category?.slug === 'home-appliances' || 
     p.category?.name === '생활가전' ||
@@ -169,7 +170,7 @@ export default function HomePage() {
         className="h-[400px] sm:h-[500px] lg:h-[600px]"
       />
 
-      {/* MD's Pick Section */}
+      {/* MD's Pick Section - 스크롤 가능한 그리드 */}
       <section className="py-8 sm:py-12 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-12">
@@ -177,10 +178,24 @@ export default function HomePage() {
             <p className="text-base sm:text-lg text-gray-600">엄선된 프리미엄 제품들을 만나보세요</p>
           </div>
           {mdPicks.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {mdPicks.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+            <div className="relative">
+              {/* 스크롤 가능한 상품 그리드 */}
+              <div className="overflow-x-auto scrollbar-hide">
+                <div className="flex gap-4 sm:gap-6 lg:gap-8 pb-4" style={{ width: 'max-content' }}>
+                  {mdPicks.map((product) => (
+                    <div key={product.id} className="flex-shrink-0 w-80 sm:w-96">
+                      <ProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* 스크롤 힌트 */}
+              {mdPicks.length > 3 && (
+                <div className="text-center mt-4">
+                  <p className="text-sm text-gray-500">← 좌우로 스크롤하여 더 많은 상품을 확인하세요 →</p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-8 sm:py-12">

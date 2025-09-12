@@ -182,8 +182,8 @@ const Header = () => {
       </header>
 
 
-      {/* 카테고리 네비게이션 */}
-      <nav className="bg-white border-b border-gray-200">
+      {/* 카테고리 네비게이션 - 고정 헤더 */}
+      <nav className="bg-white border-b border-gray-200 sticky top-16 z-40">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="flex items-center space-x-3 sm:space-x-6 h-10 sm:h-12 overflow-x-auto">
             <Link 

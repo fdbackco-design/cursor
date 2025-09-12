@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
 import { Button } from '@repo/ui';
 import { 
@@ -47,17 +47,28 @@ const NewProductPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState('');
 
+  // 컴포넌트 마운트 시 초기 상태 로그
+  useEffect(() => {
+    console.log('컴포넌트 마운트 시 formData.isFeatured:', formData.isFeatured);
+  }, []);
+
   const categories = ['전체상품', '생활가전', '주방용품', '전자제품', '화장품', '잡화', '스포츠용품'];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    console.log(`입력 변경: ${name}, 타입: ${type}, 값: ${value}`); // 디버깅용 로그
+    
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       console.log(`체크박스 변경: ${name} = ${checked}`); // 디버깅용 로그
-      setFormData(prev => ({
-        ...prev,
-        [name]: checked
-      }));
+      setFormData(prev => {
+        const newData = {
+          ...prev,
+          [name]: checked
+        };
+        console.log(`새로운 formData.${name}:`, (newData as any)[name]); // 디버깅용 로그
+        return newData;
+      });
     } else {
       setFormData(prev => ({
         ...prev,
@@ -532,6 +543,7 @@ const NewProductPage = () => {
                       className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="text-sm text-gray-700">추천 상품</span>
+                    <span className="ml-2 text-xs text-gray-500">(현재: {formData.isFeatured ? '체크됨' : '체크 안됨'})</span>
                   </label>
                 </div>
               </div>

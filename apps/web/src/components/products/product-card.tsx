@@ -183,6 +183,20 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const priceDisplay = getPriceDisplay();
 
+  // 디버깅을 위한 로그
+  console.log('Product price data:', {
+    productId: product.id,
+    productName: product.name,
+    priceB2B: product.priceB2B,
+    priceB2C: product.priceB2C,
+    comparePrice: product.comparePrice,
+    userRole: user?.role,
+    currentPrice: user?.role === 'BIZ' ? product.priceB2B : product.priceB2C,
+    shouldShowComparePrice: product.comparePrice && 
+                           product.comparePrice > 0 && 
+                           product.comparePrice > (user?.role === 'BIZ' ? product.priceB2B : product.priceB2C)
+  });
+
   const handleCardClick = (e: React.MouseEvent) => {
     // 버튼 영역 클릭이 아닌 경우에만 상품 상세로 이동
     const target = e.target as HTMLElement;
@@ -252,7 +266,9 @@ export function ProductCard({ product }: ProductCardProps) {
                     {priceDisplay.text}
                   </span>
                 )}
-                {product.comparePrice && product.comparePrice > (user?.role === 'BIZ' ? product.priceB2B : product.priceB2C) && (
+                {product.comparePrice && 
+                 product.comparePrice > 0 && 
+                 product.comparePrice > (user?.role === 'BIZ' ? product.priceB2B : product.priceB2C) && (
                   <span className="text-xs text-gray-500 line-through">
                     {formatPriceWithCurrency(product.comparePrice)}
                   </span>

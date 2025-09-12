@@ -201,6 +201,7 @@ export const createProduct = async (productData: {
       formData.append('isActive', productData.isActive.toString());
     }
     if (productData.isFeatured !== undefined) {
+      console.log('API 전송 시 isFeatured:', productData.isFeatured, '타입:', typeof productData.isFeatured);
       formData.append('isFeatured', productData.isFeatured.toString());
     }
     formData.append('stockQuantity', productData.stockQuantity.toString());

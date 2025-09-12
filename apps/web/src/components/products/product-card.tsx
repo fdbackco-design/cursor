@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@repo/ui';
 import { Button } from '@repo/ui';
-import { ShoppingCart, Package, Heart } from 'lucide-react';
+import { ShoppingCart, Package, Heart, CreditCard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { wishlistApi } from '@/lib/api/wishlist';
@@ -101,6 +101,37 @@ export function ProductCard({ product }: ProductCardProps) {
     } finally {
       setCartLoading(false);
     }
+  };
+
+  // 바로 결제하기
+  const handleDirectPayment = (e: React.MouseEvent) => {
+    e.preventDefault(); // Link 클릭 방지
+    e.stopPropagation(); // 이벤트 버블링 방지
+    
+    if (!isAuthenticated) {
+      showToast(toast.warning('로그인 필요', '로그인이 필요한 서비스입니다.'));
+      return;
+    }
+
+    if (product.stockQuantity <= 0) {
+      showToast(toast.error('품절', '현재 품절된 상품입니다.'));
+      return;
+    }
+
+    // 상품 정보를 URL 파라미터로 전달하여 결제 페이지로 이동
+    const productData = {
+      id: product.id,
+      name: product.name,
+      price: user?.role === 'BIZ' ? product.priceB2B : product.priceB2C,
+      quantity: 1,
+      image: getProductMainImageUrl(product)
+    };
+
+    const queryParams = new URLSearchParams({
+      product: JSON.stringify(productData)
+    });
+
+    window.location.href = `/checkout?${queryParams.toString()}`;
   };
   
   // 가격 표시 로직
@@ -235,6 +266,19 @@ export function ProductCard({ product }: ProductCardProps) {
             >
               <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               {cartLoading ? '추가중...' : product.stockQuantity <= 0 ? '품절' : '장바구니'}
+            </Button>
+            <Button 
+              size="sm" 
+              className={`flex-1 text-xs sm:text-sm ${
+                product.stockQuantity <= 0 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+              onClick={handleDirectPayment}
+              disabled={product.stockQuantity <= 0}
+            >
+              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              {product.stockQuantity <= 0 ? '품절' : '결제하기'}
             </Button>
           </div>
         </CardFooter>

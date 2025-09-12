@@ -5,7 +5,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { ArrowLeft, CreditCard, MapPin, Tag, User, Check, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { cartApi, Cart, CartItem } from '@/lib/api/cart';
 import { addressesApi } from '@/lib/api/addresses';
 import { paymentsApi } from '@/lib/api/payments';
@@ -40,12 +40,16 @@ interface PaymentInfo {
 export default function CheckoutPage() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
   
   // 기본 상태
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  
+  // 직접 결제 상품 정보
+  const [directProduct, setDirectProduct] = useState<any>(null);
   
   // 주문자 정보
   const [ordererInfo, setOrdererInfo] = useState<OrdererInfo>({
@@ -71,11 +75,23 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
+      // URL 파라미터에서 직접 결제 상품 정보 확인
+      const productParam = searchParams.get('product');
+      if (productParam) {
+        try {
+          const productData = JSON.parse(productParam);
+          setDirectProduct(productData);
+        } catch (error) {
+          console.error('상품 정보 파싱 실패:', error);
+          showToast(toast.error('상품 정보 오류', '상품 정보를 불러올 수 없습니다.'));
+        }
+      }
+      
       loadCheckoutData();
     } else if (!authLoading && !isAuthenticated) {
       router.push('/signin');
     }
-  }, [isAuthenticated, user, authLoading, router]);
+  }, [isAuthenticated, user, authLoading, router, searchParams, showToast]);
 
   const loadCheckoutData = async () => {
     try {
@@ -179,6 +195,12 @@ export default function CheckoutPage() {
 
   // 장바구니 소계 계산
   const calculateSubtotal = (): number => {
+    // 직접 결제 상품이 있는 경우
+    if (directProduct) {
+      return directProduct.price * directProduct.quantity;
+    }
+    
+    // 장바구니 상품들 계산
     if (!cart || !cart.items) return 0;
     
     return cart.items.reduce((total, item) => {
@@ -239,7 +261,14 @@ export default function CheckoutPage() {
   };
 
   const handleOrder = async () => {
-    if (!cart || !selectedAddress || !ordererInfo.name || !ordererInfo.email || !ordererInfo.phone) {
+    // 직접 결제 상품이 있는 경우 장바구니 체크 생략
+    if (!directProduct && (!cart || !selectedAddress || !ordererInfo.name || !ordererInfo.email || !ordererInfo.phone)) {
+      showToast(toast.warning('주문 정보 부족', '주문 정보를 모두 입력해주세요.'));
+      return;
+    }
+
+    // 직접 결제 상품이 있는 경우 기본 정보 체크
+    if (directProduct && (!selectedAddress || !ordererInfo.name || !ordererInfo.email || !ordererInfo.phone)) {
       showToast(toast.warning('주문 정보 부족', '주문 정보를 모두 입력해주세요.'));
       return;
     }
@@ -251,10 +280,15 @@ export default function CheckoutPage() {
       const orderId = `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
       // 2. 주문명 생성
-      const cartItems = cart.items || [];
-      const orderName = cartItems.length === 1 
-        ? cartItems[0]?.product.name || '상품명 없음'
-        : `${cartItems[0]?.product.name || '상품명 없음'} 외 ${cartItems.length - 1}건`;
+      let orderName: string;
+      if (directProduct) {
+        orderName = directProduct.name;
+      } else {
+        const cartItems = cart?.items || [];
+        orderName = cartItems.length === 1 
+          ? cartItems[0]?.product.name || '상품명 없음'
+          : `${cartItems[0]?.product.name || '상품명 없음'} 외 ${cartItems.length - 1}건`;
+      }
 
       // 전화번호 정규화
       const normalizePhoneNumber = (phone: string): string | undefined => {
@@ -738,9 +772,34 @@ export default function CheckoutPage() {
               <CardContent className="space-y-6">
                 {/* 상품 목록 */}
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-3">주문 상품 ({cartItems.length}개)</h4>
+                  <h4 className="font-medium text-gray-900 mb-3">
+                    주문 상품 ({directProduct ? 1 : cartItems.length}개)
+                  </h4>
                   <div className="space-y-3">
-                    {cartItems.map((item) => (
+                    {/* 직접 결제 상품 */}
+                    {directProduct && (
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={directProduct.image}
+                          alt={directProduct.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {directProduct.name}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {directProduct.price.toLocaleString()}원 × {directProduct.quantity}
+                          </p>
+                        </div>
+                        <p className="text-sm font-medium">
+                          {(directProduct.price * directProduct.quantity).toLocaleString()}원
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* 장바구니 상품들 */}
+                    {!directProduct && cartItems.map((item) => (
                       <div key={item.id} className="flex items-center space-x-3">
                         <img
                           src={getImageUrl(item.product.images?.[0])}

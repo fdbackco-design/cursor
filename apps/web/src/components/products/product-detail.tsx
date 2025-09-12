@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { ShoppingCart, Heart, Star, Image as ImageIcon, Check, X } from 'lucide-react';
+import { ShoppingCart, Heart, Star, Image as ImageIcon, Check, X, CreditCard } from 'lucide-react';
 import { getProductImageUrls, getProductThumbnailUrl } from '@/lib/utils/image';
 import { formatPriceWithCurrency } from '@/lib/utils/price';
 import { useAuth } from '@/contexts/AuthContext';
@@ -213,6 +213,59 @@ export function ProductDetail({ product }: ProductDetailProps) {
     }
   };
 
+  // 바로 결제하기
+  const handleDirectPayment = async () => {
+    if (!isAuthenticated) {
+      showToast(toast.warning('로그인 필요', '로그인이 필요한 서비스입니다.'));
+      window.location.href = '/signin';
+      return;
+    }
+
+    if (product.stockQuantity < quantity) {
+      showToast(toast.warning('재고 부족', `재고가 부족합니다. 현재 재고: ${product.stockQuantity}개`));
+      return;
+    }
+
+    try {
+      // 상품 상세 정보를 가져와서 실제 이미지 URL을 얻습니다
+      const response = await fetch(`https://feedbackmall.com/api/v1/products/${product.id}`);
+      let actualImageUrl = getProductThumbnailUrl(product.images, 0);
+      
+      if (response.ok) {
+        const productDetail = await response.json();
+        if (productDetail.success && productDetail.data) {
+          actualImageUrl = getProductThumbnailUrl(productDetail.data.images, 0);
+        }
+      }
+
+      // 상품 정보를 URL 파라미터로 전달하여 결제 페이지로 이동
+      const productData = {
+        id: product.id,
+        name: product.name,
+        price: user?.role === 'BIZ' ? product.priceB2B : product.priceB2C,
+        quantity: quantity,
+        image: actualImageUrl
+      };
+
+      // 디버깅을 위한 로그
+      console.log('Product data for checkout from detail page:', {
+        productId: product.id,
+        productName: product.name,
+        quantity: quantity,
+        actualImageUrl: actualImageUrl
+      });
+
+      const queryParams = new URLSearchParams({
+        product: JSON.stringify(productData)
+      });
+
+      window.location.href = `/checkout?${queryParams.toString()}`;
+    } catch (error) {
+      console.error('상품 정보 가져오기 실패:', error);
+      showToast(toast.error('오류', '상품 정보를 가져오는 중 오류가 발생했습니다.'));
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* Product Images */}
@@ -326,6 +379,16 @@ export function ProductDetail({ product }: ProductDetailProps) {
               onClick={() => setQuantity(quantity + 1)}
             >
               +
+            </Button>
+            {/* 결제하기 버튼 */}
+            <Button
+              size="sm"
+              className="ml-auto bg-blue-600 text-white hover:bg-blue-700"
+              onClick={handleDirectPayment}
+              disabled={product.stockQuantity === 0}
+            >
+              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              결제하기
             </Button>
           </div>
         </div>

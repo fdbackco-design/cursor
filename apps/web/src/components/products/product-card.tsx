@@ -183,6 +183,12 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const priceDisplay = getPriceDisplay();
 
+  // 가격을 숫자로 변환
+  const priceB2BNum = typeof product.priceB2B === 'string' ? parseFloat(product.priceB2B) : product.priceB2B;
+  const priceB2CNum = typeof product.priceB2C === 'string' ? parseFloat(product.priceB2C) : product.priceB2C;
+  const comparePriceNum = typeof product.comparePrice === 'string' ? parseFloat(product.comparePrice) : product.comparePrice;
+  const currentPriceNum = user?.role === 'BIZ' ? priceB2BNum : priceB2CNum;
+
   // 디버깅을 위한 로그
   console.log('Product price data:', {
     productId: product.id,
@@ -191,10 +197,10 @@ export function ProductCard({ product }: ProductCardProps) {
     priceB2C: product.priceB2C,
     comparePrice: product.comparePrice,
     userRole: user?.role,
-    currentPrice: user?.role === 'BIZ' ? product.priceB2B : product.priceB2C,
-    shouldShowComparePrice: product.comparePrice && 
-                           product.comparePrice > 0 && 
-                           product.comparePrice > (user?.role === 'BIZ' ? product.priceB2B : product.priceB2C)
+    currentPrice: currentPriceNum,
+    shouldShowComparePrice: comparePriceNum &&
+                            comparePriceNum > 0 &&
+                            comparePriceNum > currentPriceNum
   });
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -266,11 +272,11 @@ export function ProductCard({ product }: ProductCardProps) {
                     {priceDisplay.text}
                   </span>
                 )}
-                {product.comparePrice && 
-                 product.comparePrice > 0 && 
-                 product.comparePrice > (user?.role === 'BIZ' ? product.priceB2B : product.priceB2C) && (
+                {comparePriceNum && 
+                 comparePriceNum > 0 && 
+                 comparePriceNum > currentPriceNum && (
                   <span className="text-xs text-gray-500 line-through">
-                    {formatPriceWithCurrency(product.comparePrice)}
+                    {formatPriceWithCurrency(comparePriceNum)}
                   </span>
                 )}
               </div>

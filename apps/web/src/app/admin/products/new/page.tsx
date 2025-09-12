@@ -265,7 +265,7 @@ const NewProductPage = () => {
 
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                    상품 설명 *(필수입력: 배송 기한은 영업일 기준 5일 이내입니다.)
+                    상품 설명 *(필수입력: 배송 기한은 영업일 기준 1-2일 이내입니다.)
                   </label>
                   <textarea
                     id="description"

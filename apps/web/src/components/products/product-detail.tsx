@@ -248,12 +248,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
       };
 
       // 디버깅을 위한 로그
-      console.log('Product data for checkout from detail page:', {
-        productId: product.id,
-        productName: product.name,
-        quantity: quantity,
-        actualImageUrl: actualImageUrl
-      });
+      // console.log('Product data for checkout from detail page:', {
+      //   productId: product.id,
+      //   productName: product.name,
+      //   quantity: quantity,
+      //   actualImageUrl: actualImageUrl
+      // });
 
       const queryParams = new URLSearchParams({
         product: JSON.stringify(productData)

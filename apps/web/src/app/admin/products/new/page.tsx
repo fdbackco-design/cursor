@@ -36,7 +36,7 @@ const NewProductPage = () => {
     category: '',
     vendor: '',
     isActive: true,
-    isFeatured: false,
+    isFeatured: false, // 명시적으로 false로 설정
     stockQuantity: '',
     lowStockThreshold: '',
     tags: [] as string[],
@@ -53,6 +53,7 @@ const NewProductPage = () => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
+      console.log(`체크박스 변경: ${name} = ${checked}`); // 디버깅용 로그
       setFormData(prev => ({
         ...prev,
         [name]: checked
@@ -103,6 +104,8 @@ const NewProductPage = () => {
   e.preventDefault();
   setIsSubmitting(true);
   try {
+    console.log('제출 시 formData.isFeatured:', formData.isFeatured); // 디버깅용 로그
+    
     const productData = {
       name: formData.name,
       description: formData.description,
@@ -133,6 +136,8 @@ const NewProductPage = () => {
       tags: formData.tags || [],
       metadata: formData.metadata || {},
     };
+    
+    console.log('제출할 productData.isFeatured:', productData.isFeatured); // 디버깅용 로그
 
     const result = await createProduct({
       ...productData,

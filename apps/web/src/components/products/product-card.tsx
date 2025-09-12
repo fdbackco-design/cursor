@@ -140,12 +140,12 @@ export function ProductCard({ product }: ProductCardProps) {
       };
 
       // 디버깅을 위한 로그
-      console.log('Product data for checkout:', {
-        productId: product.id,
-        productName: product.name,
-        productImages: product.images,
-        actualImageUrl: actualImageUrl
-      });
+      // console.log('Product data for checkout:', {
+      //   productId: product.id,
+      //   productName: product.name,
+      //   productImages: product.images,
+      //   actualImageUrl: actualImageUrl
+      // });
 
       const queryParams = new URLSearchParams({
         product: JSON.stringify(productData)
@@ -190,18 +190,18 @@ export function ProductCard({ product }: ProductCardProps) {
   const currentPriceNum = user?.role === 'BIZ' ? priceB2BNum : priceB2CNum;
 
   // 디버깅을 위한 로그
-  console.log('Product price data:', {
-    productId: product.id,
-    productName: product.name,
-    priceB2B: product.priceB2B,
-    priceB2C: product.priceB2C,
-    comparePrice: product.comparePrice,
-    userRole: user?.role,
-    currentPrice: currentPriceNum,
-    shouldShowComparePrice: comparePriceNum &&
-                            comparePriceNum > 0 &&
-                            comparePriceNum > currentPriceNum
-  });
+  // console.log('Product price data:', {
+  //   productId: product.id,
+  //   productName: product.name,
+  //   priceB2B: product.priceB2B,
+  //   priceB2C: product.priceB2C,
+  //   comparePrice: product.comparePrice,
+  //   userRole: user?.role,
+  //   currentPrice: currentPriceNum,
+  //   shouldShowComparePrice: comparePriceNum &&
+  //                           comparePriceNum > 0 &&
+  //                           comparePriceNum > currentPriceNum
+  // });
 
   const handleCardClick = (e: React.MouseEvent) => {
     // 버튼 영역 클릭이 아닌 경우에만 상품 상세로 이동

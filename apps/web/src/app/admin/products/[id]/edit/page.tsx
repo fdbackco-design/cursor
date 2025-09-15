@@ -125,16 +125,16 @@ const EditProductPage = () => {
     } else {
       // weight 필드가 "0" (일반 상품)일 때는 undefined로 설정
       if (name === 'weight' && value === '0') {
-        console.log('weight를 undefined로 설정');
+        //console.log('weight를 undefined로 설정');
         setFormData(prev => {
           const newData = { ...prev, [name]: undefined };
-          console.log('새로운 formData:', newData);
+          //console.log('새로운 formData:', newData);
           return newData;
         });
       } else {
         setFormData(prev => {
           const newData = { ...prev, [name]: value };
-          console.log('새로운 formData:', newData);
+          //console.log('새로운 formData:', newData);
           return newData;
         });
       }
@@ -215,20 +215,20 @@ const EditProductPage = () => {
       const currentWeight = formData.weight && formData.weight !== '' ? parseFloat(formData.weight) : undefined;
       const originalWeight = product.weight;
       
-      console.log('weight 비교:', {
-        formDataWeight: formData.weight,
-        currentWeight: currentWeight,
-        originalWeight: originalWeight,
-        originalWeightType: typeof originalWeight,
-        isChanged: currentWeight !== originalWeight
-      });
+      // console.log('weight 비교:', {
+      //   formDataWeight: formData.weight,
+      //   currentWeight: currentWeight,
+      //   originalWeight: originalWeight,
+      //   originalWeightType: typeof originalWeight,
+      //   isChanged: currentWeight !== originalWeight
+      // });
       
       if (currentWeight !== originalWeight) {
         // undefined 대신 null을 전송하여 서버에서 null로 처리되도록 함
         productData.weight = currentWeight === undefined ? null : currentWeight;
-        console.log('weight 변경됨:', productData.weight);
+        //console.log('weight 변경됨:', productData.weight);
       } else {
-        console.log('weight 변경되지 않음');
+        //console.log('weight 변경되지 않음');
       }
       if (formData.length !== (product.length ? product.length.toString() : '')) {
         productData.length = formData.length ? parseFloat(formData.length) : undefined;
@@ -266,7 +266,7 @@ const EditProductPage = () => {
       // console.log('삭제된 이미지 인덱스:', deletedImageIndexes);
       // console.log('삭제된 설명 이미지 인덱스:', deletedDescriptionImageIndexes);
       
-      console.log('API에 전송할 productData:', productData);
+      //console.log('API에 전송할 productData:', productData);
       await updateProduct(productId, productData);
       showToast(toast.success('상품 수정 완료', '상품이 성공적으로 수정되었습니다.'));
       router.push('/admin/products');

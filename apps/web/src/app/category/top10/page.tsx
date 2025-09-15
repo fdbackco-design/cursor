@@ -88,27 +88,66 @@ export default function Top10Page() {
 
         {/* 상품 목록 */}
         {products.length > 0 ? (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {products.map((product, index) => (
-              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
+              <Card key={product.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 border-orange-100">
                 <CardContent className="p-0">
-                  <div className="flex flex-col sm:flex-row">
-                    {/* 순위 배지 */}
-                    <div className="flex-shrink-0 bg-orange-500 text-white flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20">
-                      <span className="text-2xl sm:text-3xl font-bold">{product.weight}</span>
+                  <div className="flex flex-col lg:flex-row">
+                    {/* 순위 배지 - 더 강조된 디자인 */}
+                    <div className="relative flex-shrink-0">
+                      <div className="bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center w-20 h-20 lg:w-24 lg:h-24 relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 to-orange-500 opacity-30"></div>
+                        <div className="relative z-10 text-center">
+                          <div className="text-xs lg:text-sm font-semibold mb-1">RANK</div>
+                          <div className="text-3xl lg:text-4xl font-black">{product.weight}</div>
+                        </div>
+                        {/* 순위별 특별 아이콘 */}
+                        {product.weight === 1 && (
+                          <div className="absolute -top-2 -right-2 text-2xl">👑</div>
+                        )}
+                        {product.weight === 2 && (
+                          <div className="absolute -top-2 -right-2 text-2xl">🥈</div>
+                        )}
+                        {product.weight === 3 && (
+                          <div className="absolute -top-2 -right-2 text-2xl">🥉</div>
+                        )}
+                      </div>
                     </div>
                     
                     {/* 상품 정보 */}
-                    <div className="flex-1 p-4 sm:p-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                            {product.name}
-                          </h3>
-                          <p className="text-gray-600 mb-4 line-clamp-2">
+                    <div className="flex-1 p-4 lg:p-6">
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between h-full">
+                        <div className="flex-1 mb-4 lg:mb-0 lg:mr-6">
+                          <div className="flex items-center mb-2">
+                            <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mr-3">
+                              {product.name}
+                            </h3>
+                            {/* 순위별 특별 배지 */}
+                            {product.weight === 1 && (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-yellow-100 text-yellow-800">
+                                🏆 1위
+                              </span>
+                            )}
+                            {product.weight === 2 && (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-gray-100 text-gray-800">
+                                🥈 2위
+                              </span>
+                            )}
+                            {product.weight === 3 && (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-orange-100 text-orange-800">
+                                🥉 3위
+                              </span>
+                            )}
+                            {product.weight && product.weight > 3 && (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-blue-100 text-blue-800">
+                                Top {product.weight}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-gray-600 mb-4 line-clamp-2 text-sm lg:text-base">
                             {product.shortDescription || product.description}
                           </p>
-                          <div className="flex flex-wrap gap-2 mb-4">
+                          <div className="flex flex-wrap gap-2">
                             {product.category && (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 {product.category.name}
@@ -123,7 +162,7 @@ export default function Top10Page() {
                         </div>
                         
                         {/* 상품 카드 */}
-                        <div className="flex-shrink-0 w-full sm:w-80">
+                        <div className="flex-shrink-0 w-full lg:w-80">
                           <ProductCard product={product} />
                         </div>
                       </div>

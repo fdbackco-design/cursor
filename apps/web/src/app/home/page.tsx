@@ -197,6 +197,55 @@ export default function HomePage() {
         className="h-[400px] sm:h-[500px] lg:h-[600px]"
       />
 
+      {/* Top 10 Section */}
+      {top10Products.length > 0 && (
+        <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-br from-orange-50 to-yellow-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center justify-center">
+                <span className="text-orange-500 mr-3">🏆</span>
+                Top 10 베스트셀러
+              </h2>
+              <p className="text-base sm:text-lg text-gray-600">가장 인기 있는 상품들을 순위별로 만나보세요</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              {top10Products.slice(0, 8).map((product) => (
+                <div key={product.id} className="relative group">
+                  {/* 순위 배지 */}
+                  <div className="absolute -top-2 -left-2 z-10">
+                    <div className="bg-gradient-to-br from-orange-400 to-orange-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
+                      <div className="text-center">
+                        <div className="text-xs font-bold">RANK</div>
+                        <div className="text-lg font-black">{product.weight}</div>
+                      </div>
+                    </div>
+                    {/* 순위별 특별 아이콘 */}
+                    {product.weight === 1 && (
+                      <div className="absolute -top-1 -right-1 text-lg">👑</div>
+                    )}
+                    {product.weight === 2 && (
+                      <div className="absolute -top-1 -right-1 text-lg">🥈</div>
+                    )}
+                    {product.weight === 3 && (
+                      <div className="absolute -top-1 -right-1 text-lg">🥉</div>
+                    )}
+                  </div>
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <Link 
+                href="/category/top10" 
+                className="inline-flex items-center px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors duration-200"
+              >
+                전체 Top 10 보기 →
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* MD's Pick Section - 스크롤 가능한 그리드 */}
       <section className="py-8 sm:py-12 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

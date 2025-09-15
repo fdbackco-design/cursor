@@ -187,7 +187,7 @@ export default function CheckoutPage() {
       
       // 바로구매인 경우 장바구니 데이터가 없어도 계속 진행
       if (isDirectPurchase && !cart) {
-        console.log('바로구매 모드: 장바구니 데이터 없이 계속 진행');
+        //console.log('바로구매 모드: 장바구니 데이터 없이 계속 진행');
       }
 
     } catch (error) {

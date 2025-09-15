@@ -36,6 +36,7 @@ export function AddressSearchButton({
   const { showToast } = useToast();
   const { openAddressSearch } = useAddressSearch({
     onComplete: (result: AddressSearchResult) => {
+      console.log('주소 검색 완료:', result);
       const addressData = convertToAddressFormData(result);
       onAddressSelected({
         zone_number: addressData.zone_number,
@@ -49,6 +50,7 @@ export function AddressSearchButton({
       });
     },
     onError: (error) => {
+      console.error('주소 검색 에러:', error);
       if (onError) {
         onError(error);
       } else {

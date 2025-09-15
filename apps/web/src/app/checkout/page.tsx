@@ -109,24 +109,37 @@ export default function CheckoutPage() {
         couponsApi.getMyCoupons()
       ]);
 
-      // 장바구니 데이터
-      if (cartResponse.success && cartResponse.data) {
-        setCart(cartResponse.data);
-        
-        // 바로구매가 아닌 경우에만 장바구니가 비어있으면 장바구니 페이지로 리다이렉트
-        if (!isDirectPurchase && (!cartResponse.data.items || cartResponse.data.items.length === 0)) {
-          showToast(toast.warning('장바구니 비어있음', '장바구니가 비어있습니다.'));
-          router.push('/cart');
-          return;
+      // 장바구니 데이터 처리
+      if (cartResponse.success) {
+        // 장바구니 데이터가 있는 경우
+        if (cartResponse.data) {
+          setCart(cartResponse.data);
+          
+          // 바로구매가 아닌 경우에만 장바구니가 비어있으면 장바구니 페이지로 리다이렉트
+          if (!isDirectPurchase && (!cartResponse.data.items || cartResponse.data.items.length === 0)) {
+            showToast(toast.warning('장바구니 비어있음', '장바구니가 비어있습니다.'));
+            router.push('/cart');
+            return;
+          }
+        } else {
+          // 장바구니 데이터가 null인 경우 (빈 장바구니)
+          setCart(null);
+          
+          // 바로구매가 아닌 경우에만 장바구니가 비어있으면 장바구니 페이지로 리다이렉트
+          if (!isDirectPurchase) {
+            showToast(toast.warning('장바구니 비어있음', '장바구니가 비어있습니다.'));
+            router.push('/cart');
+            return;
+          }
         }
       } else {
-        // 바로구매가 아닌 경우에만 장바구니 로드 실패 시 리다이렉트
+        // 장바구니 로드 실패
         if (!isDirectPurchase) {
           showToast(toast.error('장바구니 로드 실패', '장바구니 정보를 불러올 수 없습니다.'));
           router.push('/cart');
           return;
         } else {
-          // 바로구매인 경우 장바구니 데이터가 없어도 계속 진행
+          // 바로구매인 경우 장바구니 로드 실패해도 계속 진행
           setCart(null);
         }
       }

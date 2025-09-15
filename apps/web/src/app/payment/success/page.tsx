@@ -87,15 +87,18 @@ export default function PaymentSuccessPage() {
 
       // 바로결제 상품 정보 확인 (URL 파라미터에서)
       const directProductParam = searchParams.get('product');
+      console.log('URL에서 받은 product 파라미터:', directProductParam);
       let directProduct = null;
       
       if (directProductParam) {
         try {
           directProduct = JSON.parse(decodeURIComponent(directProductParam));
-          console.log('바로결제 상품 정보:', directProduct);
+          console.log('바로결제 상품 정보 파싱 성공:', directProduct);
         } catch (error) {
           console.error('바로결제 상품 정보 파싱 실패:', error);
         }
+      } else {
+        console.log('URL에 product 파라미터 없음 - 일반 장바구니 주문으로 처리');
       }
 
       let cartItems = [];

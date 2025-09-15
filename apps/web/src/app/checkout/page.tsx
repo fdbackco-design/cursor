@@ -50,6 +50,7 @@ export default function CheckoutPage() {
   
   // 직접 결제 상품 정보
   const [directProduct, setDirectProduct] = useState<any>(null);
+  const [isDirectPurchase, setIsDirectPurchase] = useState(false);
   
   // 주문자 정보
   const [ordererInfo, setOrdererInfo] = useState<OrdererInfo>({
@@ -82,10 +83,14 @@ export default function CheckoutPage() {
           const productData = JSON.parse(productParam);
           //console.log('Parsed product data in checkout:', productData);
           setDirectProduct(productData);
+          setIsDirectPurchase(true);
         } catch (error) {
           console.error('상품 정보 파싱 실패:', error);
           showToast(toast.error('상품 정보 오류', '상품 정보를 불러올 수 없습니다.'));
+          setIsDirectPurchase(false);
         }
+      } else {
+        setIsDirectPurchase(false);
       }
       
       loadCheckoutData();
@@ -108,16 +113,22 @@ export default function CheckoutPage() {
       if (cartResponse.success && cartResponse.data) {
         setCart(cartResponse.data);
         
-        // 장바구니가 비어있으면 장바구니 페이지로 리다이렉트
-        if (!cartResponse.data.items || cartResponse.data.items.length === 0) {
+        // 바로구매가 아닌 경우에만 장바구니가 비어있으면 장바구니 페이지로 리다이렉트
+        if (!isDirectPurchase && (!cartResponse.data.items || cartResponse.data.items.length === 0)) {
           showToast(toast.warning('장바구니 비어있음', '장바구니가 비어있습니다.'));
           router.push('/cart');
           return;
         }
       } else {
-        showToast(toast.error('장바구니 로드 실패', '장바구니 정보를 불러올 수 없습니다.'));
-        router.push('/cart');
-        return;
+        // 바로구매가 아닌 경우에만 장바구니 로드 실패 시 리다이렉트
+        if (!isDirectPurchase) {
+          showToast(toast.error('장바구니 로드 실패', '장바구니 정보를 불러올 수 없습니다.'));
+          router.push('/cart');
+          return;
+        } else {
+          // 바로구매인 경우 장바구니 데이터가 없어도 계속 진행
+          setCart(null);
+        }
       }
 
       // 배송지 데이터는 loadAddresses 함수에서 처리
@@ -132,6 +143,9 @@ export default function CheckoutPage() {
           !userCoupon.coupon.isUsageLimitReached
         );
         setAvailableCoupons(usableCoupons);
+      } else if (isDirectPurchase) {
+        // 바로구매인 경우 쿠폰 데이터가 없어도 계속 진행
+        setAvailableCoupons([]);
       }
 
       // 사용자 정보 초기화
@@ -142,11 +156,23 @@ export default function CheckoutPage() {
           phone: user.phoneNumber || ''
         });
       }
+      
+      // 바로구매인 경우 장바구니 데이터가 없어도 계속 진행
+      if (isDirectPurchase && !cart) {
+        console.log('바로구매 모드: 장바구니 데이터 없이 계속 진행');
+      }
 
     } catch (error) {
       console.error('체크아웃 데이터 로드 실패:', error);
-      showToast(toast.error('페이지 로드 오류', '페이지 로드 중 오류가 발생했습니다.'));
-      router.push('/cart');
+      
+      // 바로구매가 아닌 경우에만 장바구니 페이지로 리다이렉트
+      if (!isDirectPurchase) {
+        showToast(toast.error('페이지 로드 오류', '페이지 로드 중 오류가 발생했습니다.'));
+        router.push('/cart');
+      } else {
+        // 바로구매인 경우 에러를 무시하고 계속 진행
+        console.warn('바로구매 모드에서 일부 데이터 로드 실패, 계속 진행:', error);
+      }
     } finally {
       setLoading(false);
     }

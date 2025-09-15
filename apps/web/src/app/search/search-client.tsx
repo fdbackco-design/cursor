@@ -31,16 +31,38 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
         setAllProducts(products);
         setSearchResults(products);
         setFilteredResults(products);
+        
+        // 초기 검색어가 있으면 검색 모드로 전환
+        if (initialQuery && initialQuery.trim()) {
+          setIsSearching(true);
+        }
       } catch (error) {
         console.error('상품 로드 실패:', error);
         setAllProducts([]); setSearchResults([]); setFilteredResults([]);
       } finally { setLoading(false); }
     };
     load();
-  }, []);
+  }, [initialQuery]);
+
+  // URL 파라미터 변경 감지
+  useEffect(() => {
+    const query = searchParams.get('q') || '';
+    console.log('URL 파라미터 감지:', { query, searchQuery, isSearching });
+    if (query !== searchQuery) {
+      setSearchQuery(query);
+      if (query.trim()) {
+        console.log('검색 모드로 전환:', query);
+        setIsSearching(true);
+      } else {
+        console.log('검색 모드 해제');
+        setIsSearching(false);
+      }
+    }
+  }, [searchParams, searchQuery]);
 
   // 검색어 필터
   useEffect(() => {
+    console.log('검색 필터 실행:', { searchQuery, allProductsCount: allProducts.length, isSearching });
     if (!searchQuery.trim()) {
       setSearchResults(allProducts);
       setFilteredResults(allProducts);
@@ -54,9 +76,10 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
       p.category?.name?.toLowerCase().includes(term) ||
       p.tags?.some(t => t?.toLowerCase().includes(term))
     );
+    console.log('검색 결과:', results.length);
     setSearchResults(results);
     setFilteredResults(results);
-  }, [searchQuery, allProducts]);
+  }, [searchQuery, allProducts, isSearching]);
 
   // 카테고리 필터
   useEffect(() => {

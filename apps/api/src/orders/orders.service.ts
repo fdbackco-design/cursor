@@ -978,38 +978,31 @@ export class OrdersService {
         };
       }
 
-      // 기존 배송 정보가 있는지 확인 (orderId와 trackingNumber 조합으로 검색)
-      let shipment = await this.prisma.shipment.findFirst({
-        where: { 
+      // 배송 정보 생성 또는 업데이트 (upsert 방식)
+      const shipment = await this.prisma.shipment.upsert({
+        where: {
+          trackingNumber: trackingNumber
+        },
+        update: {
+          orderId: orderId,
+          carrier: courier,
+          status: 'SHIPPED',
+          metadata: {
+            updatedBy: 'admin',
+            updatedAt: new Date().toISOString()
+          }
+        },
+        create: {
           orderId,
-          trackingNumber
+          trackingNumber,
+          carrier: courier,
+          status: 'SHIPPED',
+          metadata: {
+            createdBy: 'admin',
+            createdAt: new Date().toISOString()
+          }
         }
       });
-
-      if (!shipment) {
-        // 새로운 배송 정보 생성
-        shipment = await this.prisma.shipment.create({
-          data: {
-            orderId,
-            trackingNumber,
-            carrier: courier,
-            status: 'SHIPPED',
-            metadata: {
-              createdBy: 'admin',
-              createdAt: new Date().toISOString()
-            }
-          }
-        });
-      } else {
-        // 기존 배송 정보가 있다면 상태를 SHIPPED로 업데이트
-        shipment = await this.prisma.shipment.update({
-          where: { id: shipment.id },
-          data: {
-            status: 'SHIPPED',
-            updatedAt: new Date()
-          }
-        });
-      }
 
       // 배송 할당 정보 생성 또는 업데이트
       await this.prisma.shipmentAllocation.upsert({

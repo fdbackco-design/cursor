@@ -411,19 +411,30 @@ const NewProductPage = () => {
                   <div>
                     <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-2">
                       <Weight className="h-4 w-4 inline mr-1" />
-                      무게 (kg)
+                      Top10 순위
                     </label>
-                    <input
-                      type="number"
+                    <select
                       id="weight"
                       name="weight"
                       value={formData.weight}
                       onChange={handleInputChange}
-                      min="0"
-                      step="0.001"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0.000"
-                    />
+                    >
+                      <option value="0">일반 상품</option>
+                      <option value="10">Top 10</option>
+                      <option value="9">Top 9</option>
+                      <option value="8">Top 8</option>
+                      <option value="7">Top 7</option>
+                      <option value="6">Top 6</option>
+                      <option value="5">Top 5</option>
+                      <option value="4">Top 4</option>
+                      <option value="3">Top 3</option>
+                      <option value="2">Top 2</option>
+                      <option value="1">Top 1</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Top10 순위를 지정하면 메인 페이지의 Top10 섹션에 표시됩니다.
+                    </p>
                   </div>
 
                   <div>

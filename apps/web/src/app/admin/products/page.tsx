@@ -258,6 +258,7 @@ const ProductsPage = () => {
                         <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">카테고리</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-900 w-24">가격</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-900 w-16">재고</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-16">Top10</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">벤더</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">상태</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">등록일</th>
@@ -311,6 +312,15 @@ const ProductsPage = () => {
                             }`}>
                               {product.stockQuantity}개
                             </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            {product.weight && product.weight > 0 ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                Top {product.weight}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-gray-400">-</span>
+                            )}
                           </td>
                           <td className="py-3 px-4">
                             <span className="text-sm text-gray-900 whitespace-nowrap truncate block">{product.vendor?.name || '벤더 없음'}</span>

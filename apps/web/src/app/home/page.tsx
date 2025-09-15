@@ -132,6 +132,12 @@ export default function HomePage() {
   ).slice(0, 3);
   const allProducts = safeProducts.slice(0, 6); // 전체 상품 중 6개
 
+  // Top10 상품 - weight가 1~10인 상품들을 순위별로 정렬
+  const top10Products = safeProducts
+    .filter(p => p.weight && p.weight > 0 && p.weight <= 10)
+    .sort((a, b) => (a.weight || 0) - (b.weight || 0))
+    .slice(0, 10);
+
   // 슬라이더 데이터
   const heroSlides = [
     {

@@ -46,7 +46,7 @@ const EditProductPage = () => {
     priceB2C: '',
     comparePrice: '',
     sku: '',
-    weight: '',
+    weight: '' as string | null,
     length: '',
     width: '',
     height: '',
@@ -121,7 +121,12 @@ const EditProductPage = () => {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      // weight 필드가 "0" (일반 상품)일 때는 null로 설정
+      if (name === 'weight' && value === '0') {
+        setFormData(prev => ({ ...prev, [name]: null }));
+      } else {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
     }
   };
 
@@ -526,7 +531,7 @@ const EditProductPage = () => {
                   </label>
                   <select
                     name="weight"
-                    value={formData.weight}
+                    value={formData.weight || "0"}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >

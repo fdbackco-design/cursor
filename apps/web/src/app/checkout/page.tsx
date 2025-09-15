@@ -226,7 +226,21 @@ export default function CheckoutPage() {
 
   const handleAddAddress = async (addressData: any) => {
     try {
-      const response = await addressesApi.createAddress(addressData);
+      // AddressFormData를 CreateAddressData 형식으로 변환
+      const createAddressData = {
+        name: addressData.name,
+        receiverName: addressData.receiver_name,
+        receiverPhoneNumber1: addressData.receiver_phone_number1,
+        receiverPhoneNumber2: addressData.receiver_phone_number2,
+        zoneNumber: addressData.zone_number,
+        baseAddress: addressData.base_address,
+        detailAddress: addressData.detail_address,
+        isDefault: addressData.is_default,
+      };
+
+      console.log('전송할 주소 데이터:', createAddressData);
+
+      const response = await addressesApi.createAddress(createAddressData);
       if (response.success) {
         await loadAddresses();
         setShowAddressModal(false);

@@ -85,31 +85,63 @@ export default function PaymentSuccessPage() {
       // 처리 시작 시점에 세션 스토리지에 기록
       sessionStorage.setItem('lastProcessedOrderId', orderId);
 
-      // 장바구니 데이터 가져오기
-      //console.log('장바구니 데이터 조회 시작...');
-      const cartResponse = await cartApi.getCart();
-      //console.log('장바구니 응답:', cartResponse);
+      // 바로결제 상품 정보 확인 (URL 파라미터에서)
+      const directProductParam = searchParams.get('product');
+      let directProduct = null;
       
-      if (!cartResponse.success || !cartResponse.data || !cartResponse.data.items || cartResponse.data.items.length === 0) {
-        //console.log('장바구니가 비어있음. 기존 주문 확인...');
-        
-        // 장바구니가 비어있다면 이미 주문이 생성되었을 가능성 확인
+      if (directProductParam) {
         try {
-          const existingOrderResponse = await ordersApi.getOrderByNumber(orderId);
-          if (existingOrderResponse.success && existingOrderResponse.data) {
-            //console.log('기존 주문 발견:', existingOrderResponse.data);
-            setOrderCreated(true);
-            return; // 이미 주문이 생성되어 있으므로 종료
-          }
+          directProduct = JSON.parse(decodeURIComponent(directProductParam));
+          console.log('바로결제 상품 정보:', directProduct);
         } catch (error) {
-          //console.log('기존 주문 조회 실패 (정상):', error);
+          console.error('바로결제 상품 정보 파싱 실패:', error);
         }
-        
-        throw new Error('장바구니 데이터를 찾을 수 없습니다. 이미 주문이 처리되었을 수 있습니다.');
       }
 
-      const cart = cartResponse.data;
-      const cartItems = cart.items;
+      let cartItems = [];
+      let cart = null;
+
+      if (directProduct) {
+        // 바로결제 상품인 경우
+        console.log('바로결제 주문 처리');
+        cartItems = [{
+          productId: directProduct.id,
+          product: {
+            id: directProduct.id,
+            name: directProduct.name,
+            priceB2C: directProduct.price,
+            sku: directProduct.id
+          },
+          quantity: directProduct.quantity
+        }];
+        cart = { id: 'direct_purchase', items: cartItems };
+      } else {
+        // 일반 장바구니 주문인 경우
+        console.log('장바구니 주문 처리');
+        const cartResponse = await cartApi.getCart();
+        console.log('장바구니 응답:', cartResponse);
+        
+        if (!cartResponse.success || !cartResponse.data || !cartResponse.data.items || cartResponse.data.items.length === 0) {
+          console.log('장바구니가 비어있음. 기존 주문 확인...');
+          
+          // 장바구니가 비어있다면 이미 주문이 생성되었을 가능성 확인
+          try {
+            const existingOrderResponse = await ordersApi.getOrderByNumber(orderId);
+            if (existingOrderResponse.success && existingOrderResponse.data) {
+              console.log('기존 주문 발견:', existingOrderResponse.data);
+              setOrderCreated(true);
+              return; // 이미 주문이 생성되어 있으므로 종료
+            }
+          } catch (error) {
+            console.log('기존 주문 조회 실패 (정상):', error);
+          }
+          
+          throw new Error('장바구니 데이터를 찾을 수 없습니다. 이미 주문이 처리되었을 수 있습니다.');
+        }
+
+        cart = cartResponse.data;
+        cartItems = cart.items;
+      }
 
       // 쿠폰 정보 조회 (URL 파라미터 1순위, localStorage 2순위, 결제 정보 3순위)
       //console.log('쿠폰 정보 조회 시작...');

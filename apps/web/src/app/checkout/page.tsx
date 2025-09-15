@@ -522,6 +522,12 @@ export default function CheckoutPage() {
             //console.log('✅ successUrl에 쿠폰 정보 추가:', successUrl.toString());
           }
           
+          // 바로결제 상품 정보를 successUrl에 추가
+          if (directProduct) {
+            successUrl.searchParams.set('product', encodeURIComponent(JSON.stringify(directProduct)));
+            console.log('✅ successUrl에 바로결제 상품 정보 추가:', directProduct);
+          }
+          
           await widgets.requestPayment({
             orderId: orderId,
             orderName: orderName,

@@ -49,24 +49,24 @@ const NewProductPage = () => {
 
   // 컴포넌트 마운트 시 초기 상태 로그
   useEffect(() => {
-    console.log('컴포넌트 마운트 시 formData.isFeatured:', formData.isFeatured);
+    //console.log('컴포넌트 마운트 시 formData.isFeatured:', formData.isFeatured);
   }, []);
 
   const categories = ['전체상품', '생활가전', '주방용품', '전자제품', '화장품', '잡화', '스포츠용품'];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    console.log(`입력 변경: ${name}, 타입: ${type}, 값: ${value}`); // 디버깅용 로그
+    //console.log(`입력 변경: ${name}, 타입: ${type}, 값: ${value}`); // 디버깅용 로그
     
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
-      console.log(`체크박스 변경: ${name} = ${checked}`); // 디버깅용 로그
+      //console.log(`체크박스 변경: ${name} = ${checked}`); // 디버깅용 로그
       setFormData(prev => {
         const newData = {
           ...prev,
           [name]: checked
         };
-        console.log(`새로운 formData.${name}:`, (newData as any)[name]); // 디버깅용 로그
+        //console.log(`새로운 formData.${name}:`, (newData as any)[name]); // 디버깅용 로그
         return newData;
       });
     } else {
@@ -115,7 +115,7 @@ const NewProductPage = () => {
   e.preventDefault();
   setIsSubmitting(true);
   try {
-    console.log('제출 시 formData.isFeatured:', formData.isFeatured); // 디버깅용 로그
+    //console.log('제출 시 formData.isFeatured:', formData.isFeatured); // 디버깅용 로그
     
     const productData = {
       name: formData.name,
@@ -148,7 +148,7 @@ const NewProductPage = () => {
       metadata: formData.metadata || {},
     };
     
-    console.log('제출할 productData.isFeatured:', productData.isFeatured); // 디버깅용 로그
+    //console.log('제출할 productData.isFeatured:', productData.isFeatured); // 디버깅용 로그
 
     const result = await createProduct({
       ...productData,

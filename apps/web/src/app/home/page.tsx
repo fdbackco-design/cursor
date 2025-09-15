@@ -215,7 +215,6 @@ export default function HomePage() {
                   <div className="absolute -top-2 -left-2 z-10">
                     <div className="bg-gradient-to-br from-orange-400 to-orange-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
                       <div className="text-center">
-                        <div className="text-xs font-bold">RANK</div>
                         <div className="text-lg font-black">{product.weight}</div>
                       </div>
                     </div>

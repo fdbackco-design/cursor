@@ -44,6 +44,20 @@ export interface AddressSearchResult {
   bname: string;
 }
 
+// AddressSearchResult를 주소 폼 데이터로 변환하는 함수
+export const convertToAddressFormData = (result: AddressSearchResult) => {
+  return {
+    zone_number: result.zonecode,
+    base_address: result.address,
+    road_address: result.roadAddress,
+    jibun_address: result.jibunAddress,
+    building_name: result.buildingName,
+    sido: result.sido,
+    sigungu: result.sigungu,
+    bname: result.bname,
+  };
+};
+
 interface UseAddressSearchOptions {
   onComplete: (result: AddressSearchResult) => void;
   onClose?: () => void;

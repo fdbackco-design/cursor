@@ -211,19 +211,23 @@ const EditProductPage = () => {
       if (currentPriceB2C !== Number(product.priceB2C)) productData.priceB2C = currentPriceB2C;
       if (currentComparePrice !== product.comparePrice) productData.comparePrice = currentComparePrice;
       if (formData.sku !== (product.sku || '')) productData.sku = formData.sku || undefined;
-      // weight 처리 - null과 빈 문자열을 구분하여 처리
-      const currentWeight = formData.weight ? parseFloat(formData.weight) : undefined;
+      // weight 처리 - undefined와 기존 값을 정확히 비교
+      const currentWeight = formData.weight && formData.weight !== '' ? parseFloat(formData.weight) : undefined;
       const originalWeight = product.weight;
       
       console.log('weight 비교:', {
         formDataWeight: formData.weight,
         currentWeight: currentWeight,
         originalWeight: originalWeight,
+        originalWeightType: typeof originalWeight,
         isChanged: currentWeight !== originalWeight
       });
       
       if (currentWeight !== originalWeight) {
         productData.weight = currentWeight;
+        console.log('weight 변경됨:', currentWeight);
+      } else {
+        console.log('weight 변경되지 않음');
       }
       if (formData.length !== (product.length ? product.length.toString() : '')) {
         productData.length = formData.length ? parseFloat(formData.length) : undefined;
@@ -261,6 +265,7 @@ const EditProductPage = () => {
       // console.log('삭제된 이미지 인덱스:', deletedImageIndexes);
       // console.log('삭제된 설명 이미지 인덱스:', deletedDescriptionImageIndexes);
       
+      console.log('API에 전송할 productData:', productData);
       await updateProduct(productId, productData);
       showToast(toast.success('상품 수정 완료', '상품이 성공적으로 수정되었습니다.'));
       router.push('/admin/products');

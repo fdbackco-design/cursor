@@ -466,7 +466,7 @@ export class ProductsService {
         sku: providedSku || existingProduct.sku,
         weight: (() => {
           const result = weight !== undefined ? (weight ? parseFloat(weight) : null) : existingProduct.weight;
-          this.logger.log(`Weight 업데이트: ${existingProduct.id}, 입력값: ${weight}, 결과: ${result}`);
+          console.log(`Weight 업데이트: ${existingProduct.id}, 입력값: ${weight}, 결과: ${result}`);
           return result;
         })(),
         length: length !== undefined ? (length ? parseFloat(length) : null) : existingProduct.length,

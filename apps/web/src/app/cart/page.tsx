@@ -89,12 +89,12 @@ export default function CartPage() {
 
   // 주문하기 함수 - 체크아웃 페이지로 이동
   const handleOrder = () => {
-    if (!user || !cart || cartItems.length === 0) {
-      showToast(toast.warning('장바구니 비어있음', '장바구니가 비어있습니다.'));
+    if (!user) {
+      showToast(toast.warning('로그인 필요', '로그인이 필요합니다.'));
       return;
     }
 
-    // 체크아웃 페이지로 이동
+    // 장바구니가 비어있어도 체크아웃 페이지로 이동
     router.push('/checkout');
   };
 
@@ -305,7 +305,7 @@ export default function CartPage() {
                   className="w-full min-h-[48px] sm:min-h-[52px]" 
                   size="lg" 
                   onClick={handleOrder}
-                  disabled={cartItems.length === 0}
+                  disabled={!user}
                 >
                       주문하기
                       <ArrowRight className="h-4 w-4 ml-2" />

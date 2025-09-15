@@ -238,6 +238,8 @@ export class ProductsController {
 
       const productData = {
         ...updateProductDto,
+        // weight가 'null' 문자열이면 null로 변환
+        weight: updateProductDto.weight === 'null' ? null : updateProductDto.weight,
         images: s3ImageData,
         descriptionImages: s3DescriptionImageData,
         deletedImageIndexes,

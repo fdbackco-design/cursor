@@ -281,7 +281,13 @@ export const updateProduct = async (id: string, productData: {
     if (productData.priceB2C !== undefined && productData.priceB2C !== null) formData.append('priceB2C', productData.priceB2C.toString());
     if (productData.comparePrice !== undefined && productData.comparePrice !== null) formData.append('comparePrice', productData.comparePrice.toString());
     if (productData.sku && productData.sku.trim()) formData.append('sku', productData.sku.trim());
-    if (productData.weight && productData.weight > 0) formData.append('weight', productData.weight.toString());
+    if (productData.weight !== undefined) {
+      if (productData.weight !== null) {
+        formData.append('weight', productData.weight.toString());
+      } else {
+        formData.append('weight', 'null');
+      }
+    }
     if (productData.length && productData.length > 0) formData.append('length', productData.length.toString());
     if (productData.width && productData.width > 0) formData.append('width', productData.width.toString());
     if (productData.height && productData.height > 0) formData.append('height', productData.height.toString());

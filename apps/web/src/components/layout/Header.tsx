@@ -193,6 +193,13 @@ const Header = () => {
               전체상품
             </Link>
             <Link 
+              href="/category/featured" 
+              className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap flex items-center"
+            >
+              <span className="text-yellow-500 mr-1">★</span>
+              추천상품
+            </Link>
+            <Link 
               href="/category/home-appliances" 
               className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
             >

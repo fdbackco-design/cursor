@@ -26,11 +26,8 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
   useEffect(() => {
     const load = async () => {
       try {
-        console.log('상품 로드 시작');
         const res = await productsApi.getProducts({ limit: 1000 });
-        console.log('상품 API 응답:', res);
         const products = (res.success && res.data?.products) ? res.data.products : [];
-        console.log('로드된 상품 수:', products.length);
         setAllProducts(products);
         setSearchResults(products);
         setFilteredResults(products);
@@ -44,7 +41,6 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
 
   // 검색어 필터
   useEffect(() => {
-    console.log('검색 필터 실행:', { searchQuery, allProductsCount: allProducts.length });
     if (!searchQuery.trim()) {
       setSearchResults(allProducts);
       setFilteredResults(allProducts);
@@ -58,7 +54,6 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
       p.category?.name?.toLowerCase().includes(term) ||
       p.tags?.some(t => t?.toLowerCase().includes(term))
     );
-    console.log('검색 결과:', results.length);
     setSearchResults(results);
     setFilteredResults(results);
   }, [searchQuery, allProducts]);
@@ -110,6 +105,28 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* 모바일 전용 검색 헤더 */}
+          <div className="md:hidden mb-6">
+            <div className="flex items-center space-x-3">
+              <button 
+                onClick={() => router.back()}
+                className="flex-shrink-0"
+              >
+                <ArrowLeft className="h-6 w-6 text-gray-600" />
+              </button>
+              <form onSubmit={handleSearch} className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="상품명 또는 브랜드 입력"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+              </form>
+            </div>
+          </div>
+          
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">검색 결과: "{searchQuery}"</h1>
             <p className="text-gray-600">총 {filteredResults.length}개의 상품을 찾았습니다</p>
@@ -176,8 +193,8 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
   // 검색 페이지 (검색어가 없는 경우)
   return (
     <div className="min-h-screen bg-white">
-      {/* 검색 헤더 */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-40">
+      {/* 모바일 전용 검색 헤더 */}
+      <div className="md:hidden sticky top-0 bg-white border-b border-gray-200 z-40">
         <div className="px-4 py-3">
           <div className="flex items-center space-x-3">
             {/* 뒤로가기 버튼 */}

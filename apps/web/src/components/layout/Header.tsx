@@ -3,15 +3,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@repo/ui';
-import { Search, LogIn, User, LogOut, Settings, Truck, ShoppingCart, X } from 'lucide-react';
+import { Search, LogIn, User, LogOut, Settings, Truck, ShoppingCart } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
 
 const Header = () => {
   const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
 
 
@@ -30,13 +27,6 @@ const Header = () => {
     }
   };
 
-  const handleMobileSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setShowMobileSearch(false);
-    }
-  };
 
   return (
     <>
@@ -58,21 +48,10 @@ const Header = () => {
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
-                  console.log('데스크톱 검색 폼 제출됨');
                   const formData = new FormData(e.currentTarget);
                   const query = formData.get('search') as string;
-                  console.log('검색어:', query);
                   if (query.trim()) {
-                    console.log('검색 실행:', query.trim());
-                    // 라우터와 window.location 둘 다 시도
-                    try {
-                      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-                    } catch (error) {
-                      console.error('라우터 오류:', error);
-                      window.location.href = `/search?q=${encodeURIComponent(query.trim())}`;
-                    }
-                  } else {
-                    console.log('검색어가 비어있음');
+                    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
                   }
                 }}
                 className="relative w-full"
@@ -192,19 +171,8 @@ const Header = () => {
               )}
             </div>
 
-            {/* 모바일 검색 및 장바구니 버튼 */}
-            <div className="md:hidden flex items-center space-x-2">
-              {/* 모바일 검색 버튼 */}
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => setShowMobileSearch(true)}
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-              
-              {/* 모바일 장바구니 버튼 */}
+            {/* 모바일 장바구니 버튼만 표시 */}
+            <div className="md:hidden flex items-center">
               {isAuthenticated && (
                 <Link href="/cart">
                   <Button 
@@ -335,32 +303,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* 모바일 검색 모달 */}
-      {showMobileSearch && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden">
-          <div className="bg-white p-4">
-            <div className="flex items-center space-x-3 mb-4">
-              <button 
-                onClick={() => setShowMobileSearch(false)}
-                className="flex-shrink-0"
-              >
-                <X className="h-6 w-6 text-gray-600" />
-              </button>
-              <form onSubmit={handleMobileSearch} className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="상품명, 브랜드, 카테고리로 검색"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  autoFocus
-                />
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

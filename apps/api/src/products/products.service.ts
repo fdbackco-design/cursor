@@ -255,14 +255,14 @@ export class ProductsService {
     const metaObj = this.parseJsonMaybe<any>(metadata, {});
 
     // 디버깅 로그 추가
-    console.log('=== createProduct 디버깅 ===');
-    console.log('전체 createProductDto:', JSON.stringify(createProductDto, null, 2));
-    console.log('원본 isFeatured 값:', isFeatured, '타입:', typeof isFeatured);
-    console.log('isFeatured === "true":', isFeatured === 'true');
-    console.log('isFeatured === true:', isFeatured === true);
-    console.log('isFeatured === "false":', isFeatured === 'false');
-    console.log('isFeatured === false:', isFeatured === false);
-    console.log('최종 isFeatured 값:', isFeatured === 'true' || isFeatured === true);
+    // console.log('=== createProduct 디버깅 ===');
+    // console.log('전체 createProductDto:', JSON.stringify(createProductDto, null, 2));
+    // console.log('원본 isFeatured 값:', isFeatured, '타입:', typeof isFeatured);
+    // console.log('isFeatured === "true":', isFeatured === 'true');
+    // console.log('isFeatured === true:', isFeatured === true);
+    // console.log('isFeatured === "false":', isFeatured === 'false');
+    // console.log('isFeatured === false:', isFeatured === false);
+    // console.log('최종 isFeatured 값:', isFeatured === 'true' || isFeatured === true);
 
     // 5) 생성
     const product = await this.prisma.product.create({

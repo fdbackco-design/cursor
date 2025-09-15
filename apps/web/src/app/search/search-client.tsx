@@ -26,12 +26,16 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
   useEffect(() => {
     const load = async () => {
       try {
+        console.log('상품 로드 시작');
         const res = await productsApi.getProducts({ limit: 1000 });
+        console.log('상품 API 응답:', res);
         const products = (res.success && res.data?.products) ? res.data.products : [];
+        console.log('로드된 상품 수:', products.length);
         setAllProducts(products);
         setSearchResults(products);
         setFilteredResults(products);
-      } catch {
+      } catch (error) {
+        console.error('상품 로드 실패:', error);
         setAllProducts([]); setSearchResults([]); setFilteredResults([]);
       } finally { setLoading(false); }
     };
@@ -40,6 +44,7 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
 
   // 검색어 필터
   useEffect(() => {
+    console.log('검색 필터 실행:', { searchQuery, allProductsCount: allProducts.length });
     if (!searchQuery.trim()) {
       setSearchResults(allProducts);
       setFilteredResults(allProducts);
@@ -53,6 +58,7 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
       p.category?.name?.toLowerCase().includes(term) ||
       p.tags?.some(t => t?.toLowerCase().includes(term))
     );
+    console.log('검색 결과:', results.length);
     setSearchResults(results);
     setFilteredResults(results);
   }, [searchQuery, allProducts]);

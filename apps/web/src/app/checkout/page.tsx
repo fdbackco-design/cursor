@@ -100,17 +100,17 @@ export default function CheckoutPage() {
       if (productParam) {
         try {
           const productData = JSON.parse(productParam);
-          console.log('바로결제 상품 정보 파싱 성공:', productData);
+          //console.log('바로결제 상품 정보 파싱 성공:', productData);
           setDirectProduct(productData);   // UI 표시에만 사용
           isDirect = !!productData?.id;
-          console.log('바로결제 여부:', isDirect);
+          //console.log('바로결제 여부:', isDirect);
         } catch (error) {
           console.error('상품 정보 파싱 실패:', error);
           showToast(toast.error('상품 정보 오류', '상품 정보를 불러올 수 없습니다.'));
           isDirect = false;
         }
       } else {
-        console.log('URL에 product 파라미터 없음');
+        //console.log('URL에 product 파라미터 없음');
       }
       loadCheckoutData(isDirect);
     } else if (!authLoading && !isAuthenticated) {
@@ -242,7 +242,7 @@ export default function CheckoutPage() {
         isDefault: addressData.is_default,
       };
 
-      console.log('전송할 주소 데이터:', createAddressData);
+      //console.log('전송할 주소 데이터:', createAddressData);
 
       const response = await addressesApi.createAddress(createAddressData);
       if (response.success) {
@@ -529,7 +529,7 @@ export default function CheckoutPage() {
           // 바로결제 상품 정보를 successUrl에 추가
           if (directProduct) {
             successUrl.searchParams.set('product', encodeURIComponent(JSON.stringify(directProduct)));
-            console.log('✅ successUrl에 바로결제 상품 정보 추가:', directProduct);
+            //console.log('✅ successUrl에 바로결제 상품 정보 추가:', directProduct);
           }
           
           await widgets.requestPayment({

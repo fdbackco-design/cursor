@@ -87,18 +87,18 @@ export default function PaymentSuccessPage() {
 
       // 바로결제 상품 정보 확인 (URL 파라미터에서)
       const directProductParam = searchParams.get('product');
-      console.log('URL에서 받은 product 파라미터:', directProductParam);
+      //console.log('URL에서 받은 product 파라미터:', directProductParam);
       let directProduct = null;
       
       if (directProductParam) {
         try {
           directProduct = JSON.parse(decodeURIComponent(directProductParam));
-          console.log('바로결제 상품 정보 파싱 성공:', directProduct);
+          //console.log('바로결제 상품 정보 파싱 성공:', directProduct);
         } catch (error) {
           console.error('바로결제 상품 정보 파싱 실패:', error);
         }
       } else {
-        console.log('URL에 product 파라미터 없음 - 일반 장바구니 주문으로 처리');
+       //console.log('URL에 product 파라미터 없음 - 일반 장바구니 주문으로 처리');
       }
 
       let cartItems = [];
@@ -106,7 +106,7 @@ export default function PaymentSuccessPage() {
 
       if (directProduct) {
         // 바로결제 상품인 경우
-        console.log('바로결제 주문 처리');
+        //console.log('바로결제 주문 처리');
         cartItems = [{
           productId: directProduct.id,
           product: {
@@ -120,23 +120,23 @@ export default function PaymentSuccessPage() {
         cart = { id: 'direct_purchase', items: cartItems };
       } else {
         // 일반 장바구니 주문인 경우
-        console.log('장바구니 주문 처리');
+        //console.log('장바구니 주문 처리');
         const cartResponse = await cartApi.getCart();
-        console.log('장바구니 응답:', cartResponse);
+        //console.log('장바구니 응답:', cartResponse);
         
         if (!cartResponse.success || !cartResponse.data || !cartResponse.data.items || cartResponse.data.items.length === 0) {
-          console.log('장바구니가 비어있음. 기존 주문 확인...');
+          //console.log('장바구니가 비어있음. 기존 주문 확인...');
           
           // 장바구니가 비어있다면 이미 주문이 생성되었을 가능성 확인
           try {
             const existingOrderResponse = await ordersApi.getOrderByNumber(orderId);
             if (existingOrderResponse.success && existingOrderResponse.data) {
-              console.log('기존 주문 발견:', existingOrderResponse.data);
+              //console.log('기존 주문 발견:', existingOrderResponse.data);
               setOrderCreated(true);
               return; // 이미 주문이 생성되어 있으므로 종료
             }
           } catch (error) {
-            console.log('기존 주문 조회 실패 (정상):', error);
+            //console.log('기존 주문 조회 실패 (정상):', error);
           }
           
           throw new Error('장바구니 데이터를 찾을 수 없습니다. 이미 주문이 처리되었을 수 있습니다.');

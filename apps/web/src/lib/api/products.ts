@@ -200,7 +200,7 @@ export const createProduct = async (productData: {
     // isActive와 isFeatured는 항상 전송 (체크박스가 체크되지 않아도 false로 전송)
     formData.append('isActive', (productData.isActive !== undefined ? productData.isActive : true).toString());
     formData.append('isFeatured', (productData.isFeatured !== undefined ? productData.isFeatured : false).toString());
-    console.log('API 전송 시 isActive:', productData.isActive, 'isFeatured:', productData.isFeatured);
+    //console.log('API 전송 시 isActive:', productData.isActive, 'isFeatured:', productData.isFeatured);
     formData.append('stockQuantity', productData.stockQuantity.toString());
     if (productData.lowStockThreshold) {
       formData.append('lowStockThreshold', productData.lowStockThreshold.toString());

@@ -100,6 +100,45 @@ const DeliveryPage = () => {
     }
   };
 
+  // 주소 정규화 함수 (공백, 특수문자 정리)
+  const normalizeAddress = (address: string): string => {
+    return address
+      .replace(/\s+/g, ' ') // 여러 공백을 하나로
+      .replace(/[^\w\s가-힣]/g, '') // 특수문자 제거 (한글, 영문, 숫자, 공백만 유지)
+      .trim()
+      .toLowerCase();
+  };
+
+  // 주소 매칭 함수 (더 정교한 매칭)
+  const isAddressMatch = (orderAddress: string, deliveryAddress: string): boolean => {
+    const normalizedOrder = normalizeAddress(orderAddress);
+    const normalizedDelivery = normalizeAddress(deliveryAddress);
+    
+    // 1. 정확한 매칭
+    if (normalizedOrder === normalizedDelivery) return true;
+    
+    // 2. 포함 관계 매칭
+    if (normalizedOrder.includes(normalizedDelivery) || normalizedDelivery.includes(normalizedOrder)) return true;
+    
+    // 3. 상세 주소 제거 후 매칭 (동/호수 등 제거)
+    const orderWithoutDetail = normalizedOrder.replace(/\s+\d+.*$/, '').trim();
+    const deliveryWithoutDetail = normalizedDelivery.replace(/\s+\d+.*$/, '').trim();
+    
+    if (orderWithoutDetail === deliveryWithoutDetail) return true;
+    if (orderWithoutDetail.includes(deliveryWithoutDetail) || deliveryWithoutDetail.includes(orderWithoutDetail)) return true;
+    
+    // 4. 단어별 매칭 (주소의 주요 부분들이 모두 포함되는지 확인)
+    const orderWords = orderWithoutDetail.split(' ').filter(word => word.length > 1);
+    const deliveryWords = deliveryWithoutDetail.split(' ').filter(word => word.length > 1);
+    
+    if (orderWords.length > 0 && deliveryWords.length > 0) {
+      const commonWords = orderWords.filter(word => deliveryWords.some(dWord => dWord.includes(word) || word.includes(dWord)));
+      return commonWords.length >= Math.min(orderWords.length, deliveryWords.length) * 0.7; // 70% 이상 일치
+    }
+    
+    return false;
+  };
+
   // 엑셀 파일 처리 및 매핑
   const processExcelFile = async () => {
     if (!file) return;
@@ -196,12 +235,30 @@ const DeliveryPage = () => {
           const address = order.shippingAddress?.address || '';
           const addressDetail = order.shippingAddress?.addressDetail || '';
           
-          const isAddressMatch = baseAddress === delivery.address ||
-                               address === delivery.address ||
-                               (baseAddress + ' ' + detailAddress).includes(delivery.address) ||
-                               (address + ' ' + addressDetail).includes(delivery.address);
+          // 전체 주소 문자열 생성
+          const fullOrderAddress = `${baseAddress} ${detailAddress}`.trim();
+          const fullOrderAddress2 = `${address} ${addressDetail}`.trim();
+          
+          // 개선된 주소 매칭 로직 사용
+          const addressMatch = isAddressMatch(fullOrderAddress, delivery.address) || 
+                              isAddressMatch(fullOrderAddress2, delivery.address) ||
+                              isAddressMatch(baseAddress, delivery.address) ||
+                              isAddressMatch(address, delivery.address);
 
-          return isRecipientMatch && isPhoneMatch && isAddressMatch;
+          // 디버깅을 위한 로그 (매칭 실패 시에만)
+          if (isRecipientMatch && isPhoneMatch && !addressMatch) {
+            console.log('주소 매칭 실패:', {
+              deliveryAddress: delivery.address,
+              orderAddress1: fullOrderAddress,
+              orderAddress2: fullOrderAddress2,
+              baseAddress: baseAddress,
+              address: address,
+              recipientName: delivery.recipientName,
+              orderRecipient: order.shippingAddress?.receiver_name || order.user.name
+            });
+          }
+
+          return isRecipientMatch && isPhoneMatch && addressMatch;
         });
 
         if (matchingOrders.length > 0) {

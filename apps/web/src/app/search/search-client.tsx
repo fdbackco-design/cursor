@@ -47,14 +47,14 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
   // URL 파라미터 변경 감지
   useEffect(() => {
     const query = searchParams.get('q') || '';
-    console.log('URL 파라미터 감지:', { query, searchQuery, isSearching });
+    //console.log('URL 파라미터 감지:', { query, searchQuery, isSearching });
     if (query !== searchQuery) {
       setSearchQuery(query);
       if (query.trim()) {
-        console.log('검색 모드로 전환:', query);
+        //console.log('검색 모드로 전환:', query);
         setIsSearching(true);
       } else {
-        console.log('검색 모드 해제');
+        //console.log('검색 모드 해제');
         setIsSearching(false);
       }
     }
@@ -62,7 +62,7 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
 
   // 검색어 필터
   useEffect(() => {
-    console.log('검색 필터 실행:', { searchQuery, allProductsCount: allProducts.length, isSearching });
+    //console.log('검색 필터 실행:', { searchQuery, allProductsCount: allProducts.length, isSearching });
     if (!searchQuery.trim()) {
       setSearchResults(allProducts);
       setFilteredResults(allProducts);
@@ -76,7 +76,7 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
       p.category?.name?.toLowerCase().includes(term) ||
       p.tags?.some(t => t?.toLowerCase().includes(term))
     );
-    console.log('검색 결과:', results.length);
+    //console.log('검색 결과:', results.length);
     setSearchResults(results);
     setFilteredResults(results);
   }, [searchQuery, allProducts, isSearching]);

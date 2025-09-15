@@ -50,9 +50,9 @@ const Header = () => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget);
                   const query = formData.get('search') as string;
-                  console.log('헤더 검색 실행:', query);
+                  //console.log('헤더 검색 실행:', query);
                   if (query.trim()) {
-                    console.log('검색어로 이동:', query.trim());
+                    //console.log('검색어로 이동:', query.trim());
                     router.push(`/search?q=${encodeURIComponent(query.trim())}`);
                   }
                 }}

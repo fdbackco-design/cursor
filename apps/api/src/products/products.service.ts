@@ -464,7 +464,11 @@ export class ProductsService {
         priceB2C: priceB2C ? parseFloat(priceB2C) : existingProduct.priceB2C,
         comparePrice: comparePrice !== undefined ? (comparePrice ? parseFloat(comparePrice) : null) : existingProduct.comparePrice,
         sku: providedSku || existingProduct.sku,
-        weight: weight !== undefined ? (weight ? parseFloat(weight) : null) : existingProduct.weight,
+        weight: (() => {
+          const result = weight !== undefined ? (weight ? parseFloat(weight) : null) : existingProduct.weight;
+          this.logger.log(`Weight 업데이트: ${existingProduct.id}, 입력값: ${weight}, 결과: ${result}`);
+          return result;
+        })(),
         length: length !== undefined ? (length ? parseFloat(length) : null) : existingProduct.length,
         width: width !== undefined ? (width ? parseFloat(width) : null) : existingProduct.width,
         height: height !== undefined ? (height ? parseFloat(height) : null) : existingProduct.height,

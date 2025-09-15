@@ -46,7 +46,7 @@ const EditProductPage = () => {
     priceB2C: '',
     comparePrice: '',
     sku: '',
-    weight: '' as string | null,
+    weight: '' as string | undefined,
     length: '',
     width: '',
     height: '',
@@ -117,15 +117,26 @@ const EditProductPage = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
+    //console.log(`입력 변경: ${name} = ${value} (타입: ${type})`);
+    
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-      // weight 필드가 "0" (일반 상품)일 때는 null로 설정
+      // weight 필드가 "0" (일반 상품)일 때는 undefined로 설정
       if (name === 'weight' && value === '0') {
-        setFormData(prev => ({ ...prev, [name]: null }));
+        //console.log('weight를 undefined로 설정');
+        setFormData(prev => {
+          const newData = { ...prev, [name]: undefined };
+          //console.log('새로운 formData:', newData);
+          return newData;
+        });
       } else {
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+          const newData = { ...prev, [name]: value };
+          //console.log('새로운 formData:', newData);
+          return newData;
+        });
       }
     }
   };
@@ -200,8 +211,19 @@ const EditProductPage = () => {
       if (currentPriceB2C !== Number(product.priceB2C)) productData.priceB2C = currentPriceB2C;
       if (currentComparePrice !== product.comparePrice) productData.comparePrice = currentComparePrice;
       if (formData.sku !== (product.sku || '')) productData.sku = formData.sku || undefined;
-      if (formData.weight !== (product.weight ? product.weight.toString() : '')) {
-        productData.weight = formData.weight ? parseFloat(formData.weight) : undefined;
+      // weight 처리 - null과 빈 문자열을 구분하여 처리
+      const currentWeight = formData.weight ? parseFloat(formData.weight) : undefined;
+      const originalWeight = product.weight;
+      
+      // console.log('weight 비교:', {
+      //   formDataWeight: formData.weight,
+      //   currentWeight: currentWeight,
+      //   originalWeight: originalWeight,
+      //   isChanged: currentWeight !== originalWeight
+      // });
+      
+      if (currentWeight !== originalWeight) {
+        productData.weight = currentWeight;
       }
       if (formData.length !== (product.length ? product.length.toString() : '')) {
         productData.length = formData.length ? parseFloat(formData.length) : undefined;

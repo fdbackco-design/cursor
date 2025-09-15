@@ -29,7 +29,7 @@ const NewProductPage = () => {
     priceB2C: '',
     comparePrice: '',
     sku: '',
-    weight: '' as string | null,
+    weight: '' as string | undefined,
     length: '',
     width: '',
     height: '',
@@ -70,11 +70,11 @@ const NewProductPage = () => {
         return newData;
       });
     } else {
-      // weight 필드가 "0" (일반 상품)일 때는 null로 설정
+      // weight 필드가 "0" (일반 상품)일 때는 undefined로 설정
       if (name === 'weight' && value === '0') {
         setFormData(prev => ({
           ...prev,
-          [name]: null
+          [name]: undefined
         }));
       } else {
         setFormData(prev => ({
@@ -133,7 +133,7 @@ const NewProductPage = () => {
       priceB2C: Number(formData.priceB2C),
       comparePrice: formData.comparePrice ? Number(formData.comparePrice) : 0,
       sku: formData.sku || '',
-      weight: formData.weight ? Number(formData.weight) : 0,
+      ...(formData.weight && { weight: Number(formData.weight) }),
       length: formData.length ? Number(formData.length) : 0,
       width: formData.width ? Number(formData.width) : 0,
       height: formData.height ? Number(formData.height) : 0,

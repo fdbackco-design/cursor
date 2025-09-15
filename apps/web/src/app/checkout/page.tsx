@@ -50,7 +50,7 @@ export default function CheckoutPage() {
   
   // 직접 결제 상품 정보
   const [directProduct, setDirectProduct] = useState<any>(null);
-  const [isDirectPurchase, setIsDirectPurchase] = useState(false);
+//  const [isDirectPurchase, setIsDirectPurchase] = useState(false);
   
   // 주문자 정보
   const [ordererInfo, setOrdererInfo] = useState<OrdererInfo>({
@@ -76,30 +76,45 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      // URL 파라미터에서 직접 결제 상품 정보 확인
+      // // URL 파라미터에서 직접 결제 상품 정보 확인
+      // const productParam = searchParams.get('product');
+      // if (productParam) {
+      //   try {
+      //     const productData = JSON.parse(productParam);
+      //     //console.log('Parsed product data in checkout:', productData);
+      //     setDirectProduct(productData);
+      //     setIsDirectPurchase(true);
+      //   } catch (error) {
+      //     console.error('상품 정보 파싱 실패:', error);
+      //     showToast(toast.error('상품 정보 오류', '상품 정보를 불러올 수 없습니다.'));
+      //     setIsDirectPurchase(false);
+      //   }
+      // } else {
+      //   setIsDirectPurchase(false);
+      // }
+      
+      // loadCheckoutData();
+      // ✅ 바로구매 여부를 즉시 계산해서 loadCheckoutData에 전달
       const productParam = searchParams.get('product');
+      let isDirect = false;
       if (productParam) {
-        try {
+      try {
           const productData = JSON.parse(productParam);
-          //console.log('Parsed product data in checkout:', productData);
-          setDirectProduct(productData);
-          setIsDirectPurchase(true);
+          setDirectProduct(productData);   // UI 표시에만 사용
+          isDirect = !!productData?.id;
         } catch (error) {
           console.error('상품 정보 파싱 실패:', error);
           showToast(toast.error('상품 정보 오류', '상품 정보를 불러올 수 없습니다.'));
-          setIsDirectPurchase(false);
+          isDirect = false;
         }
-      } else {
-        setIsDirectPurchase(false);
       }
-      
-      loadCheckoutData();
+      loadCheckoutData(isDirect);
     } else if (!authLoading && !isAuthenticated) {
       router.push('/signin');
     }
   }, [isAuthenticated, user, authLoading, router, searchParams, showToast]);
 
-  const loadCheckoutData = async () => {
+  const loadCheckoutData = async (isDirectPurchase: boolean) => {
     try {
       setLoading(true);
       

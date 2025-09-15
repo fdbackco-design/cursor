@@ -125,16 +125,16 @@ const EditProductPage = () => {
     } else {
       // weight 필드가 "0" (일반 상품)일 때는 undefined로 설정
       if (name === 'weight' && value === '0') {
-        //console.log('weight를 undefined로 설정');
+        console.log('weight를 undefined로 설정');
         setFormData(prev => {
           const newData = { ...prev, [name]: undefined };
-          //console.log('새로운 formData:', newData);
+          console.log('새로운 formData:', newData);
           return newData;
         });
       } else {
         setFormData(prev => {
           const newData = { ...prev, [name]: value };
-          //console.log('새로운 formData:', newData);
+          console.log('새로운 formData:', newData);
           return newData;
         });
       }
@@ -215,12 +215,12 @@ const EditProductPage = () => {
       const currentWeight = formData.weight ? parseFloat(formData.weight) : undefined;
       const originalWeight = product.weight;
       
-      // console.log('weight 비교:', {
-      //   formDataWeight: formData.weight,
-      //   currentWeight: currentWeight,
-      //   originalWeight: originalWeight,
-      //   isChanged: currentWeight !== originalWeight
-      // });
+      console.log('weight 비교:', {
+        formDataWeight: formData.weight,
+        currentWeight: currentWeight,
+        originalWeight: originalWeight,
+        isChanged: currentWeight !== originalWeight
+      });
       
       if (currentWeight !== originalWeight) {
         productData.weight = currentWeight;

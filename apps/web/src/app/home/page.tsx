@@ -7,7 +7,7 @@ import { Search, Target, User, Truck, ShoppingCart } from 'lucide-react';
 import { ProductCard } from '@/components/products/product-card';
 import { productsApi } from '@/lib/api/products';
 import { Product } from '@/types/product';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ImageSlider } from '@/components/ui/ImageSlider';
 import { getImageUrl } from '@/lib/utils/image';
@@ -17,6 +17,7 @@ export default function HomePage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -72,6 +73,26 @@ export default function HomePage() {
     
     return () => clearTimeout(timer);
   }, [isAuthenticated, user, router]);
+
+  // 마우스 휠 이벤트로 좌우 스크롤 처리
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Shift 키를 누르고 있거나 수직 스크롤이 아닌 경우에만 좌우 스크롤
+      if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        e.preventDefault();
+        scrollContainer.scrollLeft += e.deltaY;
+      }
+    };
+
+    scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      scrollContainer.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
 
   // 카테고리별 상품 분류 (안전한 필터링)
   const safeProducts = Array.isArray(products) ? products : [];
@@ -180,7 +201,7 @@ export default function HomePage() {
           {mdPicks.length > 0 ? (
             <div className="relative">
               {/* 스크롤 가능한 상품 그리드 */}
-              <div className="overflow-x-auto scrollbar-hide">
+              <div ref={scrollContainerRef} className="horizontal-scroll">
                 <div className="flex gap-4 sm:gap-6 lg:gap-8 pb-4" style={{ width: 'max-content' }}>
                   {mdPicks.map((product) => (
                     <div key={product.id} className="flex-shrink-0 w-80 sm:w-96">

@@ -150,7 +150,7 @@ export const createProduct = async (productData: {
   priceB2C: number;
   comparePrice?: number;
   sku?: string;
-  weight?: number;
+  weight?: number | null;
   length?: number;
   width?: number;
   height?: number;
@@ -251,7 +251,7 @@ export const updateProduct = async (id: string, productData: {
   priceB2C?: number;
   comparePrice?: number;
   sku?: string;
-  weight?: number;
+  weight?: number | null;
   length?: number;
   width?: number;
   height?: number;

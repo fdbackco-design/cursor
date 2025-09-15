@@ -133,7 +133,7 @@ const NewProductPage = () => {
       priceB2C: Number(formData.priceB2C),
       comparePrice: formData.comparePrice ? Number(formData.comparePrice) : 0,
       sku: formData.sku || '',
-      ...(formData.weight && { weight: Number(formData.weight) }),
+      weight: formData.weight ? Number(formData.weight) : null,
       length: formData.length ? Number(formData.length) : 0,
       width: formData.width ? Number(formData.width) : 0,
       height: formData.height ? Number(formData.height) : 0,

@@ -224,8 +224,9 @@ const EditProductPage = () => {
       });
       
       if (currentWeight !== originalWeight) {
-        productData.weight = currentWeight;
-        console.log('weight 변경됨:', currentWeight);
+        // undefined 대신 null을 전송하여 서버에서 null로 처리되도록 함
+        productData.weight = currentWeight === undefined ? null : currentWeight;
+        console.log('weight 변경됨:', productData.weight);
       } else {
         console.log('weight 변경되지 않음');
       }

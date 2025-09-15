@@ -322,9 +322,9 @@ const NewProductPage = () => {
                       onChange={handleInputChange}
                       required
                       min="0"
-                      step="0.01"
+                      step="100"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0.00"
+                      placeholder="100"
                     />
                   </div>
 
@@ -340,9 +340,9 @@ const NewProductPage = () => {
                       onChange={handleInputChange}
                       required
                       min="0"
-                      step="0.01"
+                      step="100"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0.00"
+                      placeholder="100"
                     />
                   </div>
 
@@ -357,9 +357,9 @@ const NewProductPage = () => {
                       value={formData.comparePrice}
                       onChange={handleInputChange}
                       min="0"
-                      step="0.01"
+                      step="100"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0.00"
+                      placeholder="100"
                     />
                   </div>
                 </div>
@@ -438,9 +438,9 @@ const NewProductPage = () => {
                       value={formData.length}
                       onChange={handleInputChange}
                       min="0"
-                      step="0.01"
+                      step="100"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0.00"
+                      placeholder="100"
                     />
                   </div>
 
@@ -456,9 +456,9 @@ const NewProductPage = () => {
                       value={formData.width}
                       onChange={handleInputChange}
                       min="0"
-                      step="0.01"
+                      step="100"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0.00"
+                      placeholder="100"
                     />
                   </div>
 
@@ -474,9 +474,9 @@ const NewProductPage = () => {
                       value={formData.height}
                       onChange={handleInputChange}
                       min="0"
-                      step="0.01"
+                      step="100"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0.00"
+                      placeholder="100"
                     />
                   </div>
                 </div>

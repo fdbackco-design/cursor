@@ -29,6 +29,7 @@ const ProductsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // 기본값: 최신순(내림차순)
 
   // 상품 데이터 로드
   const loadProducts = async () => {
@@ -93,6 +94,11 @@ const ProductsPage = () => {
     }
   };
 
+  // 정렬 토글 함수
+  const toggleSortOrder = () => {
+    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+  };
+
   // 필터링된 상품 목록 (id가 있는 상품만)
   const filteredProducts = Array.isArray(products) ? products.filter(product => {
     if (!product.id) return false; // id가 없는 상품 제외
@@ -105,6 +111,16 @@ const ProductsPage = () => {
                          (selectedStatus === 'active' ? product.isActive : !product.isActive);
     
     return matchesSearch && matchesCategory && matchesStatus;
+  }).sort((a, b) => {
+    // 등록일 기준으로 정렬
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    
+    if (sortOrder === 'asc') {
+      return dateA - dateB; // 오름차순 (오래된 순)
+    } else {
+      return dateB - dateA; // 내림차순 (최신 순)
+    }
   }) : [];
 
   // 카테고리 목록 (실제 데이터에서 추출)
@@ -208,10 +224,18 @@ const ProductsPage = () => {
           <CardHeader>
             <CardTitle className="flex items-center justify-between text-lg sm:text-xl">
               <span>상품 목록 ({filteredProducts.length}개)</span>
-              <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
+              <button
+                onClick={toggleSortOrder}
+                className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 px-2 py-1 rounded transition-colors duration-200"
+              >
                 <ArrowUpDown className="h-4 w-4" />
-                <span className="hidden sm:inline">정렬</span>
-              </div>
+                <span className="hidden sm:inline">
+                  {sortOrder === 'desc' ? '최신순' : '오래된순'}
+                </span>
+                <span className="sm:hidden">
+                  {sortOrder === 'desc' ? '↓' : '↑'}
+                </span>
+              </button>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 sm:p-6">

@@ -528,120 +528,123 @@ const OrdersPage = () => {
                 {/* 데스크톱 테이블 */}
                 <div className="hidden sm:block">
                   <div className="-mx-3 sm:-mx-4 lg:-mx-6">
-                    <table className="w-full table-auto min-w-[1200px]">
-                      <thead>
-                        <tr className="border-b border-gray-200">
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[200px]">주문 정보</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[250px]">상품</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[140px]">총 금액</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[180px]">상태</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[100px]">결제수단</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">주문일시</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">작업</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredOrders.map((order) => (
-                          <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-3 px-4">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                  <ShoppingCart className="h-6 w-6 text-purple-600" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="font-medium text-gray-900 text-sm leading-tight">{order.orderNumber}</p>
-                                  <p className="text-xs text-gray-500 truncate">{order.user.name}</p>
-                                  <p className="text-xs text-gray-500 truncate">{order.user.phoneNumber}</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="space-y-1">
-                                {order.items.slice(0, 3).map((item, index) => (
-                                  <div key={item.id} className="flex items-center space-x-2">
-                                    <Package className="h-3 w-3 text-gray-400 flex-shrink-0" />
-                                    <span className="text-xs text-gray-900 truncate">
-                                      {item.productName} x {item.quantity}
-                                    </span>
-                                  </div>
-                                ))}
-                                {order.items.length > 3 && (
-                                  <div className="text-xs text-gray-500">
-                                    +{order.items.length - 3}개 더
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <p className="font-medium text-gray-900 text-sm">
-                                ₩{order.totalAmount.toLocaleString()}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                상품: ₩{order.subtotal.toLocaleString()}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                배송: ₩{order.shippingAmount.toLocaleString()}
-                              </p>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex flex-col space-y-2">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                                  {getStatusText(order.status)}
-                                </span>
-                                <select
-                                  value={order.status}
-                                  onChange={(e) => updateOrderStatus(order.orderNumber, e.target.value)}
-                                  disabled={updatingStatus[order.orderNumber]}
-                                  className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 w-full"
-                                >
-                                  {statuses.map((status) => (
-                                    <option key={status.value} value={status.value}>
-                                      {status.label}
-                                    </option>
-                                  ))}
-                                </select>
-                                {updatingStatus[order.orderNumber] && (
-                                  <Loader2 className="h-3 w-3 animate-spin text-purple-600" />
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center space-x-2">
-                                <CreditCard className="h-3 w-3 text-gray-400" />
-                                <span className="text-xs text-gray-900">카드</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="text-xs text-gray-900">
-                                {format(new Date(order.createdAt), 'MM/dd')}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {format(new Date(order.createdAt), 'HH:mm')}
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center space-x-1">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => openOrderDetail(order)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Eye className="h-3 w-3" />
-                                </Button>
-                                <Button 
-                                  variant="outline"
-                                  size="sm" 
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </td>
+                    {/* 스크롤/테두리/둥근모서리 */}
+                    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+                      <table className="w-full table-auto min-w-[1200px]">
+                        <thead>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 w-[200px]">주문 정보</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 w-[250px]">상품</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 w-[140px]">총 금액</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 w-[180px]">상태</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 w-[100px]">결제수단</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">주문일시</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">작업</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {filteredOrders.map((order) => (
+                            <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                              <td className="py-3 px-4">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <ShoppingCart className="h-6 w-6 text-purple-600" />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-medium text-gray-900 text-sm leading-tight">{order.orderNumber}</p>
+                                    <p className="text-xs text-gray-500 truncate">{order.user.name}</p>
+                                    <p className="text-xs text-gray-500 truncate">{order.user.phoneNumber}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="space-y-1">
+                                  {order.items.slice(0, 3).map((item, index) => (
+                                    <div key={item.id} className="flex items-center space-x-2">
+                                      <Package className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                                      <span className="text-xs text-gray-900 truncate">
+                                        {item.productName} x {item.quantity}
+                                      </span>
+                                    </div>
+                                  ))}
+                                  {order.items.length > 3 && (
+                                    <div className="text-xs text-gray-500">
+                                      +{order.items.length - 3}개 더
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <p className="font-medium text-gray-900 text-sm">
+                                  ₩{order.totalAmount.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  상품: ₩{order.subtotal.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  배송: ₩{order.shippingAmount.toLocaleString()}
+                                </p>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex flex-col space-y-2">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                    {getStatusText(order.status)}
+                                  </span>
+                                  <select
+                                    value={order.status}
+                                    onChange={(e) => updateOrderStatus(order.orderNumber, e.target.value)}
+                                    disabled={updatingStatus[order.orderNumber]}
+                                    className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 w-full"
+                                  >
+                                    {statuses.map((status) => (
+                                      <option key={status.value} value={status.value}>
+                                        {status.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {updatingStatus[order.orderNumber] && (
+                                    <Loader2 className="h-3 w-3 animate-spin text-purple-600" />
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex items-center space-x-2">
+                                  <CreditCard className="h-3 w-3 text-gray-400" />
+                                  <span className="text-xs text-gray-900">카드</span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="text-xs text-gray-900">
+                                  {format(new Date(order.createdAt), 'MM/dd')}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {format(new Date(order.createdAt), 'HH:mm')}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex items-center space-x-1">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openOrderDetail(order)}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <Eye className="h-3 w-3" />
+                                  </Button>
+                                  <Button 
+                                    variant="outline"
+                                    size="sm" 
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
 

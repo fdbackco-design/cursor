@@ -401,7 +401,7 @@ const OrdersPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="max-w-none mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-8">
         {/* 검색 및 필터 */}
         <Card className="mb-4 sm:mb-6">
           <CardContent className="p-4 sm:p-6">
@@ -526,8 +526,8 @@ const OrdersPage = () => {
             ) : (
               <div className="space-y-4 sm:space-y-0">
                 {/* 데스크톱 테이블 */}
-                <div className="hidden sm:block overflow-x-auto">
-                  <table className="w-full min-w-[1400px]">
+                <div className="hidden sm:block">
+                  <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
                         <th className="text-left py-3 px-4 font-medium text-gray-900 w-[200px]">주문 정보</th>

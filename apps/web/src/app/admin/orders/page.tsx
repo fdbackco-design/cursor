@@ -513,7 +513,7 @@ const OrdersPage = () => {
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0 sm:p-6">
+          <CardContent className="p-0">
             {loading ? (
               <div className="text-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
@@ -526,7 +526,7 @@ const OrdersPage = () => {
             ) : (
               <div className="space-y-4 sm:space-y-0">
                 {/* 데스크톱 테이블 */}
-                <div className="hidden sm:block">
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full min-w-[1400px]">
                     <thead>
                       <tr className="border-b border-gray-200">
@@ -644,7 +644,7 @@ const OrdersPage = () => {
                 </div>
 
                 {/* 모바일 카드 */}
-                <div className="sm:hidden space-y-4 p-4">
+                <div className="sm:hidden space-y-4 p-4 sm:p-0">
                   {filteredOrders.map((order) => (
                     <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
                       {/* 주문 정보 */}
@@ -738,7 +738,7 @@ const OrdersPage = () => {
 
             {/* 페이지네이션 */}
             {totalPages > 1 && (
-              <div className="mt-4 sm:mt-6 px-4 sm:px-0">
+              <div className="mt-4 sm:mt-6 px-4 sm:px-6">
                 <div className="flex items-center justify-center space-x-1 sm:space-x-2">
                   <Button
                     variant="outline"

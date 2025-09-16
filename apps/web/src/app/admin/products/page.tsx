@@ -238,7 +238,7 @@ const ProductsPage = () => {
               </button>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0 sm:p-6">
+          <CardContent className="p-0">
             {filteredProducts.length === 0 ? (
               <div className="text-center py-12">
                 <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -250,7 +250,7 @@ const ProductsPage = () => {
             ) : (
               <div className="space-y-4 sm:space-y-0">
                 {/* 데스크톱 테이블 */}
-                <div className="hidden sm:block">
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full min-w-[1400px]">
                     <thead>
                       <tr className="border-b border-gray-200">
@@ -376,7 +376,7 @@ const ProductsPage = () => {
                 </div>
 
                 {/* 모바일 카드 */}
-                <div className="sm:hidden space-y-4 p-4">
+                <div className="sm:hidden space-y-4 p-4 sm:p-0">
                   {filteredProducts.map((product) => (
                     <div key={product.id!} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
                       {/* 상품 정보 */}

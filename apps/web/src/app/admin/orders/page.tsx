@@ -373,7 +373,7 @@ const OrdersPage = () => {
               <h1 className="text-lg sm:text-2xl font-bold text-gray-900">주문 관리</h1>
             </div>
             <div className="flex space-x-1 sm:space-x-2">
-              <Button 
+              {/* <Button 
                 onClick={async () => {
                   try {
                     const response = await fetch('https://api.feedbackmall.com/api/v1/auth/dev/admin-login', {
@@ -391,7 +391,7 @@ const OrdersPage = () => {
                 className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2"
               >
                 관리자 로그인
-              </Button>
+              </Button> */}
             {/* <Button className="bg-purple-600 hover:bg-purple-700">
               <Plus className="h-4 w-4 mr-2" />
               새 주문 등록

@@ -171,7 +171,7 @@ const ProductsPage = () => {
         </div>
       </div>
 
-      <div className="max-w-none mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-8">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* 검색 및 필터 */}
         <Card className="mb-4 sm:mb-6">
           <CardContent className="p-4 sm:p-6">
@@ -251,128 +251,130 @@ const ProductsPage = () => {
               <div className="space-y-4 sm:space-y-0">
                 {/* 데스크톱 테이블 */}
                 <div className="hidden sm:block">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[300px]">상품명</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">카테고리</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[140px]">가격</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[80px]">재고</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[80px]">Top10</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">벤더</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">상태</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[100px]">등록일</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[140px]">작업</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredProducts.map((product) => (
-                        <tr key={product.id!} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-3 px-4">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                                {product.images && product.images.length > 0 ? (
-                                  <img
-                                    src={getImageUrl(product.images[0] || '')}
-                                    alt={product.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <Package className="h-6 w-6 text-gray-500" />
+                  <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[300px]">상품명</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">카테고리</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[140px]">가격</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[80px]">재고</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[80px]">Top10</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">벤더</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">상태</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[100px]">등록일</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[140px]">작업</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredProducts.map((product) => (
+                          <tr key={product.id!} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                                  {product.images && product.images.length > 0 ? (
+                                    <img
+                                      src={getImageUrl(product.images[0] || '')}
+                                      alt={product.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <Package className="h-6 w-6 text-gray-500" />
+                                  )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-medium text-gray-900 text-sm leading-tight">{product.name}</p>
+                                  <p className="text-xs text-gray-500 mt-1">SKU: {product.sku}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">
+                                {product.category?.name || '카테고리 없음'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="space-y-1">
+                                <div className="text-xs">
+                                  <span className="text-gray-500">B2B: </span>
+                                  <span className="font-medium">{Number(product.priceB2B).toLocaleString()}원</span>
+                                </div>
+                                <div className="text-xs">
+                                  <span className="text-gray-500">B2C: </span>
+                                  <span className="font-medium">{Number(product.priceB2C).toLocaleString()}원</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                product.stockQuantity > 20 ? 'bg-green-100 text-green-800' :
+                                product.stockQuantity > 10 ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {product.stockQuantity}개
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              {product.weight && product.weight > 0 ? (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                  Top {product.weight}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-gray-400">-</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="text-xs text-gray-900 whitespace-nowrap truncate block">{product.vendor?.name || '벤더 없음'}</span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-col space-y-1">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  product.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {product.isActive ? '활성' : '비활성'}
+                                </span>
+                                {product.isFeatured && (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    추천
+                                  </span>
                                 )}
                               </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="font-medium text-gray-900 text-sm leading-tight">{product.name}</p>
-                                <p className="text-xs text-gray-500 mt-1">SKU: {product.sku}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">
-                              {product.category?.name || '카테고리 없음'}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="space-y-1">
-                              <div className="text-xs">
-                                <span className="text-gray-500">B2B: </span>
-                                <span className="font-medium">{Number(product.priceB2B).toLocaleString()}원</span>
-                              </div>
-                              <div className="text-xs">
-                                <span className="text-gray-500">B2C: </span>
-                                <span className="font-medium">{Number(product.priceB2C).toLocaleString()}원</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              product.stockQuantity > 20 ? 'bg-green-100 text-green-800' :
-                              product.stockQuantity > 10 ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
-                              {product.stockQuantity}개
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            {product.weight && product.weight > 0 ? (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                Top {product.weight}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="text-xs text-gray-500 whitespace-nowrap">
+                                {new Date(product.createdAt).toLocaleDateString('ko-KR', { 
+                                  month: '2-digit', 
+                                  day: '2-digit' 
+                                })}
                               </span>
-                            ) : (
-                              <span className="text-xs text-gray-400">-</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="text-xs text-gray-900 whitespace-nowrap truncate block">{product.vendor?.name || '벤더 없음'}</span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex flex-col space-y-1">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                product.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                              }`}>
-                                {product.isActive ? '활성' : '비활성'}
-                              </span>
-                              {product.isFeatured && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                  추천
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="text-xs text-gray-500 whitespace-nowrap">
-                              {new Date(product.createdAt).toLocaleDateString('ko-KR', { 
-                                month: '2-digit', 
-                                day: '2-digit' 
-                              })}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex items-center space-x-1">
-                              <Link href={`/products/${product.id}`}>
-                                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 h-8 w-8 p-0">
-                                  <Eye className="h-3 w-3" />
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center space-x-1">
+                                <Link href={`/products/${product.id}`}>
+                                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 h-8 w-8 p-0">
+                                    <Eye className="h-3 w-3" />
+                                  </Button>
+                                </Link>
+                                <Link href={`/admin/products/${product.id}/edit`}>
+                                  <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700 h-8 w-8 p-0">
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                </Link>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
+                                  onClick={() => handleDelete(product.id)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
-                              </Link>
-                              <Link href={`/admin/products/${product.id}/edit`}>
-                                <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700 h-8 w-8 p-0">
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                              </Link>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
-                                onClick={() => handleDelete(product.id)}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
 
                 {/* 모바일 카드 */}

@@ -250,19 +250,19 @@ const ProductsPage = () => {
             ) : (
               <div className="space-y-4 sm:space-y-0">
                 {/* 데스크톱 테이블 */}
-                <div className="hidden sm:block overflow-x-auto">
-                  <table className="w-full table-fixed">
+                <div className="hidden sm:block">
+                  <table className="w-full min-w-[1400px]">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-1/4">상품명</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">카테고리</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-24">가격</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-16">재고</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-16">Top10</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">벤더</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">상태</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-20">등록일</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-24">작업</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[300px]">상품명</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">카테고리</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[140px]">가격</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[80px]">재고</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[80px]">Top10</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">벤더</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">상태</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[100px]">등록일</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-900 w-[140px]">작업</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -270,7 +270,7 @@ const ProductsPage = () => {
                         <tr key={product.id!} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="py-3 px-4">
                             <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                              <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
                                 {product.images && product.images.length > 0 ? (
                                   <img
                                     src={getImageUrl(product.images[0] || '')}
@@ -278,12 +278,12 @@ const ProductsPage = () => {
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (
-                                  <Package className="h-5 w-5 text-gray-500" />
+                                  <Package className="h-6 w-6 text-gray-500" />
                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="font-medium text-gray-900 truncate">{product.name}</p>
-                                <p className="text-sm text-gray-500 truncate">SKU: {product.sku}</p>
+                                <p className="font-medium text-gray-900 text-sm leading-tight">{product.name}</p>
+                                <p className="text-xs text-gray-500 mt-1">SKU: {product.sku}</p>
                               </div>
                             </div>
                           </td>
@@ -294,11 +294,11 @@ const ProductsPage = () => {
                           </td>
                           <td className="py-3 px-4">
                             <div className="space-y-1">
-                              <div className="text-sm">
+                              <div className="text-xs">
                                 <span className="text-gray-500">B2B: </span>
                                 <span className="font-medium">{Number(product.priceB2B).toLocaleString()}원</span>
                               </div>
-                              <div className="text-sm">
+                              <div className="text-xs">
                                 <span className="text-gray-500">B2C: </span>
                                 <span className="font-medium">{Number(product.priceB2C).toLocaleString()}원</span>
                               </div>
@@ -323,46 +323,49 @@ const ProductsPage = () => {
                             )}
                           </td>
                           <td className="py-3 px-4">
-                            <span className="text-sm text-gray-900 whitespace-nowrap truncate block">{product.vendor?.name || '벤더 없음'}</span>
+                            <span className="text-xs text-gray-900 whitespace-nowrap truncate block">{product.vendor?.name || '벤더 없음'}</span>
                           </td>
                           <td className="py-3 px-4">
-                            <div className="flex items-center space-x-2 whitespace-nowrap">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            <div className="flex flex-col space-y-1">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                                 product.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                               }`}>
                                 {product.isActive ? '활성' : '비활성'}
                               </span>
                               {product.isFeatured && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                   추천
                                 </span>
                               )}
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <span className="text-sm text-gray-500 whitespace-nowrap">
-                              {new Date(product.createdAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
+                            <span className="text-xs text-gray-500 whitespace-nowrap">
+                              {new Date(product.createdAt).toLocaleDateString('ko-KR', { 
+                                month: '2-digit', 
+                                day: '2-digit' 
+                              })}
                             </span>
                           </td>
                           <td className="py-3 px-4">
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-1">
                               <Link href={`/products/${product.id}`}>
-                                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
-                                  <Eye className="h-4 w-4" />
+                                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 h-8 w-8 p-0">
+                                  <Eye className="h-3 w-3" />
                                 </Button>
                               </Link>
                               <Link href={`/admin/products/${product.id}/edit`}>
-                                <Button variant="ghost" size="sm" className="text-green-600 hover:text-blue-700">
-                                  <Edit className="h-4 w-4" />
+                                <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700 h-8 w-8 p-0">
+                                  <Edit className="h-3 w-3" />
                                 </Button>
                               </Link>
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                className="text-red-600 hover:text-red-700"
+                                className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
                                 onClick={() => handleDelete(product.id)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
                           </td>

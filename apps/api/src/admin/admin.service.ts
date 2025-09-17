@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class AdminService {
@@ -20,8 +21,7 @@ export class AdminService {
         ],
         include: {
           category: true,
-          vendor: true,
-          images: true
+          vendor: true
         }
       });
 
@@ -40,7 +40,7 @@ export class AdminService {
         }
         
         // MD's Pick은 length 값이 1-10 범위인 상품들로 가정
-        if (product.length && product.length >= 1 && product.length <= 10) {
+        if (product.length && product.length.toNumber() >= 1 && product.length.toNumber() <= 10) {
           mdPicks.push(product);
         }
       });
@@ -49,7 +49,7 @@ export class AdminService {
         success: true,
         data: {
           categoryProducts,
-          mdPicks: mdPicks.sort((a, b) => (a.length || 0) - (b.length || 0))
+          mdPicks: mdPicks.sort((a, b) => (a.length?.toNumber() || 0) - (b.length?.toNumber() || 0))
         }
       };
     } catch (error) {
@@ -78,7 +78,7 @@ export class AdminService {
               for (const product of products) {
                 await tx.product.update({
                   where: { id: product.id },
-                  data: { length: orderCounter }
+                  data: { length: new Decimal(orderCounter) }
                 });
                 orderCounter += 1;
               }
@@ -91,7 +91,7 @@ export class AdminService {
           for (const productId of mdPicks) {
             await tx.product.update({
               where: { id: productId },
-              data: { length: orderCounter }
+              data: { length: new Decimal(orderCounter) }
             });
             orderCounter += 1;
           }

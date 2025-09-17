@@ -81,7 +81,7 @@ export class AdminService {
 
   async updateHomeOrder(categoryProducts: any, mdPicks: string[]) {
     try {
-      console.log('updateHomeOrder 호출됨:', { categoryProducts, mdPicks });
+      //console.log('updateHomeOrder 호출됨:', { categoryProducts, mdPicks });
       
       // 트랜잭션으로 모든 업데이트 처리
       await this.prisma.$transaction(async (tx) => {
@@ -112,9 +112,9 @@ export class AdminService {
         // 3. MD's Pick 상품들의 width 값 설정 (순서대로)
         let mdPickOrderCounter = 1;
         if (Array.isArray(mdPicks)) {
-          console.log('MD\'s Pick 상품들 처리 중:', mdPicks);
+          //console.log('MD\'s Pick 상품들 처리 중:', mdPicks);
           for (const productId of mdPicks) {
-            console.log(`상품 ${productId}에 width ${mdPickOrderCounter} 설정`);
+            //console.log(`상품 ${productId}에 width ${mdPickOrderCounter} 설정`);
             await tx.product.update({
               where: { id: productId },
               data: { width: new Decimal(mdPickOrderCounter) }
@@ -122,7 +122,7 @@ export class AdminService {
             mdPickOrderCounter += 1;
           }
         } else {
-          console.log('MD\'s Pick 배열이 비어있거나 유효하지 않음:', mdPicks);
+          //console.log('MD\'s Pick 배열이 비어있거나 유효하지 않음:', mdPicks);
         }
       });
 
@@ -200,6 +200,48 @@ export class AdminService {
       };
     } catch (error) {
       console.error('관리자 통계 조회 실패:', error);
+      return {
+        success: false,
+        error: 'Internal Server Error'
+      };
+    }
+  }
+
+  async getProductAttributes() {
+    try {
+      // 첫 번째 상품의 shortDescription을 가져와서 공통속성으로 사용
+      const firstProduct = await this.prisma.product.findFirst({
+        select: { shortDescription: true }
+      });
+
+      return {
+        success: true,
+        data: {
+          shortDescription: firstProduct?.shortDescription || ''
+        }
+      };
+    } catch (error) {
+      console.error('상품 공통속성 조회 실패:', error);
+      return {
+        success: false,
+        error: 'Internal Server Error'
+      };
+    }
+  }
+
+  async updateProductAttributes(shortDescription: string) {
+    try {
+      // 모든 상품의 shortDescription을 업데이트
+      await this.prisma.product.updateMany({
+        data: { shortDescription }
+      });
+
+      return {
+        success: true,
+        message: '상품 공통속성이 성공적으로 저장되었습니다.'
+      };
+    } catch (error) {
+      console.error('상품 공통속성 저장 실패:', error);
       return {
         success: false,
         error: 'Internal Server Error'

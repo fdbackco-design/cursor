@@ -322,11 +322,11 @@ export default function HomeOrderPage() {
       // MD's Pick 상품 ID 수집 (순서대로)
       const mdPickIds = mdPicks.map(p => p.id!);
       
-      console.log('저장할 데이터:', {
-        categoryProducts: selectedProducts,
-        mdPicks: mdPickIds,
-        mdPicksArray: mdPicks
-      });
+      // console.log('저장할 데이터:', {
+      //   categoryProducts: selectedProducts,
+      //   mdPicks: mdPickIds,
+      //   mdPicksArray: mdPicks
+      // });
       
       const response = await fetch('/api/admin/home-order', {
         method: 'POST',

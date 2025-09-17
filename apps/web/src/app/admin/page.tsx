@@ -18,7 +18,8 @@ import {
   Trash2,
   Eye,
   DollarSign,
-  Layout
+  Layout,
+  Settings
 } from 'lucide-react';
 import Link from 'next/link';
 import { getRecentActivities, AuditLog } from '../../lib/api/audit-log';
@@ -114,6 +115,14 @@ const AdminPage = () => {
       icon: Layout,
       color: 'bg-pink-500',
       href: '/admin/home-order'
+    },
+    {
+      id: 'product-attributes',
+      title: '상품 공통속성 관리',
+      description: '상품 공통 설명 및 속성 관리',
+      icon: Settings,
+      color: 'bg-indigo-500',
+      href: '/admin/product-attributes'
     },
     {
       id: 'users',

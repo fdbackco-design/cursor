@@ -21,4 +21,14 @@ export class AdminController {
   async getAdminStats() {
     return this.adminService.getAdminStats();
   }
+
+  @Get('product-attributes')
+  async getProductAttributes() {
+    return this.adminService.getProductAttributes();
+  }
+
+  @Post('product-attributes')
+  async updateProductAttributes(@Body() body: { shortDescription: string }) {
+    return this.adminService.updateProductAttributes(body.shortDescription);
+  }
 }

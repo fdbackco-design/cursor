@@ -472,6 +472,22 @@ export function ProductDetail({ product }: ProductDetailProps) {
         </Card>
       </div>
 
+      {/* 공지사항 */}
+      {product.shortDescription && (
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>공지사항</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                {product.shortDescription}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Product Description Images */}
       {product.descriptionImages && product.descriptionImages.length > 0 && (
         <div className="lg:col-span-2">

@@ -298,20 +298,6 @@ const NewProductPage = () => {
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="shortDescription" className="block text-sm font-medium text-gray-700 mb-2">
-                    간단 설명
-                  </label>
-                  <textarea
-                    id="shortDescription"
-                    name="shortDescription"
-                    value={formData.shortDescription}
-                    onChange={handleInputChange}
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="상품에 대한 간단한 설명을 입력하세요"
-                  />
-                </div>
               </div>
 
               {/* 가격 정보 */}

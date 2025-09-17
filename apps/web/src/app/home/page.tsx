@@ -135,20 +135,20 @@ export default function HomePage() {
     });
 
   // 디버깅: MD's Pick 정렬 결과 확인
-  console.log('MD\'s Pick 정렬 결과:', mdPicks.map(p => {
-    const widthValue = p.width ? 
-      (typeof p.width === 'number' ? p.width : 
-        (p.width && typeof p.width === 'object' && 'toNumber' in p.width) ? 
-          (p.width as any).toNumber() : Number(p.width)) : null;
+  // console.log('MD\'s Pick 정렬 결과:', mdPicks.map(p => {
+  //   const widthValue = p.width ? 
+  //     (typeof p.width === 'number' ? p.width : 
+  //       (p.width && typeof p.width === 'object' && 'toNumber' in p.width) ? 
+  //         (p.width as any).toNumber() : Number(p.width)) : null;
     
-    return {
-      id: p.id,
-      name: p.name,
-      width: p.width,
-      widthType: typeof p.width,
-      widthValue: widthValue
-    };
-  }));
+  //   return {
+  //     id: p.id,
+  //     name: p.name,
+  //     width: p.width,
+  //     widthType: typeof p.width,
+  //     widthValue: widthValue
+  //   };
+  // }));
   const homeAppliances = sortedProducts.filter(p => 
     p.category?.slug === 'home-appliances' || 
     p.category?.name === '생활가전' ||

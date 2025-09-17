@@ -247,15 +247,15 @@ const DeliveryPage = () => {
 
           // 디버깅을 위한 로그 (매칭 실패 시에만)
           if (isRecipientMatch && isPhoneMatch && !addressMatch) {
-            console.log('주소 매칭 실패:', {
-              deliveryAddress: delivery.address,
-              orderAddress1: fullOrderAddress,
-              orderAddress2: fullOrderAddress2,
-              baseAddress: baseAddress,
-              address: address,
-              recipientName: delivery.recipientName,
-              orderRecipient: order.shippingAddress?.receiver_name || order.user.name
-            });
+            // console.log('주소 매칭 실패:', {
+            //   deliveryAddress: delivery.address,
+            //   orderAddress1: fullOrderAddress,
+            //   orderAddress2: fullOrderAddress2,
+            //   baseAddress: baseAddress,
+            //   address: address,
+            //   recipientName: delivery.recipientName,
+            //   orderRecipient: order.shippingAddress?.receiver_name || order.user.name
+            // });
           }
 
           return isRecipientMatch && isPhoneMatch && addressMatch;

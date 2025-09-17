@@ -1,22 +1,22 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { Request } from 'express';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  @Get('stats')
-  @UseGuards(JwtAuthGuard)
-  async getAdminStats(@Req() req: Request) {
-    const user = req.user as any;
-    
-    // 관리자 권한 확인
-    if (user.role !== 'ADMIN') {
-      throw new Error('관리자 권한이 필요합니다.');
-    }
-    
-    return this.adminService.getAdminStats();
+  @Get('home-order')
+  async getHomeOrder() {
+    return this.adminService.getHomeOrder();
+  }
+
+  @Post('home-order')
+  async updateHomeOrder(@Body() body: { categoryProducts: any; mdPicks: string[] }) {
+    return this.adminService.updateHomeOrder(body.categoryProducts, body.mdPicks);
   }
 }

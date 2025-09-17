@@ -81,6 +81,8 @@ export class AdminService {
 
   async updateHomeOrder(categoryProducts: any, mdPicks: string[]) {
     try {
+      console.log('updateHomeOrder 호출됨:', { categoryProducts, mdPicks });
+      
       // 트랜잭션으로 모든 업데이트 처리
       await this.prisma.$transaction(async (tx) => {
         // 1. 모든 상품의 length와 width 값을 null로 초기화
@@ -110,13 +112,17 @@ export class AdminService {
         // 3. MD's Pick 상품들의 width 값 설정 (순서대로)
         let mdPickOrderCounter = 1;
         if (Array.isArray(mdPicks)) {
+          console.log('MD\'s Pick 상품들 처리 중:', mdPicks);
           for (const productId of mdPicks) {
+            console.log(`상품 ${productId}에 width ${mdPickOrderCounter} 설정`);
             await tx.product.update({
               where: { id: productId },
               data: { width: new Decimal(mdPickOrderCounter) }
             });
             mdPickOrderCounter += 1;
           }
+        } else {
+          console.log('MD\'s Pick 배열이 비어있거나 유효하지 않음:', mdPicks);
         }
       });
 

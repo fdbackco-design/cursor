@@ -112,7 +112,20 @@ export default function HomePage() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  const mdPicks = sortedProducts.filter(p => p.isFeatured); // 모든 추천 상품 가져오기
+  // MD's Pick 상품들을 width 순서대로 정렬
+  const mdPicks = safeProducts
+    .filter(p => p.isFeatured)
+    .sort((a, b) => {
+      // width 값이 있는 상품들을 먼저 정렬 (오름차순)
+      if (a.width && b.width) {
+        return a.width - b.width;
+      }
+      if (a.width && !b.width) return -1;
+      if (!a.width && b.width) return 1;
+      
+      // width 값이 없는 상품들은 createdAt 기준 내림차순
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
   const homeAppliances = sortedProducts.filter(p => 
     p.category?.slug === 'home-appliances' || 
     p.category?.name === '생활가전' ||

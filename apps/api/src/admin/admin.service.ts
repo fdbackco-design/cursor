@@ -8,8 +8,8 @@ export class AdminService {
 
   async getHomeOrder() {
     try {
-      // DB에서 products.length 값이 있는 상품들을 순서대로 가져오기
-      const productsWithOrder = await this.prisma.product.findMany({
+      // 카테고리별 상품을 위해 length 값이 있는 상품들을 가져오기
+      const categoryProductsWithOrder = await this.prisma.product.findMany({
         where: {
           length: {
             not: null
@@ -25,11 +25,29 @@ export class AdminService {
         }
       });
 
+      // MD's Pick을 위해 width 값이 있는 상품들을 가져오기
+      const mdPicksWithOrder = await this.prisma.product.findMany({
+        where: {
+          width: {
+            not: null
+          }
+        },
+        orderBy: [
+          { width: 'asc' },
+          { createdAt: 'desc' }
+        ],
+        include: {
+          category: true,
+          vendor: true
+        }
+      });
+
       // 카테고리별 상품 분류
       const categoryProducts: { [key: string]: any[] } = {};
       const mdPicks: any[] = [];
 
-      productsWithOrder.forEach(product => {
+      // 카테고리별 상품 처리
+      categoryProductsWithOrder.forEach(product => {
         if (product.category?.name) {
           if (!categoryProducts[product.category.name]) {
             categoryProducts[product.category.name] = [];
@@ -38,18 +56,18 @@ export class AdminService {
             categoryProducts[product.category.name].push(product);
           }
         }
-        
-        // MD's Pick은 length 값이 1-10 범위인 상품들로 가정
-        if (product.length && product.length.toNumber() >= 1 && product.length.toNumber() <= 10) {
-          mdPicks.push(product);
-        }
+      });
+
+      // MD's Pick 상품 처리
+      mdPicksWithOrder.forEach(product => {
+        mdPicks.push(product);
       });
 
       return {
         success: true,
         data: {
           categoryProducts,
-          mdPicks: mdPicks.sort((a, b) => (a.length?.toNumber() || 0) - (b.length?.toNumber() || 0))
+          mdPicks: mdPicks.sort((a, b) => (a.width?.toNumber() || 0) - (b.width?.toNumber() || 0))
         }
       };
     } catch (error) {
@@ -65,35 +83,39 @@ export class AdminService {
     try {
       // 트랜잭션으로 모든 업데이트 처리
       await this.prisma.$transaction(async (tx) => {
-        // 1. 모든 상품의 length 값을 null로 초기화
+        // 1. 모든 상품의 length와 width 값을 null로 초기화
         await tx.product.updateMany({
-          data: { length: null }
+          data: { 
+            length: null,
+            width: null
+          }
         });
 
         // 2. 카테고리별 상품들의 length 값 설정 (1.00, 2.00, 3.00...)
-        let orderCounter = 1;
+        let categoryOrderCounter = 1;
         if (categoryProducts) {
           for (const [category, products] of Object.entries(categoryProducts)) {
             if (Array.isArray(products)) {
               for (const product of products) {
                 await tx.product.update({
                   where: { id: product.id },
-                  data: { length: new Decimal(orderCounter) }
+                  data: { length: new Decimal(categoryOrderCounter) }
                 });
-                orderCounter += 1;
+                categoryOrderCounter += 1;
               }
             }
           }
         }
 
-        // 3. MD's Pick 상품들의 length 값 설정 (순서대로)
+        // 3. MD's Pick 상품들의 width 값 설정 (순서대로)
+        let mdPickOrderCounter = 1;
         if (Array.isArray(mdPicks)) {
           for (const productId of mdPicks) {
             await tx.product.update({
               where: { id: productId },
-              data: { length: new Decimal(orderCounter) }
+              data: { width: new Decimal(mdPickOrderCounter) }
             });
-            orderCounter += 1;
+            mdPickOrderCounter += 1;
           }
         }
       });

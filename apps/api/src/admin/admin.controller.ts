@@ -16,4 +16,9 @@ export class AdminController {
   async updateHomeOrder(@Body() body: { categoryProducts: any; mdPicks: string[] }) {
     return this.adminService.updateHomeOrder(body.categoryProducts, body.mdPicks);
   }
+
+  @Get('stats')
+  async getAdminStats() {
+    return this.adminService.getAdminStats();
+  }
 }

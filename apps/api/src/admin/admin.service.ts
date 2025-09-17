@@ -110,4 +110,72 @@ export class AdminService {
       };
     }
   }
+
+  async getAdminStats() {
+    try {
+      // 총 상품 수
+      const totalProducts = await this.prisma.product.count();
+      
+      // 활성 셀러 수
+      const activeSellers = await this.prisma.seller.count({
+        where: { isActive: true }
+      });
+      
+      // 오늘 주문 수
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const todayOrders = await this.prisma.order.count({
+        where: {
+          createdAt: {
+            gte: today,
+            lt: tomorrow
+          }
+        }
+      });
+      
+      // 재고 부족 상품 수 (재고가 10개 이하)
+      const lowStockProducts = await this.prisma.product.count({
+        where: {
+          stockQuantity: {
+            lte: 10
+          }
+        }
+      });
+
+      return {
+        success: true,
+        data: {
+          totalProducts: {
+            value: totalProducts.toString(),
+            change: '0%',
+            changeType: 'positive'
+          },
+          activeSellers: {
+            value: activeSellers.toString(),
+            change: '0%',
+            changeType: 'positive'
+          },
+          todayOrders: {
+            value: todayOrders.toString(),
+            change: '0%',
+            changeType: 'positive'
+          },
+          lowStockProducts: {
+            value: lowStockProducts.toString(),
+            change: '0%',
+            changeType: 'positive'
+          }
+        }
+      };
+    } catch (error) {
+      console.error('관리자 통계 조회 실패:', error);
+      return {
+        success: false,
+        error: 'Internal Server Error'
+      };
+    }
+  }
 }

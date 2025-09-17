@@ -118,7 +118,9 @@ export default function HomePage() {
     .sort((a, b) => {
       // width 값이 있는 상품들을 먼저 정렬 (오름차순)
       if (a.width && b.width) {
-        return a.width - b.width;
+        const aWidth = typeof a.width === 'number' ? a.width : a.width.toNumber();
+        const bWidth = typeof b.width === 'number' ? b.width : b.width.toNumber();
+        return aWidth - bWidth;
       }
       if (a.width && !b.width) return -1;
       if (!a.width && b.width) return 1;
@@ -126,6 +128,15 @@ export default function HomePage() {
       // width 값이 없는 상품들은 createdAt 기준 내림차순
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
+
+  // 디버깅: MD's Pick 정렬 결과 확인
+  console.log('MD\'s Pick 정렬 결과:', mdPicks.map(p => ({
+    id: p.id,
+    name: p.name,
+    width: p.width,
+    widthType: typeof p.width,
+    widthValue: p.width ? (typeof p.width === 'number' ? p.width : p.width.toNumber()) : null
+  })));
   const homeAppliances = sortedProducts.filter(p => 
     p.category?.slug === 'home-appliances' || 
     p.category?.name === '생활가전' ||

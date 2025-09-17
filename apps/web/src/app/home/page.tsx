@@ -99,38 +99,51 @@ export default function HomePage() {
   
 
   
-  const mdPicks = safeProducts.filter(p => p.isFeatured); // 모든 추천 상품 가져오기
-  const homeAppliances = safeProducts.filter(p => 
+  // length 순서대로 정렬된 상품들 (홈페이지 노출 순서 관리에서 설정된 순서)
+  const sortedProducts = safeProducts.sort((a, b) => {
+    // length 값이 있는 상품들을 먼저 정렬 (오름차순)
+    if (a.length && b.length) {
+      return a.length - b.length;
+    }
+    if (a.length && !b.length) return -1;
+    if (!a.length && b.length) return 1;
+    
+    // length 값이 없는 상품들은 createdAt 기준 내림차순
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  const mdPicks = sortedProducts.filter(p => p.isFeatured); // 모든 추천 상품 가져오기
+  const homeAppliances = sortedProducts.filter(p => 
     p.category?.slug === 'home-appliances' || 
     p.category?.name === '생활가전' ||
     p.category?.name === '가전제품'
   ).slice(0, 3);
-  const kitchenProducts = safeProducts.filter(p => 
+  const kitchenProducts = sortedProducts.filter(p => 
     p.category?.slug === 'kitchen' || 
     p.category?.name === '주방용품' ||
     p.category?.name === '주방'
   ).slice(0, 3);
-  const electronicsProducts = safeProducts.filter(p => 
+  const electronicsProducts = sortedProducts.filter(p => 
     p.category?.slug === 'electronics' || 
     p.category?.name === '전자제품' ||
     p.category?.name === '전자'
   ).slice(0, 3);
-  const cosmeticsProducts = safeProducts.filter(p => 
+  const cosmeticsProducts = sortedProducts.filter(p => 
     p.category?.slug === 'cosmetics' || 
     p.category?.name === '화장품' ||
     p.category?.name === '뷰티'
   ).slice(0, 3);
-  const miscellaneousProducts = safeProducts.filter(p => 
+  const miscellaneousProducts = sortedProducts.filter(p => 
     p.category?.slug === 'miscellaneous' || 
     p.category?.name === '잡화' ||
     p.category?.name === '기타'
   ).slice(0, 3);
-  const sportsProducts = safeProducts.filter(p => 
+  const sportsProducts = sortedProducts.filter(p => 
     p.category?.slug === 'sports' || 
     p.category?.name === '스포츠용품' ||
     p.category?.name === '스포츠'
   ).slice(0, 3);
-  const allProducts = safeProducts.slice(0, 6); // 전체 상품 중 6개
+  const allProducts = sortedProducts.slice(0, 6); // 전체 상품 중 6개
 
   // Top10 상품 - weight가 1~10인 상품들을 순위별로 정렬
   const top10Products = safeProducts

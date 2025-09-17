@@ -118,8 +118,13 @@ export default function HomePage() {
     .sort((a, b) => {
       // width 값이 있는 상품들을 먼저 정렬 (오름차순)
       if (a.width && b.width) {
-        const aWidth = typeof a.width === 'number' ? a.width : a.width.toNumber();
-        const bWidth = typeof b.width === 'number' ? b.width : b.width.toNumber();
+        // Decimal 타입인지 확인하고 안전하게 변환
+        const aWidth = typeof a.width === 'number' ? a.width : 
+          (a.width && typeof a.width === 'object' && 'toNumber' in a.width) ? 
+            (a.width as any).toNumber() : Number(a.width);
+        const bWidth = typeof b.width === 'number' ? b.width : 
+          (b.width && typeof b.width === 'object' && 'toNumber' in b.width) ? 
+            (b.width as any).toNumber() : Number(b.width);
         return aWidth - bWidth;
       }
       if (a.width && !b.width) return -1;
@@ -130,13 +135,20 @@ export default function HomePage() {
     });
 
   // 디버깅: MD's Pick 정렬 결과 확인
-  console.log('MD\'s Pick 정렬 결과:', mdPicks.map(p => ({
-    id: p.id,
-    name: p.name,
-    width: p.width,
-    widthType: typeof p.width,
-    widthValue: p.width ? (typeof p.width === 'number' ? p.width : p.width.toNumber()) : null
-  })));
+  console.log('MD\'s Pick 정렬 결과:', mdPicks.map(p => {
+    const widthValue = p.width ? 
+      (typeof p.width === 'number' ? p.width : 
+        (p.width && typeof p.width === 'object' && 'toNumber' in p.width) ? 
+          (p.width as any).toNumber() : Number(p.width)) : null;
+    
+    return {
+      id: p.id,
+      name: p.name,
+      width: p.width,
+      widthType: typeof p.width,
+      widthValue: widthValue
+    };
+  }));
   const homeAppliances = sortedProducts.filter(p => 
     p.category?.slug === 'home-appliances' || 
     p.category?.name === '생활가전' ||

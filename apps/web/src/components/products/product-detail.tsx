@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { ShoppingCart, Heart, Star, Image as ImageIcon, Check, X, CreditCard } from 'lucide-react';
+import { ShoppingCart, Heart, Star, Image as ImageIcon, Check, X, CreditCard, Edit } from 'lucide-react';
 import { getProductImageUrls, getProductThumbnailUrl } from '@/lib/utils/image';
 import { formatPriceWithCurrency } from '@/lib/utils/price';
 import { useAuth } from '@/contexts/AuthContext';
@@ -442,6 +442,19 @@ export function ProductDetail({ product }: ProductDetailProps) {
             />
             {wishlistLoading ? '처리중...' : (isWishlisted ? '찜됨' : '찜하기')}
           </Button>
+
+          {/* 관리자 수정 버튼 */}
+          {user?.role === 'ADMIN' && (
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => window.open(`/admin/products/${product.id}/edit`, '_blank')}
+              className="transition-colors duration-200 hover:border-blue-500 hover:text-blue-600"
+            >
+              <Edit className="h-5 w-5 mr-2" />
+              수정
+            </Button>
+          )}
 
         </div>
 

@@ -9,8 +9,44 @@ import { DialogProvider } from '@/components/ui/dialog-provider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'FeedbackMall - Shootmoon Ventures',
-  description: '혁신적인 비즈니스 솔루션을 제공하는 벤처 기업',
+  title: 'FeedbackMall',
+  description: '프리미엄 쇼핑몰, 피드백몰',
+  openGraph: {
+    title: 'FeedbackMall',
+    description: '프리미엄 쇼핑몰, 피드백몰',
+    url: 'https://feedbackmall.com/',
+    siteName: 'FeedbackMall',
+    images: [
+      {
+        url: 'https://feedbackmall.com/feedbackmall.png',
+        width: 1200,
+        height: 630,
+        alt: 'FeedbackMall',
+      },
+    ],
+    locale: 'ko_KR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FeedbackMall',
+    description: '프리미엄 쇼핑몰, 피드백몰',
+    images: ['https://feedbackmall.com/feedbackmall.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'your-google-verification-code', // 실제 Google Search Console 코드로 교체
+  },
 };
 
 export default function RootLayout({

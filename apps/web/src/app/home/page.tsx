@@ -11,6 +11,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ImageSlider } from '@/components/ui/ImageSlider';
 import { getImageUrl } from '@/lib/utils/image';
+import Head from 'next/head';
 
 export default function HomePage() {
   const { user, isAuthenticated } = useAuth();
@@ -235,7 +236,22 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <Head>
+        <title>FeedbackMall - 프리미엄 쇼핑몰</title>
+        <meta name="description" content="프리미엄 쇼핑몰, 피드백몰에서 최고의 상품을 만나보세요" />
+        <meta property="og:title" content="FeedbackMall - 프리미엄 쇼핑몰" />
+        <meta property="og:description" content="프리미엄 쇼핑몰, 피드백몰에서 최고의 상품을 만나보세요" />
+        <meta property="og:image" content="https://feedbackmall.com/feedbackmall.png" />
+        <meta property="og:url" content="https://feedbackmall.com/home" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="FeedbackMall" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="FeedbackMall - 프리미엄 쇼핑몰" />
+        <meta name="twitter:description" content="프리미엄 쇼핑몰, 피드백몰에서 최고의 상품을 만나보세요" />
+        <meta name="twitter:image" content="https://feedbackmall.com/feedbackmall.png" />
+      </Head>
+      <div className="min-h-screen bg-white">
       {/* Hero Slider Section */}
       <ImageSlider
         slides={heroSlides}
@@ -468,6 +484,7 @@ export default function HomePage() {
       </section>
 
       
-    </div>
+      </div>
+    </>
   );
 }

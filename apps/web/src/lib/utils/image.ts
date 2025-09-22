@@ -69,6 +69,37 @@ export function getS3ImageUrl(s3Image: any): string {
 }
 
 /**
+ * 이미지 URL에 최적화 파라미터를 추가합니다.
+ * @param imageUrl 원본 이미지 URL
+ * @param width 원하는 너비 (기본값: 400)
+ * @param height 원하는 높이 (기본값: 400)
+ * @param quality 품질 (기본값: 80)
+ * @returns 최적화된 이미지 URL
+ */
+export function getOptimizedImageUrl(
+  imageUrl: string, 
+  width: number = 400, 
+  height: number = 400, 
+  quality: number = 80
+): string {
+  if (!imageUrl || imageUrl.includes('/images/placeholder-product.jpg')) {
+    return imageUrl;
+  }
+
+  // CloudFront URL인 경우 최적화 파라미터 추가
+  if (imageUrl.includes('cloudfront.net')) {
+    const url = new URL(imageUrl);
+    url.searchParams.set('w', width.toString());
+    url.searchParams.set('h', height.toString());
+    url.searchParams.set('q', quality.toString());
+    url.searchParams.set('f', 'webp'); // WebP 포맷 사용
+    return url.toString();
+  }
+
+  return imageUrl;
+}
+
+/**
  * 상품 이미지 배열의 URL들을 올바르게 구성합니다.
  * @param images 이미지 경로 배열 또는 S3 이미지 배열
  * @returns 완전한 이미지 URL 배열

@@ -11,6 +11,7 @@ import { cartApi } from '@/lib/api/cart';
 import { wishlistApi } from '@/lib/api/wishlist';
 import { reviewsApi, Review } from '@/lib/api/reviews';
 import { useToast, toast } from '@/components/ui/toast';
+import Image from 'next/image';
 
 import { Product } from '@/types/product';
 
@@ -288,14 +289,17 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   </div>
                 </div>
               ) : (
-                <img
+                <Image
                   src={getProductThumbnailUrl(product.images, safeSelectedImage)}
                   alt={`${product.name} 이미지 ${safeSelectedImage + 1}`}
-                  className={`w-full h-full object-cover transition-opacity duration-200 ${
+                  fill
+                  className={`object-cover transition-opacity duration-200 ${
                     imageLoading ? 'opacity-0' : 'opacity-100'
                   }`}
                   onLoad={handleImageLoad}
                   onError={handleImageError}
+                  priority={safeSelectedImage === 0}
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
               )}
               
@@ -321,10 +325,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   safeSelectedImage === index ? 'ring-2 ring-primary scale-105' : 'ring-1 ring-gray-200 hover:ring-gray-300'
                 }`}
               >
-                <img
+                <Image
                   src={getProductThumbnailUrl(product.images, index)}
                   alt={`${product.name} 썸네일 ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="80px"
                 />
               </button>
             ))}

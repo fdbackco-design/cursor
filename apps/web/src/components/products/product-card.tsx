@@ -8,8 +8,9 @@ import { useState, useEffect } from 'react';
 import { wishlistApi } from '@/lib/api/wishlist';
 import { cartApi } from '@/lib/api/cart';
 import { useToast, toast } from '@/components/ui/toast';
-import { getProductMainImageUrl } from '@/lib/utils/image';
+import { getProductMainImageUrl, getOptimizedImageUrl } from '@/lib/utils/image';
 import { formatPriceWithCurrency } from '@/lib/utils/price';
+import Image from 'next/image';
 
 import { Product } from '@/types/product';
 
@@ -23,6 +24,8 @@ export function ProductCard({ product }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
   
   // 찜하기 상태 확인
   useEffect(() => {
@@ -220,17 +223,39 @@ export function ProductCard({ product }: ProductCardProps) {
     >
         <CardHeader className="pb-2 sm:pb-3 p-0">
           <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 mb-2 sm:mb-3 flex items-center justify-center relative overflow-hidden">
+            {/* 로딩 스피너 */}
+            {imageLoading && !imageError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            )}
+            
             {/* 상품 이미지 표시 */}
-            <img
-              src={getProductMainImageUrl(product.images)} // S3 이미지 지원
+            <Image
+              src={getOptimizedImageUrl(getProductMainImageUrl(product.images), 400, 400, 80)}
               alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-              loading="lazy"
-              onError={(e) => {
-                // 이미지 로드 실패 시 기본 이미지로 대체
-                e.currentTarget.src = '/images/placeholder-product.jpg';
+              fill
+              className={`object-cover group-hover:scale-105 transition-transform duration-200 ${
+                imageLoading ? 'opacity-0' : 'opacity-100'
+              }`}
+              onLoad={() => {
+                setImageLoading(false);
+                setImageError(false);
               }}
+              onError={() => {
+                setImageLoading(false);
+                setImageError(true);
+              }}
+              priority={false}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
+            
+            {/* 에러 상태일 때 기본 이미지 표시 */}
+            {imageError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <Package className="h-12 w-12 text-gray-400" />
+              </div>
+            )}
             
             
             {/* 브랜드 배지 */}

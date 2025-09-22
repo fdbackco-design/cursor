@@ -5,7 +5,21 @@ const nextConfig = {
     externalDir: true,
   },
   images: {
-    domains: ['feedbackmall.com', 'localhost'],
+    domains: ['feedbackmall.com', 'localhost', 'dbf9mgv9dy7hl.cloudfront.net'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'dbf9mgv9dy7hl.cloudfront.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'feedbackmall.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
   webpack: (config) => {
     config.resolve.alias = {

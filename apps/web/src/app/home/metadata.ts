@@ -10,7 +10,7 @@ export const homeMetadata: Metadata = {
     siteName: 'FeedbackMall',
     images: [
       {
-        url: 'https://feedbackmall.com/feedbackmall.png',
+        url: 'https://feedbackmall.com/images/feedbackmall.png',
         width: 1200,
         height: 630,
         alt: 'FeedbackMall - 프리미엄 쇼핑몰',
@@ -23,6 +23,6 @@ export const homeMetadata: Metadata = {
     card: 'summary_large_image',
     title: 'FeedbackMall - 프리미엄 쇼핑몰',
     description: '프리미엄 쇼핑몰, 피드백몰에서 최고의 상품을 만나보세요',
-    images: ['https://feedbackmall.com/feedbackmall.png'],
+    images: ['https://feedbackmall.com/images/feedbackmall.png'],
   },
 };

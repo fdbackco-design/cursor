@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: 'FeedbackMall',
     images: [
       {
-        url: 'https://feedbackmall.com/feedbackmall.png',
+        url: 'https://feedbackmall.com/images/feedbackmall.png',
         width: 1200,
         height: 630,
         alt: 'FeedbackMall',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'FeedbackMall',
     description: '프리미엄 쇼핑몰, 피드백몰',
-    images: ['https://feedbackmall.com/feedbackmall.png'],
+    images: ['https://feedbackmall.com/images/feedbackmall.png'],
   },
   robots: {
     index: true,

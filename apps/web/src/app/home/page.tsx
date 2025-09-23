@@ -242,14 +242,14 @@ export default function HomePage() {
         <meta name="description" content="프리미엄 쇼핑몰, 피드백몰에서 최고의 상품을 만나보세요" />
         <meta property="og:title" content="FeedbackMall - 프리미엄 쇼핑몰" />
         <meta property="og:description" content="프리미엄 쇼핑몰, 피드백몰에서 최고의 상품을 만나보세요" />
-        <meta property="og:image" content="https://feedbackmall.com/feedbackmall.png" />
+        <meta property="og:image" content="https://feedbackmall.com/images/feedbackmall.png" />
         <meta property="og:url" content="https://feedbackmall.com/home" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="FeedbackMall" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="FeedbackMall - 프리미엄 쇼핑몰" />
         <meta name="twitter:description" content="프리미엄 쇼핑몰, 피드백몰에서 최고의 상품을 만나보세요" />
-        <meta name="twitter:image" content="https://feedbackmall.com/feedbackmall.png" />
+        <meta name="twitter:image" content="https://feedbackmall.com/images/feedbackmall.png" />
       </Head>
       <div className="min-h-screen bg-white">
       {/* Hero Slider Section */}

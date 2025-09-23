@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
     const productImage = product.images && product.images.length > 0 
       ? getImageUrl(product.images[0]) 
-      : 'https://feedbackmall.com/feedbackmall.png';
+      : 'https://feedbackmall.com/images/feedbackmall.png';
 
     return {
       title: `${product.name} - FeedbackMall`,

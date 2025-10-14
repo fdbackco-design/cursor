@@ -55,9 +55,29 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const userRole = 'CONSUMER';
   
   // Show consumer price by default for MVP
-  const displayPrice = product.priceB2C;
+  const displayPrice = typeof product.priceB2C === 'string' ? parseFloat(product.priceB2C) : product.priceB2C;
   const priceLabel = '회원 가격';
-  const discount = product.comparePrice ? Math.round(((product.comparePrice - displayPrice) / product.comparePrice) * 100) : 0;
+  
+  // comparePrice를 숫자로 변환
+  const comparePriceNum = typeof product.comparePrice === 'string' ? parseFloat(product.comparePrice) : product.comparePrice;
+  
+  // 할인율 계산
+  const discount = comparePriceNum && comparePriceNum > displayPrice ? 
+    Math.round(((comparePriceNum - displayPrice) / comparePriceNum) * 100) : 0;
+
+  // 디버깅 로그
+  console.log('상품 상세 페이지 가격 정보:', {
+    productId: product.id,
+    productName: product.name,
+    priceB2C: product.priceB2C,
+    priceB2CType: typeof product.priceB2C,
+    displayPrice: displayPrice,
+    comparePrice: product.comparePrice,
+    comparePriceType: typeof product.comparePrice,
+    comparePriceNum: comparePriceNum,
+    shouldShowComparePrice: comparePriceNum && comparePriceNum > 0 && comparePriceNum > displayPrice,
+    discount: discount
+  });
 
   const handleImageLoad = () => {
     setImageLoading(false);
@@ -352,9 +372,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <span className="text-3xl font-bold text-primary">
                 {formatPriceWithCurrency(displayPrice)}
               </span>
-              {product.comparePrice && product.comparePrice > displayPrice && (
+              {comparePriceNum && comparePriceNum > 0 && comparePriceNum > displayPrice && (
                 <span className="text-lg text-gray-500 line-through">
-                  {formatPriceWithCurrency(product.comparePrice)}
+                  {formatPriceWithCurrency(comparePriceNum)}
                 </span>
               )}
             </div>

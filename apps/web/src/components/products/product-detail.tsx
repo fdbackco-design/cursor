@@ -66,18 +66,18 @@ export function ProductDetail({ product }: ProductDetailProps) {
     Math.round(((comparePriceNum - displayPrice) / comparePriceNum) * 100) : 0;
 
   // 디버깅 로그
-  console.log('상품 상세 페이지 가격 정보:', {
-    productId: product.id,
-    productName: product.name,
-    priceB2C: product.priceB2C,
-    priceB2CType: typeof product.priceB2C,
-    displayPrice: displayPrice,
-    comparePrice: product.comparePrice,
-    comparePriceType: typeof product.comparePrice,
-    comparePriceNum: comparePriceNum,
-    shouldShowComparePrice: comparePriceNum && comparePriceNum > 0 && comparePriceNum > displayPrice,
-    discount: discount
-  });
+  // console.log('상품 상세 페이지 가격 정보:', {
+  //   productId: product.id,
+  //   productName: product.name,
+  //   priceB2C: product.priceB2C,
+  //   priceB2CType: typeof product.priceB2C,
+  //   displayPrice: displayPrice,
+  //   comparePrice: product.comparePrice,
+  //   comparePriceType: typeof product.comparePrice,
+  //   comparePriceNum: comparePriceNum,
+  //   shouldShowComparePrice: comparePriceNum && comparePriceNum > 0 && comparePriceNum > displayPrice,
+  //   discount: discount
+  // });
 
   const handleImageLoad = () => {
     setImageLoading(false);

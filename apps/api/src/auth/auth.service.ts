@@ -112,12 +112,58 @@ export class AuthService {
   }
 
   async verifyReferralCode(referralCode: string): Promise<boolean> {
+    const normalizedCode = referralCode?.trim().toUpperCase();
+    this.logger.log(`[추천인 코드 검증 시작] 입력 코드: "${referralCode}" -> 정규화: "${normalizedCode}"`);
+    
     try {
-      // TODO: 실제 구현 시 DB에서 코드 유효성 체크
+      if (!normalizedCode) {
+        this.logger.warn(`[추천인 코드 검증 실패] 코드가 비어있음`);
+        return false;
+      }
+
+      // 1. 하드코딩된 코드 목록 확인 (기존 로직 유지)
       const validCodes = ['WELCOME10', 'NEWUSER20', 'SPECIAL30', 'FEEDBACK2024', 'LIVE', 'TEST'];
-      return validCodes.includes(referralCode.toUpperCase());
+      const isInHardcodedList = validCodes.includes(normalizedCode);
+      this.logger.log(`[추천인 코드 검증] 하드코딩 목록 확인: ${isInHardcodedList ? '유효' : '무효'} (목록: ${validCodes.join(', ')})`);
+
+      // 2. DB에서 추천인 코드 확인
+      let dbCode = null;
+      let dbErrorOccurred = false;
+      try {
+        dbCode = await this.prisma.referralCode.findUnique({
+          where: { code: normalizedCode },
+          select: {
+            id: true,
+            code: true,
+            isActive: true,
+            currentUses: true,
+            sellerId: true,
+          }
+        });
+        
+        if (dbCode) {
+          this.logger.log(`[추천인 코드 검증] DB에서 코드 발견: id=${dbCode.id}, code="${dbCode.code}", isActive=${dbCode.isActive}, currentUses=${dbCode.currentUses}, sellerId=${dbCode.sellerId ?? 'null'}`);
+        } else {
+          this.logger.log(`[추천인 코드 검증] DB에서 코드를 찾을 수 없음: "${normalizedCode}"`);
+        }
+      } catch (dbError: any) {
+        dbErrorOccurred = true;
+        const errorMessage = dbError?.message || String(dbError);
+        if (errorMessage.includes('Can\'t reach database server') || errorMessage.includes('ECONNREFUSED')) {
+          this.logger.warn(`[추천인 코드 검증] DB 연결 실패 - DB 서버에 연결할 수 없습니다. 하드코딩 목록만 확인합니다.`);
+        } else {
+          this.logger.error(`[추천인 코드 검증] DB 조회 에러:`, dbError);
+        }
+      }
+
+      // 3. 최종 검증: 하드코딩 목록에 있거나, DB에 있고 활성화된 경우
+      const isValid = isInHardcodedList || (dbCode?.isActive === true);
+      
+      this.logger.log(`[추천인 코드 검증 결과] 코드: "${normalizedCode}" -> ${isValid ? '✅ 유효' : '❌ 무효'} (하드코딩: ${isInHardcodedList}, DB활성: ${dbCode?.isActive === true})`);
+      
+      return isValid;
     } catch (error) {
-      console.error('추천인 코드 검증 에러:', error);
+      this.logger.error(`[추천인 코드 검증 에러] 코드: "${normalizedCode}", 에러:`, error);
       return false;
     }
   }

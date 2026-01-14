@@ -100,38 +100,52 @@ export class AuthController {
   async verifyReferralCode(@Req() req: Request, @Res() res: Response) {
     try {
       const { referralCode } = req.body ?? {};
+      this.logger.log(`[verify-referral POST 요청] 코드: "${referralCode}"`);
+      
       if (!referralCode) {
+        this.logger.warn(`[verify-referral POST] 코드가 비어있음`);
         return res.status(400).json({ error: '추천인 코드가 필요합니다.' });
       }
+      
       const isValid = await this.authService.verifyReferralCode(referralCode);
+      
+      this.logger.log(`[verify-referral POST 결과] 코드: "${referralCode}" -> ${isValid ? '유효' : '무효'}`);
+      
       return res.json({
         isValid,
         message: isValid ? '유효한 추천인 코드입니다.' : '유효하지 않은 추천인 코드입니다.',
       });
     } catch (error) {
-      console.error('추천인 코드 검증 에러:', error);
+      this.logger.error(`[verify-referral POST 에러] 코드: "${req.body?.referralCode}", 에러:`, error);
       return res.status(500).json({ error: '추천인 코드 검증에 실패했습니다.' });
     }
   }
 
   @Get('validate-referral/:code')
   async validateReferralCode(@Param('code') code: string, @Res() res: Response) {
+    const decodedCode = decodeURIComponent(code);
+    this.logger.log(`[validate-referral 요청] 원본: "${code}", 디코딩: "${decodedCode}"`);
+    
     try {
       if (!code) {
+        this.logger.warn(`[validate-referral] 코드가 비어있음`);
         return res.status(400).json({ 
           valid: false, 
           error: '추천인 코드가 필요합니다.' 
         });
       }
       
-      const isValid = await this.authService.verifyReferralCode(code);
+      const isValid = await this.authService.verifyReferralCode(decodedCode);
+      
+      this.logger.log(`[validate-referral 결과] 코드: "${decodedCode}" -> ${isValid ? '유효' : '무효'}`);
+      
       return res.json({
         valid: isValid,
-        code: code,
+        code: decodedCode,
         message: isValid ? '유효한 추천인 코드입니다.' : '유효하지 않은 추천인 코드입니다.',
       });
     } catch (error) {
-      console.error('추천인 코드 검증 에러:', error);
+      this.logger.error(`[validate-referral 에러] 코드: "${decodedCode}", 에러:`, error);
       return res.status(500).json({ 
         valid: false, 
         error: '추천인 코드 검증에 실패했습니다.' 
@@ -191,9 +205,15 @@ export class AuthController {
 
       let referralCode: string | undefined = undefined;
       if (candidate) {
+        this.logger.log(`[카카오 콜백] 추천인 코드 검증 시작: "${candidate}"`);
         const ok = await this.authService.verifyReferralCode(candidate);
-        this.logger.log(`Referral verify: "${candidate}" -> ${ok ? 'VALID' : 'INVALID'}`);
+        this.logger.log(`[카카오 콜백] 추천인 코드 검증 결과: "${candidate}" -> ${ok ? '✅ VALID' : '❌ INVALID'}`);
         referralCode = ok ? candidate : undefined;
+        if (!ok) {
+          this.logger.warn(`[카카오 콜백] 무효한 추천인 코드로 인해 사용되지 않음: "${candidate}"`);
+        }
+      } else {
+        this.logger.log(`[카카오 콜백] 추천인 코드 후보가 없음 (fromInfo: "${fromInfo ?? ''}", fromCookie: "${fromCookie ?? ''}")`);
       }
 
       const result = await this.authService.handleKakaoLogin(user, referralCode);

@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { PrismaClient, UserRole } from '@repo/db';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { AddressesService } from '../addresses/addresses.service';
+import { ReferralCodesService } from '../referral-codes/referral-codes.service';
 
 
 @Injectable()
@@ -13,7 +14,8 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly auditLogService: AuditLogService,
-    private readonly addressesService: AddressesService
+    private readonly addressesService: AddressesService,
+    private readonly referralCodesService: ReferralCodesService
   ) {}
 
   async getCurrentUser(req: Request) {
@@ -126,10 +128,11 @@ export class AuthService {
       const isInHardcodedList = validCodes.includes(normalizedCode);
       this.logger.log(`[추천인 코드 검증] 하드코딩 목록 확인: ${isInHardcodedList ? '유효' : '무효'} (목록: ${validCodes.join(', ')})`);
 
-      // 2. DB에서 추천인 코드 확인
+      // 2. DB에서 추천인 코드 확인 (BIZ_ 접두사 포함하여 조회)
       let dbCode = null;
       let dbErrorOccurred = false;
       try {
+        // 먼저 정확한 코드로 조회
         dbCode = await this.prisma.referralCode.findUnique({
           where: { code: normalizedCode },
           select: {
@@ -140,9 +143,24 @@ export class AuthService {
             sellerId: true,
           }
         });
+
+        // 없으면 BIZ_ 접두사가 붙은 버전으로도 조회
+        if (!dbCode) {
+          dbCode = await this.prisma.referralCode.findUnique({
+            where: { code: `BIZ_${normalizedCode}` },
+            select: {
+              id: true,
+              code: true,
+              isActive: true,
+              currentUses: true,
+              sellerId: true,
+            }
+          });
+        }
         
         if (dbCode) {
-          this.logger.log(`[추천인 코드 검증] DB에서 코드 발견: id=${dbCode.id}, code="${dbCode.code}", isActive=${dbCode.isActive}, currentUses=${dbCode.currentUses}, sellerId=${dbCode.sellerId ?? 'null'}`);
+          const roleType = dbCode.code.startsWith('BIZ_') ? 'BIZ' : 'CONSUMER';
+          this.logger.log(`[추천인 코드 검증] DB에서 코드 발견: id=${dbCode.id}, code="${dbCode.code}", roleType=${roleType}, isActive=${dbCode.isActive}, currentUses=${dbCode.currentUses}, sellerId=${dbCode.sellerId ?? 'null'}`);
         } else {
           this.logger.log(`[추천인 코드 검증] DB에서 코드를 찾을 수 없음: "${normalizedCode}"`);
         }
@@ -252,11 +270,44 @@ export class AuthService {
   
     if (!dbUser) {
       // 3) 완전 신규 가입
+      // 추천인 코드의 roleType 확인
+      let userRole: UserRole = UserRole.CONSUMER; // 기본값
+      if (cleanRef) {
+        try {
+          // DB에서 추천인 코드 조회 (BIZ_ 접두사 포함하여 조회)
+          const normalizedRef = cleanRef.toUpperCase();
+          const dbRefCode = await this.prisma.referralCode.findFirst({
+            where: {
+              OR: [
+                { code: normalizedRef },
+                { code: `BIZ_${normalizedRef}` }
+              ],
+              isActive: true
+            }
+          });
+
+          if (dbRefCode) {
+            // code에서 roleType 추출
+            userRole = dbRefCode.code.startsWith('BIZ_') ? UserRole.BIZ : UserRole.CONSUMER;
+            this.logger.log(`[가입] 추천인 코드 "${cleanRef}" -> roleType: ${userRole}`);
+          } else {
+            // 하드코딩 목록 확인 (기본적으로 CONSUMER)
+            const validCodes = ['WELCOME10', 'NEWUSER20', 'SPECIAL30', 'FEEDBACK2024', 'LIVE', 'TEST'];
+            if (validCodes.includes(normalizedRef)) {
+              userRole = UserRole.CONSUMER;
+              this.logger.log(`[가입] 하드코딩 추천인 코드 "${cleanRef}" -> roleType: ${userRole}`);
+            }
+          }
+        } catch (error) {
+          this.logger.warn(`[가입] 추천인 코드 roleType 조회 실패, 기본값(CONSUMER) 사용:`, error);
+        }
+      }
+
       const data: any = {
         email: cleanEmail,
         name: cleanName,
         kakaoSub: user.kakaoSub,
-        role: UserRole.CONSUMER,
+        role: userRole,
         approve: false, // 기본적으로 승인되지 않음
         isActive: true,
         // 카카오 추가 정보

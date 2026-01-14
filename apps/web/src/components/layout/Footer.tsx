@@ -24,6 +24,9 @@ const Footer = () => {
                   교환/반품
                 </Link>
               </li>
+              <li className="text-sm text-gray-500 mt-1">
+                교환/반품 주소: 인천광역시 연수구 송도동 172-1 송도테크노파크IT센터, S동 3003-3호
+              </li>
             </ul>
           </div>
 

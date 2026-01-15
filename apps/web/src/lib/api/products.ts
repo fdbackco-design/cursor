@@ -43,6 +43,7 @@ export const productsApi = {
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    includeInactive?: boolean;
   } = {}): Promise<{ success: boolean; data?: { products: Product[]; pagination?: any }; error?: string }> {
     try {
       const params = new URLSearchParams();
@@ -52,6 +53,7 @@ export const productsApi = {
       if (options.search) params.append('search', options.search);
       if (options.sortBy) params.append('sortBy', options.sortBy);
       if (options.sortOrder) params.append('sortOrder', options.sortOrder);
+      if (options.includeInactive) params.append('includeInactive', 'true');
 
       const queryString = params.toString();
       const endpoint = `/api/v1/products${queryString ? `?${queryString}` : ''}`;

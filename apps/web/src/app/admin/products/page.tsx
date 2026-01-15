@@ -35,8 +35,8 @@ const ProductsPage = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      // 관리자 페이지에서는 모든 상품을 가져오기 위해 매우 큰 limit 설정
-      const result = await productsApi.getProducts({ limit: 10000 });
+      // 관리자 페이지에서는 모든 상품(비활성 포함)을 가져오기 위해 매우 큰 limit 설정
+      const result = await productsApi.getProducts({ limit: 10000, includeInactive: true });
       if (result.success && result.data && Array.isArray(result.data.products)) {
         setProducts(result.data.products);
       } else {

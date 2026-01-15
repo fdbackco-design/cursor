@@ -21,7 +21,8 @@ export class ProductsController {
     @Query('limit') limit?: string,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
-    @Query('sortOrder') sortOrder?: string
+    @Query('sortOrder') sortOrder?: string,
+    @Query('includeInactive') includeInactive?: string
   ) {
     const options = {
       category,
@@ -29,7 +30,8 @@ export class ProductsController {
       limit: limit ? parseInt(limit, 10) : 20,
       search,
       sortBy,
-      sortOrder: sortOrder as 'asc' | 'desc' || 'desc'
+      sortOrder: sortOrder as 'asc' | 'desc' || 'desc',
+      includeInactive: includeInactive === 'true' || includeInactive === '1'
     };
 
     const result = await this.productsService.getProducts(options);

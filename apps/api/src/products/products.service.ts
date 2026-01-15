@@ -35,11 +35,15 @@ export class ProductsService {
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    includeInactive?: boolean;
   }) {
-    const { category, page = 1, limit = 20, search, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+    const { category, page = 1, limit = 20, search, sortBy = 'createdAt', sortOrder = 'desc', includeInactive = false } = options;
     
     // 필터 조건 구성
-    const where: any = { isActive: true };
+    const where: any = {};
+    if (!includeInactive) {
+      where.isActive = true;
+    }
     
     if (category) {
       where.category = {

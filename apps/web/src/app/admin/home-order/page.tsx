@@ -509,7 +509,7 @@ export default function HomeOrderPage() {
               <Link href="/admin" className="text-gray-500 hover:text-gray-700">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">홈페이지 상품 노출 순서 관리</h1>
+              <h1 className="text-2xl font-bold text-gray-900">메인페이지 노출 관리</h1>
             </div>
             <Button 
               onClick={handleSave}

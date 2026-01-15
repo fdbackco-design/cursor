@@ -110,7 +110,7 @@ const AdminPage = () => {
     },
     {
       id: 'home-order',
-      title: '메인상품 노출 관리',
+      title: '메인페이지 노출 관리',
       description: '카테고리, MD Pick 순서 관리',
       icon: Layout,
       color: 'bg-pink-500',

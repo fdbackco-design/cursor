@@ -319,7 +319,7 @@ export const updateProduct = async (id: string, productData: {
     if (productData.vendor && productData.vendor.trim()) formData.append('vendor', productData.vendor.trim());
     if (productData.isActive !== undefined) formData.append('isActive', productData.isActive.toString());
     if (productData.isFeatured !== undefined) formData.append('isFeatured', productData.isFeatured.toString());
-    if (productData.stockQuantity && productData.stockQuantity > 0) formData.append('stockQuantity', productData.stockQuantity.toString());
+    if (productData.stockQuantity !== undefined && productData.stockQuantity !== null) formData.append('stockQuantity', productData.stockQuantity.toString());
     if (productData.lowStockThreshold && productData.lowStockThreshold > 0) formData.append('lowStockThreshold', productData.lowStockThreshold.toString());
     
     // 배열과 객체는 실제 데이터가 있을 때만 추가

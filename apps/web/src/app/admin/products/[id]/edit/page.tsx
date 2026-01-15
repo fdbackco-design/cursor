@@ -92,7 +92,7 @@ const EditProductPage = () => {
             vendor: data.vendor?.name || '',
             isActive: data.isActive,
             isFeatured: data.isFeatured,
-            stockQuantity: data.stockQuantity ? data.stockQuantity.toString() : '',
+            stockQuantity: data.stockQuantity !== null && data.stockQuantity !== undefined ? data.stockQuantity.toString() : '',
             lowStockThreshold: data.lowStockThreshold ? data.lowStockThreshold.toString() : '',
             tags: data.tags || [],
             metadata: data.metadata || {},
@@ -308,7 +308,7 @@ const EditProductPage = () => {
            formData.priceB2B && 
            formData.priceB2C && 
            formData.category && 
-           formData.stockQuantity;
+           formData.stockQuantity !== '' && formData.stockQuantity !== null && formData.stockQuantity !== undefined;
   };
 
   if (loading) {

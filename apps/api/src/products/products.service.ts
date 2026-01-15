@@ -459,6 +459,7 @@ export class ProductsService {
     }
 
     // 상품 업데이트
+    console.log('[상품 수정 서비스] DB 업데이트 전 최종 이미지:', JSON.stringify(finalImages.map(img => ({ s3Key: img.s3Key, cdnUrl: img.cdnUrl }))));
     const product = await this.prisma.product.update({
       where: { id },
       data: {
@@ -493,6 +494,10 @@ export class ProductsService {
         vendor: true,
       },
     });
+    
+    // 업데이트된 상품의 이미지 확인
+    console.log('[상품 수정 서비스] DB 업데이트 후 저장된 이미지:', JSON.stringify((product.images as any[])?.map((img: any) => ({ s3Key: img?.s3Key, cdnUrl: img?.cdnUrl })) || []));
+    console.log('[상품 수정 서비스] 저장된 이미지 개수:', (product.images as any[])?.length || 0);
 
     return product;
   }

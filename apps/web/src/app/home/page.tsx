@@ -326,7 +326,7 @@ export default function HomePage() {
         autoPlayInterval={5000}
         showDots={true}
         showArrows={true}
-        className="h-[400px] sm:h-[500px] lg:h-[600px]"
+        className=""
       />
 
       {/* Top 10 Section */}

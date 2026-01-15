@@ -538,7 +538,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <CardContent>
               <div className="space-y-4">
                 {product.descriptionImages.map((image, index) => (
-                  <div key={index} className="w-full">
+                  <div key={index} className="w-full lg:max-w-4xl lg:mx-auto">
                     <img
                       src={getProductThumbnailUrl(product.descriptionImages, index)}
                       alt={`${product.name} 상세 이미지 ${index + 1}`}

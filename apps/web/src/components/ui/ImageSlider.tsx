@@ -102,18 +102,23 @@ export function ImageSlider({
         {slides.map((slide) => (
           <div
             key={slide.id}
-            className="w-full flex-shrink-0 relative"
-            style={{
-              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url(${slide.image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              minHeight: '600px'
-            }}
+            className="w-full flex-shrink-0 relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]"
           >
+            {/* 배경 이미지 */}
+            <div
+              className="absolute inset-0 w-full h-full"
+              style={{
+                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url(${slide.image})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            />
+            
             {/* 슬라이드 콘텐츠 */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white animate-fade-in">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 text-white drop-shadow-lg">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white animate-fade-in w-full">
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold mb-2 sm:mb-4 md:mb-6 text-white drop-shadow-lg leading-tight">
                   {slide.title.split('<br />').map((line, index) => (
                     <span key={index}>
                       {line}
@@ -121,13 +126,13 @@ export function ImageSlider({
                     </span>
                   ))}
                 </h1>
-                <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-6 sm:mb-8 text-gray-100 drop-shadow-md px-4">
+                <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl mb-4 sm:mb-6 md:mb-8 text-gray-100 drop-shadow-md px-2 sm:px-4">
                   {slide.description}
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 justify-center px-2 sm:px-4">
                   <Button 
                     size="lg" 
-                    className="bg-white text-blue-600 hover:bg-gray-100 text-sm sm:text-base"
+                    className="bg-white text-blue-600 hover:bg-gray-100 text-xs sm:text-sm md:text-base h-9 sm:h-10 md:h-11 px-4 sm:px-6 md:px-8"
                     onClick={slide.primaryButton.onClick}
                   >
                     {slide.primaryButton.text}
@@ -136,7 +141,7 @@ export function ImageSlider({
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="border-white text-white hover:bg-white hover:text-blue-600 text-sm sm:text-base"
+                      className="border-white text-white hover:bg-white hover:text-blue-600 text-xs sm:text-sm md:text-base h-9 sm:h-10 md:h-11 px-4 sm:px-6 md:px-8"
                       onClick={slide.secondaryButton.onClick}
                     >
                       {slide.secondaryButton.text}

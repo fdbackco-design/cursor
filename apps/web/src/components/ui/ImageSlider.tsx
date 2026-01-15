@@ -131,12 +131,13 @@ export function ImageSlider({
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 justify-center px-2 sm:px-4">
                   <Button
-                    size="sm"
+                    size="sm"                     // 모바일 기준
                     className="
                       bg-white text-blue-600 hover:bg-gray-100
-                      text-[8px] sm:text-sm md:text-base
-                      h-[9px] sm:h-10 md:h-11
-                      px-1 sm:px-6 md:px-8
+                      text-[10px] sm:text-sm md:text-base
+                      h-7 sm:h-10 md:h-11
+                      px-3 sm:px-6 md:px-8
+                      w-1/3 sm:w-auto
                     "
                     onClick={slide.primaryButton.onClick}
                   >
@@ -146,7 +147,7 @@ export function ImageSlider({
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="border-white text-white hover:bg-white hover:text-blue-600 text-[8px] sm:text-sm md:text-base h-[9px] sm:h-10 md:h-11 px-1 sm:px-6 md:px-8"
+                      className="border-white text-white hover:bg-white hover:text-blue-600 text-[10px] sm:text-sm md:text-base h-7 sm:h-10 md:h-11 px-3 sm:px-6 md:px-8 w-1/3 sm:w-auto"
                       onClick={slide.secondaryButton.onClick}
                     >
                       {slide.secondaryButton.text}

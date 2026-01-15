@@ -132,7 +132,7 @@ export function ImageSlider({
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 justify-center px-2 sm:px-4">
                   <Button 
                     size="lg" 
-                    className="bg-white text-blue-600 hover:bg-gray-100 text-xs sm:text-sm md:text-base h-9 sm:h-10 md:h-11 px-4 sm:px-6 md:px-8"
+                    className="bg-white text-blue-600 hover:bg-gray-100 text-[10px] sm:text-sm md:text-base h-7 sm:h-10 md:h-11 px-3 sm:px-6 md:px-8"
                     onClick={slide.primaryButton.onClick}
                   >
                     {slide.primaryButton.text}
@@ -141,7 +141,7 @@ export function ImageSlider({
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="border-white text-white hover:bg-white hover:text-blue-600 text-xs sm:text-sm md:text-base h-9 sm:h-10 md:h-11 px-4 sm:px-6 md:px-8"
+                      className="border-white text-white hover:bg-white hover:text-blue-600 text-[10px] sm:text-sm md:text-base h-7 sm:h-10 md:h-11 px-3 sm:px-6 md:px-8"
                       onClick={slide.secondaryButton.onClick}
                     >
                       {slide.secondaryButton.text}

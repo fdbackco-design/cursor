@@ -254,6 +254,11 @@ const EditProductPage = () => {
       if (formData.images.length > 0 || deletedImageIndexes.length > 0) {
         productData.images = formData.images;
         productData.deletedImageIndexes = deletedImageIndexes;
+        console.log('[상품 수정] 이미지 데이터:', {
+          새이미지개수: formData.images.length,
+          삭제인덱스: deletedImageIndexes,
+          새이미지타입: formData.images.map(img => img instanceof File ? 'File' : typeof img)
+        });
       }
       
       if (formData.descriptionImages.length > 0 || deletedDescriptionImageIndexes.length > 0) {

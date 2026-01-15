@@ -212,16 +212,19 @@ export class ProductsController {
       }
 
       // 새 이미지들을 S3에 업로드
+      console.log('[상품 수정] files?.images:', files?.images?.length || 0, '개');
       if (files?.images && files.images.length > 0) {
         try {
-          //console.log('S3 이미지 업로드 시작:', files.images.length, '개 파일');
+          console.log('[상품 수정] S3 이미지 업로드 시작:', files.images.length, '개 파일');
           s3ImageData = await this.productsService.uploadImagesForNewProduct(files.images);
-          //console.log('S3 이미지 업로드 성공:', s3ImageData.length, '개');
+          console.log('[상품 수정] S3 이미지 업로드 성공:', s3ImageData.length, '개');
         } catch (error) {
-          console.error('S3 이미지 업로드 실패:', error);
+          console.error('[상품 수정] S3 이미지 업로드 실패:', error);
           // S3 업로드 실패 시 빈 배열로 폴백
           s3ImageData = [];
         }
+      } else {
+        console.log('[상품 수정] 업로드할 새 이미지가 없습니다.');
       }
       
       if (files?.descriptionImages && files.descriptionImages.length > 0) {

@@ -308,11 +308,17 @@ export const updateProduct = async (id: string, productData: {
     
     // 이미지는 실제 파일이 있을 때만 추가
     if (productData.images && Array.isArray(productData.images) && productData.images.length > 0) {
-      productData.images.forEach((image) => {
+      console.log('[API] 이미지 파일 추가 시작:', productData.images.length, '개');
+      productData.images.forEach((image, index) => {
         if (image instanceof File && image.size > 0) {
+          console.log(`[API] 이미지 ${index + 1} 추가:`, image.name, image.size, 'bytes');
           formData.append('images', image);
+        } else {
+          console.log(`[API] 이미지 ${index + 1} 스킵:`, image instanceof File ? 'File이지만 size가 0' : 'File 객체가 아님');
         }
       });
+    } else {
+      console.log('[API] 추가할 이미지가 없습니다.');
     }
     
     if (productData.descriptionImages && Array.isArray(productData.descriptionImages) && productData.descriptionImages.length > 0) {

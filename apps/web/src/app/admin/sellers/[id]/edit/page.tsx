@@ -34,7 +34,7 @@ const EditSellerPage = () => {
   // 추천 코드 관련 상태
   const [referralCodes, setReferralCodes] = useState<ReferralCode[]>([]);
   const [editingReferralCode, setEditingReferralCode] = useState<string | null>(null);
-  const [newReferralCode, setNewReferralCode] = useState({ code: '', isActive: true });
+  const [newReferralCode, setNewReferralCode] = useState({ code: '', isActive: true, roleType: 'CONSUMER' as 'BIZ' | 'CONSUMER' });
   const [showNewReferralCodeForm, setShowNewReferralCodeForm] = useState(false);
 
   // 셀러 데이터 로드
@@ -122,13 +122,14 @@ const EditSellerPage = () => {
     try {
       const result = await referralCodesApi.createReferralCode(sellerId, {
         code: newReferralCode.code.trim(),
-        isActive: newReferralCode.isActive
+        isActive: newReferralCode.isActive,
+        roleType: newReferralCode.roleType
       });
 
       if (result.success) {
         // 새 추천 코드를 목록에 추가
         setReferralCodes(prev => [...prev, result.data]);
-        setNewReferralCode({ code: '', isActive: true });
+        setNewReferralCode({ code: '', isActive: true, roleType: 'CONSUMER' });
         setShowNewReferralCodeForm(false);
         showToast(toast.success('추천 코드 생성 완료', '추천 코드가 성공적으로 생성되었습니다.'));
       }
@@ -403,7 +404,7 @@ const EditSellerPage = () => {
               {/* 새 추천 코드 생성 폼 */}
               {showNewReferralCodeForm && (
                 <div className="p-4 bg-gray-50 rounded-lg border">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         추천 코드 *
@@ -416,6 +417,20 @@ const EditSellerPage = () => {
                         placeholder="예: WELCOME10"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        역할 타입 *
+                      </label>
+                      <select
+                        name="roleType"
+                        value={newReferralCode.roleType}
+                        onChange={(e) => setNewReferralCode(prev => ({ ...prev, roleType: e.target.value as 'BIZ' | 'CONSUMER' }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      >
+                        <option value="CONSUMER">일반 고객 (CONSUMER)</option>
+                        <option value="BIZ">사업자 (BIZ)</option>
+                      </select>
                     </div>
                     <div className="flex items-center space-x-2">
                       <input
@@ -451,20 +466,33 @@ const EditSellerPage = () => {
               <div className="space-y-3">
                 {referralCodes.map((referralCode) => (
                   <div key={referralCode.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
                       {editingReferralCode === referralCode.id ? (
                         // 수정 모드
                         <>
                           <input
                             type="text"
-                            value={referralCode.code}
+                            value={referralCode.displayCode || referralCode.code.replace(/^BIZ_/, '')}
                             onChange={(e) => {
                               setReferralCodes(prev => prev.map(code => 
-                                code.id === referralCode.id ? { ...code, code: e.target.value } : code
+                                code.id === referralCode.id ? { ...code, displayCode: e.target.value } : code
                               ));
                             }}
                             className="px-2 py-1 border border-gray-300 rounded text-sm"
+                            placeholder="코드"
                           />
+                          <select
+                            value={referralCode.roleType || 'CONSUMER'}
+                            onChange={(e) => {
+                              setReferralCodes(prev => prev.map(code => 
+                                code.id === referralCode.id ? { ...code, roleType: e.target.value as 'BIZ' | 'CONSUMER' } : code
+                              ));
+                            }}
+                            className="px-2 py-1 border border-gray-300 rounded text-sm"
+                          >
+                            <option value="CONSUMER">일반 고객</option>
+                            <option value="BIZ">사업자</option>
+                          </select>
                           <div className="flex items-center space-x-2">
                             <input
                               type="checkbox"
@@ -485,7 +513,12 @@ const EditSellerPage = () => {
                       ) : (
                         // 보기 모드
                         <>
-                          <span className="font-medium text-gray-900">{referralCode.code}</span>
+                          <span className="font-medium text-gray-900">{referralCode.displayCode || referralCode.code.replace(/^BIZ_/, '')}</span>
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            referralCode.roleType === 'BIZ' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {referralCode.roleType === 'BIZ' ? '사업자' : '일반 고객'}
+                          </span>
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             referralCode.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}>
@@ -505,8 +538,9 @@ const EditSellerPage = () => {
                             type="button"
                             size="sm"
                             onClick={() => handleUpdateReferralCode(referralCode.id, {
-                              code: referralCode.code,
-                              isActive: referralCode.isActive
+                              code: referralCode.displayCode || referralCode.code.replace(/^BIZ_/, ''),
+                              isActive: referralCode.isActive,
+                              roleType: referralCode.roleType || 'CONSUMER'
                             })}
                             className="bg-green-600 hover:bg-green-700 text-white"
                           >

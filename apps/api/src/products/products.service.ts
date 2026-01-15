@@ -442,9 +442,14 @@ export class ProductsService {
     }
 
     // 새로 추가된 이미지가 있으면 기존 이미지에 추가
+    console.log('[상품 수정 서비스] 새 이미지 배열:', images?.length || 0, '개');
     if (images && Array.isArray(images) && images.length > 0) {
       // images는 이미 S3Image 객체 배열이므로 그대로 추가
+      console.log('[상품 수정 서비스] 새 이미지를 기존 이미지에 추가:', images.length, '개');
       finalImages = [...finalImages, ...images];
+      console.log('[상품 수정 서비스] 최종 이미지 개수:', finalImages.length, '개');
+    } else {
+      console.log('[상품 수정 서비스] 추가할 새 이미지가 없습니다.');
     }
 
     // 새로 추가된 설명 이미지가 있으면 기존 설명 이미지에 추가

@@ -62,13 +62,28 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 }
 
+// 캐시 비활성화 - 상품 정보가 자주 변경될 수 있으므로
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+
 export default async function ProductPage({ params }: ProductPageProps) {
   try {
+    // 캐시 버스팅을 위해 타임스탬프 추가
     const product = await productsApi.getProductById(params.id);
     
     if (!product) {
       notFound();
     }
+
+    // 디버깅: 상품 이미지 확인
+    console.log('[상품 상세 페이지] 로드된 상품 이미지:', {
+      productId: product.id,
+      imagesCount: product.images?.length || 0,
+      firstImage: product.images?.[0] ? {
+        s3Key: (product.images[0] as any)?.s3Key,
+        cdnUrl: (product.images[0] as any)?.cdnUrl
+      } : null
+    });
 
     return (
       <div className="container mx-auto px-4 py-8">

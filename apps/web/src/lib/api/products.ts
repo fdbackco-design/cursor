@@ -100,21 +100,45 @@ export const productsApi = {
   // 상품 상세 조회
   async getProductById(id: string): Promise<Product | null> {
     try {
+      console.log('[상품 상세 조회] 요청 ID:', id);
+
       const response = await fetch(`${API_BASE_URL}/api/v1/products/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
+        cache: 'no-store',
       });
+
+      console.log('[상품 상세 조회] response status:', response.status);
 
       if (!response.ok) {
         throw new Error(`상품 상세 정보를 불러올 수 없습니다. (${response.status})`);
       }
 
       const result = await response.json();
-      return result.data || result || null;
+
+      // 🔥 핵심 로그들
+      console.log('[상품 상세 조회] 원본 응답:', result);
+
+      const product = result.data || result || null;
+
+      if (product) {
+        console.log('[상품 상세 조회] images:', product.images);
+        console.log('[상품 상세 조회] thumbnail 관련 필드:', {
+          thumbnail: product.thumbnail,
+          thumbnailUrl: product.thumbnailUrl,
+          mainImage: product.mainImage,
+        });
+        console.log(
+          '[상품 상세 조회] images[0]?.cdnUrl:',
+          product.images?.[0]?.cdnUrl
+        );
+      }
+
+      return product;
     } catch (error) {
-      console.error('상품 상세 조회 실패:', error);
+      console.error('[상품 상세 조회 실패]', error);
       return null;
     }
   },

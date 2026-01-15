@@ -137,15 +137,40 @@ export function getProductMainImageUrl(images: any): string {
  * 상품 이미지의 썸네일 URL을 가져옵니다.
  * @param images 이미지 경로 배열 또는 S3 이미지 배열
  * @param index 이미지 인덱스 (기본값: 0)
+ * @param updatedAt 상품 업데이트 시간 (캐시 버스팅용, 선택사항)
  * @returns 썸네일 URL
  */
-export function getProductThumbnailUrl(images: any, index: number = 0): string {
+export function getProductThumbnailUrl(images: any, index: number = 0, updatedAt?: string | Date | null): string {
   if (!images || !Array.isArray(images) || images.length === 0) {
     return '/images/placeholder-product.jpg';
   }
 
   const urls = getProductImageUrls(images);
-  return urls[index] || urls[0] || '/images/placeholder-product.jpg';
+  const url = urls[index] || urls[0] || '/images/placeholder-product.jpg';
+  
+  // Next.js Image 컴포넌트 캐싱 문제 해결을 위해 쿼리 파라미터 추가
+  // updatedAt이 있으면 사용, 없으면 현재 시간 사용
+  if (url && !url.includes('placeholder-product.jpg') && !url.includes('?')) {
+    try {
+      const urlObj = new URL(url);
+      // updatedAt을 기반으로 캐시 버스팅 (같은 시간에는 같은 URL)
+      let cacheKey: string;
+      if (updatedAt) {
+        const date = typeof updatedAt === 'string' ? new Date(updatedAt) : updatedAt;
+        cacheKey = Math.floor(date.getTime() / 1000).toString();
+      } else {
+        // updatedAt이 없으면 현재 시간 사용 (매번 변경됨)
+        cacheKey = Math.floor(Date.now() / 1000).toString();
+      }
+      urlObj.searchParams.set('v', cacheKey);
+      return urlObj.toString();
+    } catch {
+      // URL 파싱 실패 시 원본 반환
+      return url;
+    }
+  }
+  
+  return url;
 }
 
 /**

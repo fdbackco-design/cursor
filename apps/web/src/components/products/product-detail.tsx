@@ -310,7 +310,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 </div>
               ) : (
                 <Image
-                  src={getProductThumbnailUrl(product.images, safeSelectedImage)}
+                  src={getProductThumbnailUrl(product.images, safeSelectedImage, (product as any).updatedAt)}
                   alt={`${product.name} 이미지 ${safeSelectedImage + 1}`}
                   fill
                   className={`object-cover transition-opacity duration-200 ${
@@ -320,6 +320,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   onError={handleImageError}
                   priority={safeSelectedImage === 0}
                   sizes="(max-width: 768px) 100vw, 50vw"
+                  key={`${product.id}-${safeSelectedImage}-${(product as any).updatedAt || Date.now()}`}
                 />
               )}
               

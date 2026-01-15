@@ -18,6 +18,7 @@ export default function HomePage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [banners, setBanners] = useState<any[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -188,8 +189,85 @@ export default function HomePage() {
     .sort((a, b) => (a.weight || 0) - (b.weight || 0))
     .slice(0, 10);
 
+  // 배너 데이터 로드
+  useEffect(() => {
+    const loadBanners = async () => {
+      try {
+        const response = await fetch('/api/admin/banners', {
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data && data.data.length > 0) {
+            const bannerSlides = data.data.map((banner: any) => ({
+              id: banner.id,
+              image: banner.image,
+              title: banner.title.replace(/\n/g, '<br />'),
+              subtitle: '',
+              description: banner.description,
+              primaryButton: {
+                text: banner.buttonText || '상품 둘러보기',
+                onClick: () => router.push(banner.buttonLink || '/products')
+              }
+            }));
+            setBanners(bannerSlides);
+          } else {
+            // 배너가 없으면 기본 배너 사용
+            setBanners([
+              {
+                id: 1,
+                image: '/main/HOIDBanner.png',
+                title: '호이드 오브제<br />무선청소기 출시',
+                subtitle: '프리미엄 라이프스타일',
+                description: '당신의 일상을 품격있게 청소하다',
+                primaryButton: {
+                  text: '상품 둘러보기',
+                  onClick: () => router.push('/products')
+                }
+              }
+            ]);
+          }
+        } else {
+          // 에러 시 기본 배너 사용
+          setBanners([
+            {
+              id: 1,
+              image: '/main/HOIDBanner.png',
+              title: '호이드 오브제<br />무선청소기 출시',
+              subtitle: '프리미엄 라이프스타일',
+              description: '당신의 일상을 품격있게 청소하다',
+              primaryButton: {
+                text: '상품 둘러보기',
+                onClick: () => router.push('/products')
+              }
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error('배너 로드 실패:', error);
+        // 에러 시 기본 배너 사용
+        setBanners([
+          {
+            id: 1,
+            image: '/main/HOIDBanner.png',
+            title: '호이드 오브제<br />무선청소기 출시',
+            subtitle: '프리미엄 라이프스타일',
+            description: '당신의 일상을 품격있게 청소하다',
+            primaryButton: {
+              text: '상품 둘러보기',
+              onClick: () => router.push('/products')
+            }
+          }
+        ]);
+      }
+    };
+
+    loadBanners();
+  }, [router]);
+
   // 슬라이더 데이터
-  const heroSlides = [
+  const heroSlides = banners.length > 0 ? banners : [
     {
       id: 1,
       image: '/main/HOIDBanner.png',
@@ -200,18 +278,7 @@ export default function HomePage() {
         text: '상품 둘러보기',
         onClick: () => router.push('/products')
       }
-    },
-    {
-      id: 2,
-      image: '/main/HOIDBanner.png',
-      title: '스마트 주방용품<br />특별 할인',
-      subtitle: '스마트 쿠킹',
-      description: '요리의 즐거움을 한층 더 업그레이드하세요',
-      primaryButton: {
-        text: '할인 상품 보기',
-        onClick: () => router.push('/category/kitchen')
-      }
-    },
+    }
   ];
 
   // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트

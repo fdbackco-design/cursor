@@ -9,7 +9,10 @@ import {
   X,
   GripVertical,
   Star,
-  Package
+  Package,
+  Upload,
+  Image as ImageIcon,
+  Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast, toast } from '@/components/ui/toast';
@@ -210,6 +213,17 @@ export default function HomeOrderPage() {
   // MD's Pick 선택된 상품들 (드래그 앤 드롭 가능)
   const [mdPicks, setMdPicks] = useState<Product[]>([]);
   
+  // 배너 관리
+  const [banners, setBanners] = useState<any[]>([]);
+  const [editingBanner, setEditingBanner] = useState<any | null>(null);
+  const [bannerForm, setBannerForm] = useState({
+    title: '',
+    description: '',
+    buttonText: '상품 둘러보기',
+    buttonLink: '/products',
+    image: null as File | null
+  });
+  
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -259,6 +273,116 @@ export default function HomeOrderPage() {
     } catch (error) {
       console.error('홈페이지 순서 로드 실패:', error);
     }
+  };
+
+  // 배너 목록 로드
+  const loadBanners = async () => {
+    try {
+      const response = await fetch('/api/admin/banners', {
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setBanners(data.data || []);
+        }
+      }
+    } catch (error) {
+      console.error('배너 로드 실패:', error);
+    }
+  };
+
+  // 배너 저장
+  const handleSaveBanner = async () => {
+    if (!bannerForm.title || !bannerForm.description || (!bannerForm.image && !editingBanner)) {
+      showToast(toast.error('입력 오류', '제목, 설명, 이미지를 모두 입력해주세요.'));
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      if (bannerForm.image) {
+        formData.append('image', bannerForm.image);
+      }
+      formData.append('title', bannerForm.title);
+      formData.append('description', bannerForm.description);
+      formData.append('buttonText', bannerForm.buttonText);
+      formData.append('buttonLink', bannerForm.buttonLink);
+      if (editingBanner) {
+        formData.append('id', editingBanner.id.toString());
+      }
+
+      const response = await fetch('/api/admin/banners', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          showToast(toast.success('저장 완료', editingBanner ? '배너가 수정되었습니다.' : '배너가 추가되었습니다.'));
+          setBannerForm({
+            title: '',
+            description: '',
+            buttonText: '상품 둘러보기',
+            buttonLink: '/products',
+            image: null
+          });
+          setEditingBanner(null);
+          loadBanners();
+        } else {
+          throw new Error(data.error || '저장에 실패했습니다.');
+        }
+      } else {
+        throw new Error('저장에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('배너 저장 실패:', error);
+      showToast(toast.error('저장 실패', error instanceof Error ? error.message : '배너 저장 중 오류가 발생했습니다.'));
+    }
+  };
+
+  // 배너 삭제
+  const handleDeleteBanner = async (id: number) => {
+    if (!confirm('정말 이 배너를 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/banners/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          showToast(toast.success('삭제 완료', '배너가 삭제되었습니다.'));
+          loadBanners();
+        } else {
+          throw new Error(data.error || '삭제에 실패했습니다.');
+        }
+      } else {
+        throw new Error('삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('배너 삭제 실패:', error);
+      showToast(toast.error('삭제 실패', error instanceof Error ? error.message : '배너 삭제 중 오류가 발생했습니다.'));
+    }
+  };
+
+  // 배너 수정 시작
+  const handleEditBanner = (banner: any) => {
+    setEditingBanner(banner);
+    setBannerForm({
+      title: banner.title,
+      description: banner.description,
+      buttonText: banner.buttonText,
+      buttonLink: banner.buttonLink || '/products',
+      image: null
+    });
   };
 
   // 카테고리별 상품 필터링
@@ -361,6 +485,7 @@ export default function HomeOrderPage() {
   useEffect(() => {
     loadProducts();
     loadHomeOrder();
+    loadBanners();
   }, []);
 
   if (loading) {
@@ -496,6 +621,177 @@ export default function HomeOrderPage() {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* 배너 관리 */}
+        <div className="mt-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>배너 관리</CardTitle>
+              <CardDescription>
+                홈페이지 메인 배너 이미지를 등록, 수정, 삭제할 수 있습니다
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* 배너 추가/수정 폼 */}
+              <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+                <h4 className="text-lg font-semibold text-gray-900">
+                  {editingBanner ? '배너 수정' : '새 배너 추가'}
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      제목 *
+                    </label>
+                    <input
+                      type="text"
+                      value={bannerForm.title}
+                      onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
+                      placeholder="예: 호이드 오브제 무선청소기 출시"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      설명 *
+                    </label>
+                    <input
+                      type="text"
+                      value={bannerForm.description}
+                      onChange={(e) => setBannerForm({ ...bannerForm, description: e.target.value })}
+                      placeholder="예: 당신의 일상을 품격있게 청소하다"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      버튼 텍스트 *
+                    </label>
+                    <input
+                      type="text"
+                      value={bannerForm.buttonText}
+                      onChange={(e) => setBannerForm({ ...bannerForm, buttonText: e.target.value })}
+                      placeholder="예: 상품 둘러보기"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      버튼 링크
+                    </label>
+                    <input
+                      type="text"
+                      value={bannerForm.buttonLink}
+                      onChange={(e) => setBannerForm({ ...bannerForm, buttonLink: e.target.value })}
+                      placeholder="/products"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      배너 이미지 {!editingBanner && '*'}
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setBannerForm({ ...bannerForm, image: file });
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {editingBanner && !bannerForm.image && (
+                      <p className="text-xs text-gray-500 mt-1">이미지를 변경하지 않으려면 비워두세요.</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSaveBanner}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {editingBanner ? '수정' : '추가'}
+                  </Button>
+                  {editingBanner && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setEditingBanner(null);
+                        setBannerForm({
+                          title: '',
+                          description: '',
+                          buttonText: '상품 둘러보기',
+                          buttonLink: '/products',
+                          image: null
+                        });
+                      }}
+                    >
+                      취소
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* 배너 목록 */}
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  등록된 배너 ({banners.length}개)
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {banners.map((banner) => (
+                    <div key={banner.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="relative h-48 bg-gray-100">
+                        <img
+                          src={banner.image}
+                          alt={banner.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-4 space-y-2">
+                        <h5 className="font-semibold text-gray-900">{banner.title}</h5>
+                        <p className="text-sm text-gray-600">{banner.description}</p>
+                        <p className="text-xs text-gray-500">버튼: {banner.buttonText}</p>
+                        <div className="flex gap-2 mt-4">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditBanner(banner)}
+                            className="flex-1"
+                          >
+                            <ImageIcon className="h-4 w-4 mr-2" />
+                            수정
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteBanner(banner.id)}
+                            className="flex-1 text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            삭제
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {banners.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    등록된 배너가 없습니다.
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

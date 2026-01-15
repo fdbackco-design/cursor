@@ -1,10 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/library';
+import { S3Service } from '../s3/s3.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  private readonly bannersFilePath = path.join(process.cwd(), 'banners.json');
+
+  constructor(
+    private prisma: PrismaService,
+    private s3Service: S3Service
+  ) {
+    // banners.json 파일이 없으면 생성
+    if (!fs.existsSync(this.bannersFilePath)) {
+      fs.writeFileSync(this.bannersFilePath, JSON.stringify([]), 'utf-8');
+    }
+  }
 
   async getHomeOrder() {
     try {
@@ -245,6 +258,174 @@ export class AdminService {
       return {
         success: false,
         error: 'Internal Server Error'
+      };
+    }
+  }
+
+  // 배너 목록 조회
+  async getBanners() {
+    try {
+      const bannersData = fs.readFileSync(this.bannersFilePath, 'utf-8');
+      const banners = JSON.parse(bannersData);
+      return {
+        success: true,
+        data: banners
+      };
+    } catch (error) {
+      console.error('배너 조회 실패:', error);
+      return {
+        success: true,
+        data: []
+      };
+    }
+  }
+
+  // 배너 추가/수정
+  async saveBanner(bannerData: {
+    id?: number;
+    image?: Express.Multer.File;
+    title: string;
+    description: string;
+    buttonText: string;
+    buttonLink?: string;
+  }) {
+    try {
+      const bannersData = fs.readFileSync(this.bannersFilePath, 'utf-8');
+      const banners: any[] = JSON.parse(bannersData);
+
+      let imageUrl: string | undefined;
+      let s3Key: string | undefined;
+
+      // 새 이미지가 있으면 업로드
+      if (bannerData.image) {
+        const uploadResult = await this.s3Service.uploadImage({
+          file: bannerData.image.buffer,
+          filename: bannerData.image.originalname,
+          mimeType: bannerData.image.mimetype,
+          path: 'banners',
+          resizeOptions: {
+            width: 1920,
+            height: 1080,
+            quality: 90,
+          },
+        });
+        imageUrl = uploadResult.cdnUrl;
+        s3Key = uploadResult.s3Key;
+      }
+
+      if (bannerData.id) {
+        // 수정: 기존 배너 찾아서 업데이트
+        const index = banners.findIndex(b => b.id === bannerData.id);
+        if (index !== -1) {
+          const existingBanner = banners[index];
+          
+          // 새 이미지가 있으면 기존 이미지 삭제
+          if (imageUrl && s3Key && existingBanner.s3Key) {
+            try {
+              await this.s3Service.deleteImage(existingBanner.s3Key);
+            } catch (error) {
+              console.error('기존 배너 이미지 삭제 실패:', error);
+            }
+          }
+
+          banners[index] = {
+            ...existingBanner,
+            ...(imageUrl && { image: imageUrl }),
+            ...(s3Key && { s3Key }),
+            title: bannerData.title,
+            description: bannerData.description,
+            buttonText: bannerData.buttonText,
+            buttonLink: bannerData.buttonLink || '/products',
+            updatedAt: new Date().toISOString(),
+          };
+        } else {
+          // ID가 있지만 배너를 찾을 수 없으면 에러
+          return {
+            success: false,
+            error: '배너를 찾을 수 없습니다.'
+          };
+        }
+      } else {
+        // 추가: 새 배너는 이미지 필수
+        if (!imageUrl || !s3Key) {
+          return {
+            success: false,
+            error: '새 배너를 추가하려면 이미지가 필요합니다.'
+          };
+        }
+
+        const banner = {
+          id: Date.now(),
+          image: imageUrl,
+          s3Key: s3Key,
+          title: bannerData.title,
+          description: bannerData.description,
+          buttonText: bannerData.buttonText,
+          buttonLink: bannerData.buttonLink || '/products',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        banners.push(banner);
+      }
+
+      fs.writeFileSync(this.bannersFilePath, JSON.stringify(banners, null, 2), 'utf-8');
+
+      const updatedBanner = bannerData.id 
+        ? banners.find(b => b.id === bannerData.id)
+        : banners[banners.length - 1];
+
+      return {
+        success: true,
+        data: updatedBanner,
+        message: bannerData.id ? '배너가 수정되었습니다.' : '배너가 추가되었습니다.'
+      };
+    } catch (error) {
+      console.error('배너 저장 실패:', error);
+      return {
+        success: false,
+        error: '배너 저장에 실패했습니다.'
+      };
+    }
+  }
+
+  // 배너 삭제
+  async deleteBanner(id: number) {
+    try {
+      const bannersData = fs.readFileSync(this.bannersFilePath, 'utf-8');
+      const banners: any[] = JSON.parse(bannersData);
+
+      const bannerIndex = banners.findIndex(b => b.id === id);
+      if (bannerIndex === -1) {
+        return {
+          success: false,
+          error: '배너를 찾을 수 없습니다.'
+        };
+      }
+
+      const banner = banners[bannerIndex];
+      
+      // S3에서 이미지 삭제
+      if (banner.s3Key) {
+        try {
+          await this.s3Service.deleteImage(banner.s3Key);
+        } catch (error) {
+          console.error('배너 이미지 삭제 실패:', error);
+        }
+      }
+
+      // 배열에서 제거
+      banners.splice(bannerIndex, 1);
+      fs.writeFileSync(this.bannersFilePath, JSON.stringify(banners, null, 2), 'utf-8');
+
+      return {
+        success: true,
+        message: '배너가 삭제되었습니다.'
+      };
+    } catch (error) {
+      console.error('배너 삭제 실패:', error);
+      return {
+        success: false,
+        error: '배너 삭제에 실패했습니다.'
       };
     }
   }

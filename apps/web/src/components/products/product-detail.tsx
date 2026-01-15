@@ -292,17 +292,17 @@ export function ProductDetail({ product }: ProductDetailProps) {
       {/* Product Images */}
       <div className="space-y-4">
         {/* Main Image */}
-        <div className="aspect-square bg-muted rounded-lg overflow-hidden relative">
+        <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-muted">
           {product.images && product.images.length > 0 ? (
             <>
               {imageLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
               )}
               
               {imageError ? (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                   <div className="text-center">
                     <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                     <span className="text-sm text-gray-500">이미지를 불러올 수 없습니다</span>
@@ -319,14 +319,14 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   onLoad={handleImageLoad}
                   onError={handleImageError}
                   priority={safeSelectedImage === 0}
-                  sizes="(max-width: 768px) 100vw, 50vw"
+                  sizes="(max-width: 768px) 100vw, 600px"
                   key={`${product.id}-${safeSelectedImage}-${(product as any).updatedAt || Date.now()}`}
                 />
               )}
               
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
                 <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                 <span className="text-muted-foreground text-sm">이미지 없음</span>
@@ -342,12 +342,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <button
                 key={index}
                 onClick={() => handleImageSelect(index)}
-                className={`w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0 transition-all duration-200 ${
+                className={`relative w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0 transition-all duration-200 ${
                   safeSelectedImage === index ? 'ring-2 ring-primary scale-105' : 'ring-1 ring-gray-200 hover:ring-gray-300'
                 }`}
               >
                 <Image
-                  src={getProductThumbnailUrl(product.images, index)}
+                  src={getProductThumbnailUrl(product.images, index, (product as any).updatedAt)}
                   alt={`${product.name} 썸네일 ${index + 1}`}
                   fill
                   className="object-cover"

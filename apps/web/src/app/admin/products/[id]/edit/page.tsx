@@ -165,6 +165,21 @@ const EditProductPage = () => {
     }
   };
 
+  // 기존 이미지 교체 함수
+  const replaceExistingImage = (index: number, file: File, type: 'images' | 'descriptionImages') => {
+    // 기존 이미지를 삭제 목록에 추가
+    if (type === 'images') {
+      setDeletedImageIndexes(prev => [...prev, index]);
+    } else {
+      setDeletedDescriptionImageIndexes(prev => [...prev, index]);
+    }
+    // 새 이미지를 추가
+    setFormData(prev => ({
+      ...prev,
+      [type]: [...prev[type], file]
+    }));
+  };
+
   const addTag = () => {
     const newTag = prompt('새 태그를 입력하세요:');
     if (newTag && newTag.trim()) {
@@ -251,13 +266,17 @@ const EditProductPage = () => {
       if (JSON.stringify(formData.metadata) !== JSON.stringify(product.metadata || {})) productData.metadata = formData.metadata;
       
       // 이미지 관련 데이터는 항상 포함 (삭제나 추가가 있을 때)
+      // 삭제 인덱스가 있거나 새 이미지가 있으면 전송
       if (formData.images.length > 0 || deletedImageIndexes.length > 0) {
-        productData.images = formData.images;
+        // File 객체만 필터링 (URL 문자열 제외)
+        const fileImages = formData.images.filter(img => img instanceof File);
+        productData.images = fileImages;
         productData.deletedImageIndexes = deletedImageIndexes;
         console.log('[상품 수정] 이미지 데이터:', {
-          새이미지개수: formData.images.length,
+          새이미지개수: fileImages.length,
           삭제인덱스: deletedImageIndexes,
-          새이미지타입: formData.images.map(img => img instanceof File ? 'File' : typeof img)
+          새이미지타입: fileImages.map(img => img instanceof File ? 'File' : typeof img),
+          파일명: fileImages.map(img => img instanceof File ? img.name : 'N/A')
         });
       }
       
@@ -679,13 +698,29 @@ const EditProductPage = () => {
                           className="w-full h-24 object-cover rounded-lg"
                         />
                         {!deletedImageIndexes.includes(index) && (
-                          <button
-                            type="button"
-                            onClick={() => removeExistingImage(index, 'images')}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
+                          <div className="absolute top-0 right-0 flex flex-col gap-1">
+                            <label className="bg-blue-500 text-white rounded-full p-1 hover:bg-blue-600 transition-colors cursor-pointer">
+                              <Upload className="h-3 w-3" />
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    replaceExistingImage(index, file, 'images');
+                                  }
+                                }}
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => removeExistingImage(index, 'images')}
+                              className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
                         )}
                       </div>
                     ))}

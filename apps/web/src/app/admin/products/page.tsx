@@ -268,8 +268,8 @@ const ProductsPage = () => {
                           <th className="text-left py-3 px-4 font-medium text-gray-900 w-[300px]">상품명</th>
                           <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">카테고리</th>
                           <th className="text-left py-3 px-4 font-medium text-gray-900 w-[140px]">가격</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[80px]">재고</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[80px]">Top10</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[80px] whitespace-nowrap">재고</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-900 w-[80px] whitespace-nowrap">한정상품</th>
                           <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">벤더</th>
                           <th className="text-left py-3 px-4 font-medium text-gray-900 w-[120px]">상태</th>
                           <th className="text-left py-3 px-4 font-medium text-gray-900 w-[100px]">등록일</th>
@@ -315,8 +315,8 @@ const ProductsPage = () => {
                                 </div>
                               </div>
                             </td>
-                            <td className="py-3 px-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            <td className="py-3 px-4 whitespace-nowrap">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
                                 product.stockQuantity > 20 ? 'bg-green-100 text-green-800' :
                                 product.stockQuantity > 10 ? 'bg-yellow-100 text-yellow-800' :
                                 'bg-red-100 text-red-800'
@@ -324,9 +324,9 @@ const ProductsPage = () => {
                                 {product.stockQuantity}개
                               </span>
                             </td>
-                            <td className="py-3 px-4">
+                            <td className="py-3 px-4 whitespace-nowrap">
                               {product.weight && product.weight > 0 ? (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 whitespace-nowrap">
                                   Top {product.weight}
                                 </span>
                               ) : (
@@ -451,7 +451,7 @@ const ProductsPage = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                             product.stockQuantity > 20 ? 'bg-green-100 text-green-800' :
                             product.stockQuantity > 10 ? 'bg-yellow-100 text-yellow-800' :
                             'bg-red-100 text-red-800'

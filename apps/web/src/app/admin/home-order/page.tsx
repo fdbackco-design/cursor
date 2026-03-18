@@ -305,6 +305,8 @@ export default function HomeOrderPage() {
       }
       formData.append('link', bannerForm.link);
       formData.append('openInNewTab', String(bannerForm.openInNewTab));
+      // 하위 호환: 기존 API가 buttonLink를 사용할 경우 대비
+      formData.append('buttonLink', bannerForm.link);
       if (editingBanner) {
         formData.append('id', editingBanner.id.toString());
       }

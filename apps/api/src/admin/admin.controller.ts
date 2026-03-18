@@ -68,7 +68,7 @@ export class AdminController {
     const bannerData = {
       id: body.id ? parseInt(body.id) : undefined,
       image: file,
-      link: body.link || '',
+      link: body.link ?? body.buttonLink ?? '',
       openInNewTab: body.openInNewTab === 'true' || body.openInNewTab === true,
     };
 

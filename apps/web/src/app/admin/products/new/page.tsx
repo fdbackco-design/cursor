@@ -52,7 +52,7 @@ const NewProductPage = () => {
     //console.log('컴포넌트 마운트 시 formData.isFeatured:', formData.isFeatured);
   }, []);
 
-  const categories = ['전체상품', '생활가전', '주방용품', '전자제품', '화장품', '잡화', '스포츠용품'];
+  const categories = ['생활가전', '주방용품', '피부&미용', '잡화', '마사지기', '침구류'];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

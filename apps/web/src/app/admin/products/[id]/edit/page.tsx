@@ -25,13 +25,12 @@ const EditProductPage = () => {
 
   // 카테고리 옵션들
   const categoryOptions = [
-    { value: '전체상품', label: '전체상품' },
     { value: '생활가전', label: '생활가전' },
     { value: '주방용품', label: '주방용품' },
-    { value: '전자제품', label: '전자제품' },
-    { value: '화장품', label: '화장품' },
+    { value: '피부&미용', label: '피부&미용' },
     { value: '잡화', label: '잡화' },
-    { value: '스포츠용품', label: '스포츠용품' }
+    { value: '마사지기', label: '마사지기' },
+    { value: '침구류', label: '침구류' }
   ];
   
   const [loading, setLoading] = useState(true);
@@ -567,7 +566,7 @@ const EditProductPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Top10 순위
+                    한정수량 순위
                   </label>
                   <select
                     name="weight"

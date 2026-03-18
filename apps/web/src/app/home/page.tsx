@@ -86,7 +86,7 @@ export default function HomePage() {
   const CATEGORY_SECTIONS = [
     { key: '생활가전', label: '생활가전', href: '/category/home-appliances' },
     { key: '주방용품', label: '주방용품', href: '/category/kitchen' },
-    { key: '화장품', label: '피부&미용', href: '/category/cosmetics' },
+    { key: '피부&미용', label: '피부&미용', href: '/category/cosmetics' },
     { key: '잡화', label: '잡화', href: '/category/miscellaneous' },
     { key: '마사지기', label: '마사지기', href: '/category/massager' },
     { key: '침구류', label: '침구류', href: '/category/bedding' },

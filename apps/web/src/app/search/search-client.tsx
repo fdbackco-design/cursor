@@ -85,11 +85,11 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
   useEffect(() => {
     const results = selectedCategory === 'all'
       ? searchResults
-      : searchResults.filter(p => p.category?.slug === selectedCategory);
+      : searchResults.filter(p => p.category?.name === selectedCategory);
     setFilteredResults(results);
   }, [searchResults, selectedCategory]);
 
-  const categories = ['all', ...Array.from(new Set(allProducts.map(p => p.category?.slug).filter(Boolean)))];
+  const categories = ['all', '생활가전', '주방용품', '피부&미용', '잡화', '마사지기', '침구류'];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,7 +182,7 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
                             className="mr-2"
                           />
                           <span className="text-sm text-gray-700">
-                            {c === 'all' ? '전체' : c || '미지정'}
+                            {c === 'all' ? '전체' : c}
                           </span>
                         </label>
                       ))}

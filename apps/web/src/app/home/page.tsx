@@ -314,21 +314,21 @@ export default function HomePage() {
               {top10Products.slice(0, 8).map((product) => (
                 <div key={product.id} className="relative group">
                   {/* 순위 배지 */}
-                  <div className="absolute -top-2 -left-2 z-10">
-                    <div className="bg-gradient-to-br from-orange-400 to-orange-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
+                  <div className="absolute -top-1 -left-1 sm:-top-2 sm:-left-2 z-10">
+                    <div className="bg-gradient-to-br from-orange-400 to-orange-600 text-white rounded-full w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 flex items-center justify-center shadow-lg">
                       <div className="text-center">
-                        <div className="text-lg font-black">{product.weight}</div>
+                        <div className="text-sm sm:text-base lg:text-lg font-black">{product.weight}</div>
                       </div>
                     </div>
                     {/* 순위별 특별 아이콘 */}
                     {product.weight === 1 && (
-                      <div className="absolute -top-1 -right-1 text-lg">👑</div>
+                      <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 text-sm sm:text-base lg:text-lg">👑</div>
                     )}
                     {product.weight === 2 && (
-                      <div className="absolute -top-1 -right-1 text-lg">🥈</div>
+                      <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 text-sm sm:text-base lg:text-lg">🥈</div>
                     )}
                     {product.weight === 3 && (
-                      <div className="absolute -top-1 -right-1 text-lg">🥉</div>
+                      <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 text-sm sm:text-base lg:text-lg">🥉</div>
                     )}
                   </div>
                   <ProductCard product={product} />

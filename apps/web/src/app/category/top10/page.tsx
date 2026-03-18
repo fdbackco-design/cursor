@@ -78,8 +78,8 @@ export default function Top10Page() {
         {/* 헤더 */}
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center">
-            <span className="text-orange-500 mr-3">🏆</span>
-            Top 10 베스트셀러
+            <span className="text-orange-500 mr-3"></span>
+            3월달 한정수량
           </h1>
           <p className="text-lg sm:text-xl text-gray-600">
             가장 인기 있는 상품들을 순위별로 만나보세요

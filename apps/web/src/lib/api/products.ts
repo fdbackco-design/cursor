@@ -389,11 +389,22 @@ export const deleteProduct = async (id: string) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/products/${id}`, {
       method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error('상품 삭제에 실패했습니다. ' + errorText);
+      let errorMessage = '상품 삭제에 실패했습니다.';
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.message || errorJson.error || errorMessage;
+      } catch {
+        errorMessage = errorText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();

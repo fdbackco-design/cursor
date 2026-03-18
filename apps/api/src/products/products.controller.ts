@@ -270,6 +270,7 @@ export class ProductsController {
 
   // 상품 삭제 (관리자 전용)
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   async deleteProduct(@Param('id') id: string) {
     try {
       await this.productsService.deleteProduct(id);

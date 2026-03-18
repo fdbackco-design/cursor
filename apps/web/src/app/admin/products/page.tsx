@@ -58,7 +58,12 @@ const ProductsPage = () => {
   }, []);
 
   // 상품 삭제
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string | undefined) => {
+    if (!id) {
+      showToast(toast.error('오류', '상품 ID가 없습니다.'));
+      return;
+    }
+
     const confirmed = await confirm({
       title: '상품 삭제',
       message: '정말로 이 상품을 삭제하시겠습니까?',
@@ -69,12 +74,17 @@ const ProductsPage = () => {
     
     if (confirmed) {
       try {
-        await deleteProduct(id);
-        showToast(toast.success('상품 삭제 완료', '상품이 성공적으로 삭제되었습니다.'));
-        loadProducts(); // 목록 새로고침
+        const result = await deleteProduct(id);
+        if (result && result.success) {
+          showToast(toast.success('상품 삭제 완료', '상품이 성공적으로 삭제되었습니다.'));
+          loadProducts(); // 목록 새로고침
+        } else {
+          throw new Error(result?.message || '상품 삭제에 실패했습니다.');
+        }
       } catch (error) {
         console.error('상품 삭제 실패:', error);
-        showToast(toast.error('상품 삭제 실패', '상품 삭제에 실패했습니다.'));
+        const errorMessage = error instanceof Error ? error.message : '상품 삭제에 실패했습니다.';
+        showToast(toast.error('상품 삭제 실패', errorMessage));
       }
     }
   };

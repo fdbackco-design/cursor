@@ -9,10 +9,12 @@ export class PaymentsService {
   private readonly secretKey = (process.env.TOSS_PAYMENTS_SECRET_KEY || process.env.TOSS_SECRET_KEY || 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6').trim();
 
   constructor(private prisma: PrismaService) {
-    if (!process.env.TOSS_PAYMENTS_SECRET_KEY && !process.env.TOSS_SECRET_KEY) {
+    const fromEnv = process.env.TOSS_PAYMENTS_SECRET_KEY || process.env.TOSS_SECRET_KEY;
+    if (!fromEnv) {
       this.logger.warn('TOSS_PAYMENTS_SECRET_KEY가 설정되지 않았습니다. 기본 테스트 키를 사용합니다.');
+    } else {
+      this.logger.log(`토스페이먼츠 시크릿 키 로드됨 (env): ${this.secretKey.substring(0, 15)}...`);
     }
-    this.logger.log(`토스페이먼츠 시크릿 키 로드됨: ${this.secretKey.substring(0, 20)}...`);
   }
 
   async preparePayment(data: {

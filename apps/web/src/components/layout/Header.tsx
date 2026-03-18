@@ -94,17 +94,17 @@ const Header = () => {
                 <span className="text-[10px]">검색</span>
               </Link>
 
-              {/* 찜목록 */}
+              {/* 찜목록 - 모바일만 */}
               {isAuthenticated && (
-                <Link href="/account?tab=wishlist" className="flex flex-col items-center p-2 text-gray-600 hover:text-gray-900">
+                <Link href="/account?tab=wishlist" className="md:hidden flex flex-col items-center p-2 text-gray-600 hover:text-gray-900">
                   <Heart className="h-5 w-5 mb-0.5" />
                   <span className="text-[10px]">찜</span>
                 </Link>
               )}
 
-              {/* 장바구니 */}
+              {/* 장바구니 - 모바일만 */}
               {isAuthenticated && (
-                <Link href="/cart" className="flex flex-col items-center p-2 text-gray-600 hover:text-gray-900">
+                <Link href="/cart" className="md:hidden flex flex-col items-center p-2 text-gray-600 hover:text-gray-900">
                   <ShoppingCart className="h-5 w-5 mb-0.5" />
                   <span className="text-[10px]">장바구니</span>
                 </Link>
@@ -118,7 +118,7 @@ const Header = () => {
                 </Link>
               )}
 
-              {/* 데스크톱: 관리자, 마이페이지, 배송, 장바구니, 로그아웃 등 */}
+              {/* 데스크톱: 관리자, 마이페이지, 배송, 로그아웃 등 */}
               <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
                 {isAuthenticated && user?.role === 'ADMIN' && (
                   <Link href="/admin">
@@ -142,11 +142,6 @@ const Header = () => {
                         <Link href="/delivery" title="배송">
                           <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
                             <Truck className="h-5 w-5" />
-                          </Button>
-                        </Link>
-                        <Link href="/cart" title="장바구니">
-                          <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
-                            <ShoppingCart className="h-5 w-5" />
                           </Button>
                         </Link>
                         <Button onClick={handleLogout} variant="outline" size="sm" className="text-gray-600 hover:text-gray-900 border-gray-300">

@@ -280,27 +280,23 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardHeader>
         
         <CardContent className="flex-1 px-3 sm:px-4 pb-2 sm:pb-3 cursor-pointer">
-          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed mb-3 sm:mb-4 line-clamp-2">
-            {product.description}
-          </p>
-          
           <div className="space-y-1 sm:space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs sm:text-sm font-medium text-gray-600">{priceDisplay.text}</span>
-              <div className="flex items-center gap-1">
+            <div className="flex justify-between items-center gap-2 min-w-0">
+              <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap flex-shrink-0">{priceDisplay.text}</span>
+              <div className="flex items-center gap-1 flex-shrink-0 min-w-0">
                 {priceDisplay.price ? (
-                  <span className="text-sm sm:text-base font-extrabold text-gray-900">
+                  <span className="text-sm sm:text-base font-extrabold text-gray-900 whitespace-nowrap">
                     {priceDisplay.price}
                   </span>
                 ) : (
-                  <span className="text-xs sm:text-sm text-gray-400">
+                  <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
                     {priceDisplay.text}
                   </span>
                 )}
                 {comparePriceNum && 
                  comparePriceNum > 0 && 
                  comparePriceNum > currentPriceNum && (
-                  <span className="text-xs text-gray-500 line-through">
+                  <span className="text-xs text-gray-500 line-through whitespace-nowrap">
                     {formatPriceWithCurrency(comparePriceNum)}
                   </span>
                 )}

@@ -88,7 +88,7 @@ export default function Top10Page() {
 
         {/* 상품 목록 */}
         {products.length > 0 ? (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {products.map((product, index) => (
               <Card key={product.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 border-orange-100">
                 <CardContent className="p-0">

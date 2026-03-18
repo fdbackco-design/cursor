@@ -56,7 +56,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   
   // Show consumer price by default for MVP
   const displayPrice = typeof product.priceB2C === 'string' ? parseFloat(product.priceB2C) : product.priceB2C;
-  const priceLabel = '회원 가격';
+  const priceLabel = '회원가격';
   
   // comparePrice를 숫자로 변환
   const comparePriceNum = typeof product.comparePrice === 'string' ? parseFloat(product.comparePrice) : product.comparePrice;

@@ -173,12 +173,12 @@ export function ProductCard({ product }: ProductCardProps) {
     
     if (user?.role === 'BIZ') {
       return { 
-        text: '기업전용 가격', 
+        text: '기업전용가격', 
         price: formatPriceWithCurrency(product.priceB2B)
       };
     } else {
       return { 
-        text: '회원 가격', 
+        text: '회원가격', 
         price: formatPriceWithCurrency(product.priceB2C)
       };
     }

@@ -151,36 +151,6 @@ export default function HomePage() {
   //     widthValue: widthValue
   //   };
   // }));
-  const homeAppliances = sortedProducts.filter(p => 
-    p.category?.slug === 'home-appliances' || 
-    p.category?.name === '생활가전' ||
-    p.category?.name === '가전제품'
-  ).slice(0, 3);
-  const kitchenProducts = sortedProducts.filter(p => 
-    p.category?.slug === 'kitchen' || 
-    p.category?.name === '주방용품' ||
-    p.category?.name === '주방'
-  ).slice(0, 3);
-  const electronicsProducts = sortedProducts.filter(p => 
-    p.category?.slug === 'electronics' || 
-    p.category?.name === '전자제품' ||
-    p.category?.name === '전자'
-  ).slice(0, 3);
-  const cosmeticsProducts = sortedProducts.filter(p => 
-    p.category?.slug === 'cosmetics' || 
-    p.category?.name === '화장품' ||
-    p.category?.name === '뷰티'
-  ).slice(0, 3);
-  const miscellaneousProducts = sortedProducts.filter(p => 
-    p.category?.slug === 'miscellaneous' || 
-    p.category?.name === '잡화' ||
-    p.category?.name === '기타'
-  ).slice(0, 3);
-  const sportsProducts = sortedProducts.filter(p => 
-    p.category?.slug === 'sports' || 
-    p.category?.name === '스포츠용품' ||
-    p.category?.name === '스포츠'
-  ).slice(0, 3);
   const allProducts = sortedProducts.slice(0, 6); // 전체 상품 중 6개
 
   // Top10 상품 - weight가 1~10인 상품들을 순위별로 정렬
@@ -412,138 +382,52 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Category Sections */}
+      {/* Category Sections - 3월 한정: 3월달 한정수량, 전체상품만 */}
       <section className="py-8 sm:py-12 lg:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">카테고리별 상품</h2>
-            <p className="text-base sm:text-lg text-gray-600">다양한 카테고리의 제품들을 확인해보세요</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">상품 둘러보기</h2>
+            <p className="text-base sm:text-lg text-gray-600">3월 한정 상품과 전체 상품을 확인해보세요</p>
           </div>
           
-          
-          {/* 생활가전 */}
+          {/* 3월달 한정수량 */}
           <div className="mb-8 sm:mb-12 lg:mb-16">
             <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">생활가전</h3>
-              <Link href="/category/home-appliances" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">3월달 한정수량</h3>
+              <Link href="/category/top10" className="text-primary hover:text-primary/80 font-medium text-sm sm:text-base">
                 더보기 →
               </Link>
             </div>
-            {homeAppliances.length > 0 ? (
+            {top10Products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {homeAppliances.map((product) => (
+                {top10Products.slice(0, 6).map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
             ) : (
               <div className="text-center py-8 sm:py-12">
-                <p className="text-gray-500">생활가전 상품이 없습니다.</p>
+                <p className="text-gray-500">3월달 한정수량 상품이 없습니다.</p>
               </div>
             )}
           </div>
 
-          {/* 주방용품 */}
-          <div className="mb-8 sm:mb-12 lg:mb-16">
-            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">주방용품</h3>
-              <Link href="/category/kitchen" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
-                더보기 →
-              </Link>
-            </div>
-            {kitchenProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {kitchenProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 sm:py-12">
-                <p className="text-gray-500">주방용품이 없습니다.</p>
-              </div>
-            )}
-          </div>
-
-
-          {/* 전자제품 */}
-          <div className="mb-8 sm:mb-12 lg:mb-16">
-            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">전자제품</h3>
-              <Link href="/category/electronics" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
-                더보기 →
-              </Link>
-            </div>
-            {electronicsProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {electronicsProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 sm:py-12">
-                <p className="text-gray-500">전자제품이 없습니다.</p>
-              </div>
-            )}
-          </div>
-
-          {/* 화장품 */}
-          <div className="mb-8 sm:mb-12 lg:mb-16">
-            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">화장품</h3>
-              <Link href="/category/cosmetics" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
-                더보기 →
-              </Link>
-            </div>
-            {cosmeticsProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {cosmeticsProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 sm:py-12">
-                <p className="text-gray-500">화장품이 없습니다.</p>
-              </div>
-            )}
-          </div>
-
-          {/* 잡화 */}
-          <div className="mb-8 sm:mb-12 lg:mb-16">
-            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">잡화</h3>
-              <Link href="/category/miscellaneous" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
-                더보기 →
-              </Link>
-            </div>
-            {miscellaneousProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {miscellaneousProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 sm:py-12">
-                <p className="text-gray-500">잡화가 없습니다.</p>
-              </div>
-            )}
-          </div>
-
-          {/* 스포츠용품 */}
+          {/* 전체상품 */}
           <div>
             <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">스포츠용품</h3>
-              <Link href="/category/sports" className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">전체상품</h3>
+              <Link href="/category/all" className="text-primary hover:text-primary/80 font-medium text-sm sm:text-base">
                 더보기 →
               </Link>
             </div>
-            {sportsProducts.length > 0 ? (
+            {allProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {sportsProducts.map((product) => (
+                {allProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
             ) : (
               <div className="text-center py-8 sm:py-12">
-                <p className="text-gray-500">스포츠용품이 없습니다.</p>
+                <p className="text-gray-500">상품이 없습니다.</p>
               </div>
             )}
           </div>

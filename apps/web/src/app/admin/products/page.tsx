@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { productsApi, deleteProduct } from '@/lib/api/products';
 import { Product } from '@/types/product';
 import { getImageUrl } from '@/lib/utils/image';
+import { formatNumber } from '@/lib/utils/price';
 import { useToast, toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-modal';
 
@@ -307,11 +308,11 @@ const ProductsPage = () => {
                               <div className="space-y-1">
                                 <div className="text-xs">
                                   <span className="text-gray-500">B2B: </span>
-                                  <span className="font-medium">{Number(product.priceB2B).toLocaleString()}원</span>
+                                  <span className="font-medium">{formatNumber(Number(product.priceB2B))}원</span>
                                 </div>
                                 <div className="text-xs">
                                   <span className="text-gray-500">B2C: </span>
-                                  <span className="font-medium">{Number(product.priceB2C).toLocaleString()}원</span>
+                                  <span className="font-medium">{formatNumber(Number(product.priceB2C))}원</span>
                                 </div>
                               </div>
                             </td>
@@ -443,11 +444,11 @@ const ProductsPage = () => {
                         <div className="space-y-1">
                           <div className="text-sm">
                             <span className="text-gray-500">B2B: </span>
-                            <span className="font-medium">{Number(product.priceB2B).toLocaleString()}원</span>
+                            <span className="font-medium">{formatNumber(Number(product.priceB2B))}원</span>
                           </div>
                           <div className="text-sm">
                             <span className="text-gray-500">B2C: </span>
-                            <span className="font-medium">{Number(product.priceB2C).toLocaleString()}원</span>
+                            <span className="font-medium">{formatNumber(Number(product.priceB2C))}원</span>
                           </div>
                         </div>
                         <div className="text-right">

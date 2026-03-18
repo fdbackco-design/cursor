@@ -28,6 +28,7 @@ import { useToast, toast } from '@/components/ui/toast';
 import { usePrompt } from '@/components/ui/prompt-modal';
 import { useConfirm } from '@/components/ui/confirm-modal';
 import { getImageUrl } from '@/lib/utils/image';
+import { formatNumber } from '@/lib/utils/price';
 
 export default function OrderDetailPage() {
   const params = useParams();
@@ -501,14 +502,14 @@ export default function OrderDetailPage() {
                         )}
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-2 gap-2">
                           <p className="text-xs sm:text-sm text-gray-600">
-                            수량: {item.quantity}개
+                            수량: {formatNumber(item.quantity)}개
                           </p>
                           <div className="text-left sm:text-right">
                             <p className="text-xs sm:text-sm text-gray-500">
-                              {item.unitPrice.toLocaleString()}원 × {item.quantity}
+                              {formatNumber(item.unitPrice)}원 × {formatNumber(item.quantity)}
                             </p>
                             <p className="font-medium text-gray-900 text-sm sm:text-base">
-                              {item.totalPrice.toLocaleString()}원
+                              {formatNumber(item.totalPrice)}원
                             </p>
                           </div>
                         </div>
@@ -557,12 +558,12 @@ export default function OrderDetailPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-gray-600">상품 금액</span>
-                      <span className="font-medium">{Number(order.subtotal).toLocaleString()}원</span>
+                      <span className="font-medium">{formatNumber(Number(order.subtotal))}원</span>
                     </div>
                     {Number(order.discountAmount) > 0 && (
                       <div className="flex justify-between text-xs sm:text-sm">
                         <span className="text-gray-600">할인 금액</span>
-                        <span className="text-red-500 font-medium">-{Number(order.discountAmount).toLocaleString()}원</span>
+                        <span className="text-red-500 font-medium">-{formatNumber(Number(order.discountAmount))}원</span>
                       </div>
                     )}
                     <div className="flex justify-between text-xs sm:text-sm">
@@ -570,13 +571,13 @@ export default function OrderDetailPage() {
                       <span className="font-medium">
                         {Number(order.shippingAmount) === 0 
                           ? '무료' 
-                          : `${Number(order.shippingAmount).toLocaleString()}원`
+                          : `${formatNumber(Number(order.shippingAmount))}원`
                         }
                       </span>
                     </div>
                     <div className="flex justify-between text-base sm:text-lg font-semibold pt-2 border-t border-gray-200">
                       <span>총 결제 금액</span>
-                      <span className="text-blue-600">{Number(order.totalAmount).toLocaleString()}원</span>
+                      <span className="text-blue-600">{formatNumber(Number(order.totalAmount))}원</span>
                     </div>
                   </div>
                 </div>
@@ -692,7 +693,7 @@ export default function OrderDetailPage() {
                   <div className="flex justify-between pt-3 border-t border-gray-200">
                     <span className="font-medium text-sm sm:text-base">총 결제 금액</span>
                     <span className="font-semibold text-base sm:text-lg text-blue-600">
-                      {order.totalAmount.toLocaleString()}원
+                      {formatNumber(order.totalAmount)}원
                     </span>
                   </div>
                 </div>
@@ -718,7 +719,7 @@ export default function OrderDetailPage() {
                     <span className={`font-medium ${Number(order.shippingAmount) === 0 ? 'text-green-600' : 'text-gray-900'}`}>
                       {Number(order.shippingAmount) === 0 
                         ? '무료' 
-                        : `${Number(order.shippingAmount).toLocaleString()}원`
+                        : `${formatNumber(Number(order.shippingAmount))}원`
                       }
                     </span>
                   </div>
@@ -943,8 +944,8 @@ export default function OrderDetailPage() {
                           )}
                         </div>
                         <p className="text-sm text-gray-500">
-                          수량: {item.quantity}개 | 
-                          가격: ₩{item.totalPrice.toLocaleString()}
+                          수량: {formatNumber(item.quantity)}개 | 
+                          가격: ₩{formatNumber(item.totalPrice)}
                         </p>
                         {isReturnInProgress && (
                           <p className="text-xs text-orange-600 mt-1">
@@ -1066,8 +1067,8 @@ export default function OrderDetailPage() {
                       <div className="flex-1">
                         <p className="font-medium text-gray-900">{item.productName}</p>
                         <p className="text-sm text-gray-500">
-                          수량: {item.quantity}개 | 
-                          가격: ₩{item.finalPrice.toLocaleString()}
+                          수량: {formatNumber(item.quantity)}개 | 
+                          가격: ₩{formatNumber(item.finalPrice)}
                         </p>
                         {item.hasReview && (
                           <p className="text-xs text-green-600 mt-1 font-medium">

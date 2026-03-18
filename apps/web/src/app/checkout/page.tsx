@@ -11,6 +11,7 @@ import { addressesApi } from '@/lib/api/addresses';
 import { paymentsApi } from '@/lib/api/payments';
 import { couponsApi, UserCoupon } from '@/lib/api/coupons';
 import { getImageUrl } from '@/lib/utils/image';
+import { formatNumber } from '@/lib/utils/price';
 import { AddressFormModal, AddressCard } from '@/components/address';
 import { useToast, toast } from '@/components/ui/toast';
 
@@ -438,7 +439,7 @@ export default function CheckoutPage() {
       buttonContainer.style.cssText = 'margin-top: 20px; text-align: center;';
       
       const payButton = document.createElement('button');
-      payButton.innerText = `${finalTotal.toLocaleString()}원 결제하기`;
+      payButton.innerText = `${formatNumber(finalTotal)}원 결제하기`;
       payButton.style.cssText = 'background: #FF6F0F; color: white; border: none; padding: 16px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%;';
       
       const closeButton = document.createElement('button');
@@ -551,7 +552,7 @@ export default function CheckoutPage() {
           console.error('결제 실패:', error);
           showToast(toast.error('결제 실패', '결제에 실패했습니다. 다시 시도해주세요.'));
           payButton.disabled = false;
-          payButton.innerText = `${finalTotal.toLocaleString()}원 결제하기`;
+          payButton.innerText = `${formatNumber(finalTotal)}원 결제하기`;
         }
       });
       
@@ -790,7 +791,7 @@ export default function CheckoutPage() {
                               }`}>
                                 {coupon.discountType === 'PERCENTAGE' 
                                   ? `${coupon.discountValue}%` 
-                                  : `${coupon.discountValue.toLocaleString()}원`}
+                                  : `${formatNumber(coupon.discountValue)}원`}
                               </span>
                             </div>
                             <p className="text-sm text-gray-600 mt-1">{coupon.description}</p>
@@ -798,21 +799,21 @@ export default function CheckoutPage() {
                             {/* 할인 정보 */}
                             {canUse ? (
                               <p className="text-sm font-medium text-blue-600 mt-1">
-                                {discount.toLocaleString()}원 할인
+                                {formatNumber(discount)}원 할인
                               </p>
                             ) : (
                               <p className="text-sm text-red-500 mt-1">
-                                최소 주문금액 {(coupon.minAmount || 0).toLocaleString()}원 이상
+                                최소 주문금액 {formatNumber(coupon.minAmount || 0)}원 이상
                               </p>
                             )}
                             
                             {/* 사용 조건 */}
                             <div className="text-xs text-gray-500 mt-1 space-y-1">
                               {coupon.minAmount && (
-                                <div>최소 주문금액: {coupon.minAmount.toLocaleString()}원</div>
+                                <div>최소 주문금액: {formatNumber(coupon.minAmount)}원</div>
                               )}
                               {coupon.maxAmount && coupon.discountType === 'PERCENTAGE' && (
-                                <div>최대 할인금액: {coupon.maxAmount.toLocaleString()}원</div>
+                                <div>최대 할인금액: {formatNumber(coupon.maxAmount)}원</div>
                               )}
                               {coupon.endsAt && (
                                 <div>만료일: {new Date(coupon.endsAt).toLocaleDateString()}</div>
@@ -868,11 +869,11 @@ export default function CheckoutPage() {
                             {directProduct.name}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {directProduct.price.toLocaleString()}원 × {directProduct.quantity}
+                            {formatNumber(directProduct.price)}원 × {formatNumber(directProduct.quantity)}
                           </p>
                         </div>
                         <p className="text-sm font-medium">
-                          {(directProduct.price * directProduct.quantity).toLocaleString()}원
+                          {formatNumber(directProduct.price * directProduct.quantity)}원
                         </p>
                       </div>
                     )}
@@ -890,11 +891,11 @@ export default function CheckoutPage() {
                             {item.product.name}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {item.product.priceB2C.toLocaleString()}원 × {item.quantity}
+                            {formatNumber(item.product.priceB2C)}원 × {formatNumber(item.quantity)}
                           </p>
                         </div>
                         <p className="text-sm font-medium">
-                          {(item.product.priceB2C * item.quantity).toLocaleString()}원
+                          {formatNumber(item.product.priceB2C * item.quantity)}원
                         </p>
                       </div>
                     ))}
@@ -905,23 +906,23 @@ export default function CheckoutPage() {
                 <div className="space-y-3 border-t pt-4">
                   <div className="flex justify-between">
                     <span className="text-gray-600">상품 금액</span>
-                    <span>{subtotal.toLocaleString()}원</span>
+                    <span>{formatNumber(subtotal)}원</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">배송비</span>
-                    <span>{shippingFee === 0 ? '무료' : `${shippingFee.toLocaleString()}원`}</span>
+                    <span>{shippingFee === 0 ? '무료' : `${formatNumber(shippingFee)}원`}</span>
                   </div>
                   {paymentInfo.couponDiscount > 0 && (
                     <div className="flex justify-between text-red-600">
                       <span>쿠폰 할인</span>
-                      <span>-{paymentInfo.couponDiscount.toLocaleString()}원</span>
+                      <span>-{formatNumber(paymentInfo.couponDiscount)}원</span>
                     </div>
                   )}
 
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-lg font-bold">
                       <span>최종 결제금액</span>
-                      <span className="text-primary">{finalTotal.toLocaleString()}원</span>
+                      <span className="text-primary">{formatNumber(finalTotal)}원</span>
                     </div>
                   </div>
                 </div>
@@ -941,7 +942,7 @@ export default function CheckoutPage() {
                   ) : (
                     <>
                       <CreditCard className="h-4 w-4 mr-2" />
-                      {finalTotal.toLocaleString()}원 결제하기
+                      {formatNumber(finalTotal)}원 결제하기
                     </>
                   )}
                 </Button>

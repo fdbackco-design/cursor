@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { couponsApi, Coupon } from '@/lib/api/coupons';
 import { useToast, toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-modal';
+import { formatNumber } from '@/lib/utils/price';
 
 export default function CouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -98,7 +99,7 @@ export default function CouponsPage() {
       case 'PERCENTAGE':
         return `${value}%`;
       case 'FIXED_AMOUNT':
-        return `${value.toLocaleString()}원`;
+        return `${formatNumber(value)}원`;
       case 'FREE_SHIPPING':
         return '무료배송';
       default:
@@ -362,7 +363,7 @@ export default function CouponsPage() {
                         
                         {coupon.minAmount && (
                           <div className="text-xs text-gray-500">
-                            최소 주문금액: {coupon.minAmount.toLocaleString()}원
+                            최소 주문금액: {formatNumber(coupon.minAmount)}원
                           </div>
                         )}
                       </div>
@@ -437,7 +438,7 @@ export default function CouponsPage() {
                                 </div>
                                 {coupon.minAmount && (
                                   <div className="text-xs text-gray-500">
-                                    최소: {coupon.minAmount.toLocaleString()}원
+                                    최소: {formatNumber(coupon.minAmount)}원
                                   </div>
                                 )}
                               </div>

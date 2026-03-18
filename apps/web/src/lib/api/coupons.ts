@@ -1,4 +1,5 @@
 import { apiRequest, ApiResponse } from './base';
+import { formatNumber } from '../utils/price';
 
 export interface Coupon {
   id: string;
@@ -205,7 +206,7 @@ export const couponUtils = {
     if (coupon.discountType === 'PERCENTAGE') {
       return `${coupon.discountValue}% 할인`;
     } else {
-      return `${coupon.discountValue.toLocaleString()}원 할인`;
+      return `${formatNumber(coupon.discountValue)}원 할인`;
     }
   },
 };

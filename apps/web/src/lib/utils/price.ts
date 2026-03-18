@@ -3,25 +3,32 @@
  */
 
 /**
+ * 숫자를 콤마 형식으로 변환합니다. (가격, 수량, 개수 등 모든 숫자에 사용)
+ * @param value - 포맷팅할 숫자 (number, string, Decimal 등)
+ * @returns 콤마가 포함된 문자열 (예: "1,234,567")
+ */
+export function formatNumber(value: number | string | { toNumber?: () => number } | null | undefined): string {
+  if (value == null) return '0';
+  let num: number;
+  if (typeof value === 'object' && value !== null && 'toNumber' in value) {
+    num = (value as { toNumber: () => number }).toNumber();
+  } else if (typeof value === 'string') {
+    num = parseFloat(value);
+  } else {
+    num = value as number;
+  }
+  if (typeof num !== 'number' || isNaN(num)) return '0';
+  return num.toLocaleString('ko-KR');
+}
+
+/**
  * 숫자를 한국어 형식의 가격 문자열로 변환합니다.
  * @param price - 포맷팅할 가격 (숫자)
  * @param showCurrency - 통화 표시 여부 (기본값: true)
  * @returns 포맷팅된 가격 문자열 (예: "300,000원")
  */
-export function formatPrice(price: number | string, showCurrency: boolean = true): string {
-  // 문자열인 경우 숫자로 변환
-  let numericPrice: number;
-  if (typeof price === 'string') {
-    numericPrice = parseFloat(price);
-  } else {
-    numericPrice = price;
-  }
-  
-  if (typeof numericPrice !== 'number' || isNaN(numericPrice) || numericPrice < 0) {
-    return showCurrency ? '0원' : '0';
-  }
-  
-  const formatted = numericPrice.toLocaleString('ko-KR');
+export function formatPrice(price: number | string | { toNumber?: () => number } | null | undefined, showCurrency: boolean = true): string {
+  const formatted = formatNumber(price);
   return showCurrency ? `${formatted}원` : formatted;
 }
 
@@ -39,7 +46,7 @@ export function formatPriceNumber(price: number | string): string {
  * @param price - 포맷팅할 가격 (숫자 또는 문자열)
  * @returns 포맷팅된 가격 문자열 (예: "300,000원")
  */
-export function formatPriceWithCurrency(price: number | string): string {
+export function formatPriceWithCurrency(price: number | string | { toNumber?: () => number } | null | undefined): string {
   return formatPrice(price, true);
 }
 

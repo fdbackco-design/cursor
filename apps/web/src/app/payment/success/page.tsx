@@ -10,6 +10,7 @@ import { cartApi } from '@/lib/api/cart';
 import { paymentsApi } from '@/lib/api/payments';
 import { couponsApi } from '@/lib/api/coupons';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatNumber } from '@/lib/utils/price';
 
 export default function PaymentSuccessPage() {
   const { user } = useAuth();
@@ -484,7 +485,7 @@ export default function PaymentSuccessPage() {
                 <div className="space-y-1 text-sm text-gray-600">
                   <p>주문번호: {paymentInfo.orderId}</p>
                   {paymentInfo.amount && (
-                    <p>결제금액: {parseInt(paymentInfo.amount).toLocaleString()}원</p>
+                    <p>결제금액: {formatNumber(parseInt(paymentInfo.amount))}원</p>
                   )}
                 </div>
               </div>

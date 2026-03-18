@@ -5,7 +5,7 @@ import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { ShoppingCart, Heart, Star, Image as ImageIcon, Check, X, CreditCard, Edit } from 'lucide-react';
 import { getProductImageUrls, getProductThumbnailUrl } from '@/lib/utils/image';
-import { formatPriceWithCurrency } from '@/lib/utils/price';
+import { formatPriceWithCurrency, formatNumber } from '@/lib/utils/price';
 import { useAuth } from '@/contexts/AuthContext';
 import { cartApi } from '@/lib/api/cart';
 import { wishlistApi } from '@/lib/api/wishlist';
@@ -199,7 +199,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
     }
 
     if (product.stockQuantity < quantity) {
-      showToast(toast.warning('재고 부족', `재고가 부족합니다. 현재 재고: ${product.stockQuantity}개`));
+      showToast(toast.warning('재고 부족', `재고가 부족합니다. 현재 재고: ${formatNumber(product.stockQuantity)}개`));
       return;
     }
 
@@ -243,7 +243,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
     }
 
     if (product.stockQuantity < quantity) {
-      showToast(toast.warning('재고 부족', `재고가 부족합니다. 현재 재고: ${product.stockQuantity}개`));
+      showToast(toast.warning('재고 부족', `재고가 부족합니다. 현재 재고: ${formatNumber(product.stockQuantity)}개`));
       return;
     }
 
@@ -399,7 +399,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
             >
               -
             </Button>
-            <span className="w-16 text-center">{quantity}</span>
+            <span className="w-16 text-center">{formatNumber(quantity)}</span>
             <Button
               variant="outline"
               size="sm"
@@ -566,7 +566,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 {reviewStats && (
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600">
                     <div className="flex items-center space-x-1">
-                      <span className="font-medium text-base">{reviewStats.totalReviews}</span>
+                      <span className="font-medium text-base">{formatNumber(reviewStats.totalReviews)}</span>
                       <span>개 리뷰</span>
                     </div>
                     {reviewStats.averageRating > 0 ? (

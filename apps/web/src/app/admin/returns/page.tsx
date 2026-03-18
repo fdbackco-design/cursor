@@ -28,6 +28,7 @@ import { useToast, toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-modal';
 import { usePrompt } from '@/components/ui/prompt-modal';
 import * as XLSX from 'xlsx';
+import { formatNumber } from '@/lib/utils/price';
 
 export default function ReturnsPage() {
   const [returns, setReturns] = useState<ReturnRequest[]>([]);
@@ -455,14 +456,14 @@ export default function ReturnsPage() {
       // 3. 토스페이먼츠를 통한 환불 처리
       const processResponse = await refundsApi.processRefund(refund.id, {
         processedBy: 'admin', // 실제로는 현재 관리자 ID
-        notes: `환불 처리: ${calculation.totalRefundAmount.toLocaleString()}원`
+        notes: `환불 처리: ${formatNumber(calculation.totalRefundAmount)}원`
       });
 
       if (processResponse.success) {
         await loadReturns();
         await loadStats();
         setShowActionModal(false);
-        showToast(toast.success('환불 처리 완료', `환불 처리가 완료되었습니다. (${calculation.totalRefundAmount.toLocaleString()}원)`));
+        showToast(toast.success('환불 처리 완료', `환불 처리가 완료되었습니다. (${formatNumber(calculation.totalRefundAmount)}원)`));
       } else {
         showToast(toast.error('환불 처리 실패', `환불 처리 실패: ${processResponse.error}`));
       }

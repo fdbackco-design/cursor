@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast, toast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { getImageUrl } from '@/lib/utils/image';
+import { formatNumber } from '@/lib/utils/price';
 
 export default function DeliveryPage() {
   const { user, isAuthenticated } = useAuth();
@@ -385,7 +386,7 @@ export default function DeliveryPage() {
                             )}
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-sm sm:text-base truncate">{item.product?.name || '상품명 없음'}</p>
-                              <p className="text-xs sm:text-sm text-gray-600">수량: {item.quantity || 0}개</p>
+                              <p className="text-xs sm:text-sm text-gray-600">수량: {formatNumber(item.quantity || 0)}개</p>
                             </div>
                           </div>
                           <p className="font-medium text-sm sm:text-base flex-shrink-0 ml-2">{formatCurrency(item.finalPrice || 0)}</p>

@@ -34,6 +34,7 @@ import { adminApi, AdminOrder, Vendor } from '@/lib/api/admin';
 import { ordersApi } from '@/lib/api/orders';
 import { useToast, toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-modal';
+import { formatNumber } from '@/lib/utils/price';
 
 const OrdersPage = () => {
   const { showToast } = useToast();
@@ -96,7 +97,7 @@ const OrdersPage = () => {
       const excelData = orders.map((order) => ({
         '날짜': format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm:ss', { locale: ko }),
         '원가': '',
-        '판매가': order.totalAmount.toLocaleString(),
+        '판매가': formatNumber(order.totalAmount),
         '순이익': '',
         '진행여부': getStatusLabel(order.status),
         '입금여부': order.status === 'CANCELLED' ? '취소' : '완료',
@@ -600,13 +601,13 @@ const OrdersPage = () => {
                               </td>
                               <td className="py-3 px-4">
                                 <p className="font-medium text-gray-900 text-sm">
-                                  ₩{order.totalAmount.toLocaleString()}
+                                  ₩{formatNumber(order.totalAmount)}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  상품: ₩{order.subtotal.toLocaleString()}
+                                  상품: ₩{formatNumber(order.subtotal)}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  배송: ₩{order.shippingAmount.toLocaleString()}
+                                  배송: ₩{formatNumber(order.shippingAmount)}
                                 </p>
                               </td>
                               <td className="py-3 px-4">
@@ -722,10 +723,10 @@ const OrdersPage = () => {
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="font-medium text-gray-900 text-sm">
-                            ₩{order.totalAmount.toLocaleString()}
+                            ₩{formatNumber(order.totalAmount)}
                           </p>
                           <p className="text-xs text-gray-500">
-                            상품: ₩{order.subtotal.toLocaleString()} | 배송: ₩{order.shippingAmount.toLocaleString()}
+                            상품: ₩{formatNumber(order.subtotal)} | 배송: ₩{formatNumber(order.shippingAmount)}
                           </p>
                         </div>
                         <div className="text-right">
@@ -915,10 +916,10 @@ const OrdersPage = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium text-gray-900">
-                          ₩{item.totalPrice.toLocaleString()}
+                          ₩{formatNumber(item.totalPrice)}
                         </p>
                         <p className="text-sm text-gray-500">
-                          단가: ₩{item.unitPrice.toLocaleString()}
+                          단가: ₩{formatNumber(item.unitPrice)}
                         </p>
                       </div>
                     </div>
@@ -933,23 +934,23 @@ const OrdersPage = () => {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">상품 금액:</span>
-                  <span className="font-medium">₩{selectedOrder.subtotal.toLocaleString()}</span>
+                  <span className="font-medium">₩{formatNumber(selectedOrder.subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">배송비:</span>
-                  <span className="font-medium">₩{selectedOrder.shippingAmount.toLocaleString()}</span>
+                  <span className="font-medium">₩{formatNumber(selectedOrder.shippingAmount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">할인:</span>
-                  <span className="font-medium">₩{selectedOrder.discountAmount.toLocaleString()}</span>
+                  <span className="font-medium">₩{formatNumber(selectedOrder.discountAmount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">세금:</span>
-                  <span className="font-medium">₩{selectedOrder.taxAmount.toLocaleString()}</span>
+                  <span className="font-medium">₩{formatNumber(selectedOrder.taxAmount)}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold text-gray-900 border-t pt-2">
                   <span>총 금액:</span>
-                  <span>₩{selectedOrder.totalAmount.toLocaleString()}</span>
+                  <span>₩{formatNumber(selectedOrder.totalAmount)}</span>
                 </div>
               </div>
             </div>

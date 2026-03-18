@@ -18,6 +18,7 @@ import { couponsApi, UserCoupon, couponUtils } from '@/lib/api/coupons';
 import { useToast, toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-modal';
 import { getImageUrl } from '@/lib/utils/image';
+import { formatNumber } from '@/lib/utils/price';
 
 export default function AccountPage() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -580,7 +581,7 @@ export default function AccountPage() {
                               })()}
                             </div>
                             <span className="font-semibold text-base sm:text-lg text-gray-900">
-                              {order.totalAmount.toLocaleString()}원
+                              {formatNumber(order.totalAmount)}원
                             </span>
                           </div>
                         </div>
@@ -605,7 +606,7 @@ export default function AccountPage() {
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-medium text-gray-900 text-sm sm:text-base line-clamp-2">{item.product.name}</h4>
                                 <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                                  {item.quantity}개 × {item.unitPrice.toLocaleString()}원
+                                  {formatNumber(item.quantity)}개 × {formatNumber(item.unitPrice)}원
                                 </p>
                                 {item.returns && item.returns.length > 0 && (
                                   <div className="mt-2 flex flex-wrap gap-1">
@@ -631,7 +632,7 @@ export default function AccountPage() {
                               </div>
                               <div className="text-right flex-shrink-0">
                                 <p className="font-medium text-gray-900 text-sm sm:text-base">
-                                  {item.totalPrice.toLocaleString()}원
+                                  {formatNumber(item.totalPrice)}원
                                 </p>
                               </div>
                             </div>
@@ -888,7 +889,7 @@ export default function AccountPage() {
                                 </span>
                                 {coupon.minAmount && (
                                   <span className="text-gray-500">
-                                    최소 주문: {coupon.minAmount.toLocaleString()}원
+                                    최소 주문: {formatNumber(coupon.minAmount)}원
                                   </span>
                                 )}
                                 <span className="text-gray-500">

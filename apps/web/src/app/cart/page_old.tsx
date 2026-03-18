@@ -7,6 +7,7 @@ import { Trash2, ShoppingBag, ArrowRight, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cartApi, Cart, CartItem } from '@/lib/api/cart';
 import { getImageUrl } from '@/lib/utils/image';
+import { formatNumber } from '@/lib/utils/price';
 import { useRouter } from 'next/navigation';
 import { useToast, toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-modal';
@@ -201,7 +202,7 @@ export default function CartPage() {
       buttonContainer.style.cssText = 'margin-top: 20px; text-align: center;';
       
       const payButton = document.createElement('button');
-      payButton.innerText = `${total.toLocaleString()}원 결제하기`;
+      payButton.innerText = `${formatNumber(total)}원 결제하기`;
       payButton.style.cssText = 'background: #FF6F0F; color: white; border: none; padding: 16px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%;';
       
       const closeButton = document.createElement('button');
@@ -330,7 +331,7 @@ export default function CartPage() {
           console.error('결제 요청 실패:', error);
           alert('결제 요청에 실패했습니다: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
           payButton.disabled = false;
-          payButton.innerText = `${total.toLocaleString()}원 결제하기`;
+          payButton.innerText = `${formatNumber(total)}원 결제하기`;
         }
       });
 
@@ -472,7 +473,7 @@ export default function CartPage() {
                           <p className="text-sm text-gray-600">{item.product.vendor.name}</p>
                         )}
                         <p className="text-lg font-bold text-gray-900">
-                          {getItemPrice(item, user?.role || 'CONSUMER').toLocaleString()}원
+                          {formatNumber(getItemPrice(item, user?.role || 'CONSUMER'))}원
                         </p>
                         {/* 재고 정보 표시 */}
                         {item.product.stockQuantity <= (item.product.lowStockThreshold || 10) && (
@@ -556,12 +557,12 @@ export default function CartPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">상품 금액</span>
-                    <span className="font-medium">{subtotal.toLocaleString()}원</span>
+                    <span className="font-medium">{formatNumber(subtotal)}원</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">배송비</span>
                     <span className="font-medium">
-                      {shippingFee === 0 ? '무료' : `${shippingFee.toLocaleString()}원`}
+                      {shippingFee === 0 ? '무료' : `${formatNumber(shippingFee)}원`}
                     </span>
                   </div>
                   {shippingFee > 0 && (
@@ -572,7 +573,7 @@ export default function CartPage() {
                   <div className="border-t pt-2">
                     <div className="flex justify-between text-lg font-bold">
                       <span>총 결제금액</span>
-                      <span>{total.toLocaleString()}원</span>
+                      <span>{formatNumber(total)}원</span>
                     </div>
                   </div>
                 </div>

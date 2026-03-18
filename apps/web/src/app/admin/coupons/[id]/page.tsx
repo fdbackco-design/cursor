@@ -9,6 +9,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { couponsApi, Coupon, UpdateCouponDto } from '@/lib/api/coupons';
 import { useToast, toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-modal';
+import { formatNumber } from '@/lib/utils/price';
 
 export default function CouponDetailPage() {
   const router = useRouter();
@@ -215,7 +216,7 @@ export default function CouponDetailPage() {
       case 'PERCENTAGE':
         return `${value}%`;
       case 'FIXED_AMOUNT':
-        return `${value.toLocaleString()}원`;
+        return `${formatNumber(value)}원`;
       case 'FREE_SHIPPING':
         return '무료배송';
       default:
@@ -714,13 +715,13 @@ export default function CouponDetailPage() {
                       {coupon.minAmount && (
                         <div className="flex justify-between">
                           <span className="text-gray-600">최소 주문 금액:</span>
-                          <span>{coupon.minAmount.toLocaleString()}원</span>
+                          <span>{formatNumber(coupon.minAmount)}원</span>
                         </div>
                       )}
                       {coupon.maxAmount && (
                         <div className="flex justify-between">
                           <span className="text-gray-600">최대 할인 금액:</span>
-                          <span>{coupon.maxAmount.toLocaleString()}원</span>
+                          <span>{formatNumber(coupon.maxAmount)}원</span>
                         </div>
                       )}
                     </div>

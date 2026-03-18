@@ -7,6 +7,7 @@ import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cartApi, Cart, CartItem } from '@/lib/api/cart';
 import { getImageUrl } from '@/lib/utils/image';
+import { formatNumber } from '@/lib/utils/price';
 import { useRouter } from 'next/navigation';
 import { useToast, toast } from '@/components/ui/toast';
 
@@ -194,7 +195,7 @@ export default function CartPage() {
                           </p>
                           <div className="flex items-center justify-between sm:block">
                             <span className="text-base sm:text-lg font-bold text-gray-900">
-                              {item.product.priceB2C.toLocaleString()}원
+                              {formatNumber(item.product.priceB2C)}원
                             </span>
                             {/* 모바일에서 제거 버튼을 여기에 배치 */}
                             <Button
@@ -280,12 +281,12 @@ export default function CartPage() {
                 <div className="space-y-3 sm:space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm sm:text-base text-gray-600">상품 금액</span>
-                    <span className="font-medium text-sm sm:text-base">{subtotal.toLocaleString()}원</span>
+                    <span className="font-medium text-sm sm:text-base">{formatNumber(subtotal)}원</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm sm:text-base text-gray-600">배송비</span>
                     <span className="font-medium text-sm sm:text-base">
-                      {shippingFee === 0 ? '무료' : `${shippingFee.toLocaleString()}원`}
+                      {shippingFee === 0 ? '무료' : `${formatNumber(shippingFee)}원`}
                     </span>
                   </div>
                   {shippingFee > 0 && (
@@ -296,7 +297,7 @@ export default function CartPage() {
                   <div className="border-t pt-3 sm:pt-2">
                     <div className="flex justify-between items-center text-base sm:text-lg font-bold">
                       <span>총 결제금액</span>
-                      <span className="text-primary">{total.toLocaleString()}원</span>
+                      <span className="text-primary">{formatNumber(total)}원</span>
                     </div>
                   </div>
                 </div>

@@ -36,8 +36,9 @@ export interface Order {
   };
 }
 
-/** 토스페이먼츠 결제수단 코드 → 한글 라벨 */
+/** 토스페이먼츠 결제수단 코드 → 한글 라벨 (영문 코드 + 한글 값 모두 지원) */
 export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  // 영문 코드 (토스 API 일부 응답)
   CARD: '카드',
   VIRTUAL_ACCOUNT: '가상계좌',
   TRANSFER: '계좌이체',
@@ -51,7 +52,22 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   PAYCO: '페이코',
   SAMSUNG_PAY: '삼성페이',
   APPLE_PAY: '애플페이',
+  // 한글 값 (토스 API가 한글로 반환하는 경우)
+  카드: '카드',
+  가상계좌: '가상계좌',
+  간편결제: '간편결제',
+  휴대폰: '휴대폰',
+  계좌이체: '계좌이체',
+  문화상품권: '문화상품권',
+  도서문화상품권: '도서문화상품권',
+  게임문화상품권: '게임문화상품권',
 };
+
+/** 결제 수단 한글 라벨 반환 (영문/한글 모두 처리) */
+export function getPaymentMethodLabel(method: string | null | undefined): string {
+  if (!method) return '카드'; // 기본값
+  return PAYMENT_METHOD_LABELS[method] ?? method;
+}
 
 export interface Shipment {
   id: string;

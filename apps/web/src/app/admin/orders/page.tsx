@@ -35,6 +35,7 @@ import { ordersApi } from '@/lib/api/orders';
 import { useToast, toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-modal';
 import { formatNumber } from '@/lib/utils/price';
+import { getPaymentMethodLabel } from '@/types/order';
 
 const OrdersPage = () => {
   const { showToast } = useToast();
@@ -635,7 +636,9 @@ const OrdersPage = () => {
                               <td className="py-3 px-4">
                                 <div className="flex items-center space-x-2">
                                   <CreditCard className="h-3 w-3 text-gray-400" />
-                                  <span className="text-xs text-gray-900">카드</span>
+                                  <span className="text-xs text-gray-900">
+                                    {getPaymentMethodLabel((order as any).metadata?.paymentMethod)}
+                                  </span>
                                 </div>
                               </td>
                               <td className="py-3 px-4">
@@ -744,7 +747,9 @@ const OrdersPage = () => {
                           </span>
                           <div className="flex items-center space-x-1">
                             <CreditCard className="h-3 w-3 text-gray-400" />
-                            <span className="text-xs text-gray-500">카드</span>
+                            <span className="text-xs text-gray-500">
+                              {getPaymentMethodLabel((order as any).metadata?.paymentMethod)}
+                            </span>
                           </div>
                         </div>
                         <select

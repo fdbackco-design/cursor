@@ -284,10 +284,8 @@ export class AdminService {
   async saveBanner(bannerData: {
     id?: number;
     image?: Express.Multer.File;
-    title: string;
-    description: string;
-    buttonText: string;
-    buttonLink?: string;
+    link?: string;
+    openInNewTab?: boolean;
   }) {
     try {
       const bannersData = fs.readFileSync(this.bannersFilePath, 'utf-8');
@@ -332,10 +330,8 @@ export class AdminService {
             ...existingBanner,
             ...(imageUrl && { image: imageUrl }),
             ...(s3Key && { s3Key }),
-            title: bannerData.title,
-            description: bannerData.description,
-            buttonText: bannerData.buttonText,
-            buttonLink: bannerData.buttonLink || '/products',
+            link: bannerData.link ?? existingBanner.link ?? '',
+            openInNewTab: bannerData.openInNewTab ?? existingBanner.openInNewTab ?? false,
             updatedAt: new Date().toISOString(),
           };
         } else {
@@ -358,10 +354,8 @@ export class AdminService {
           id: Date.now(),
           image: imageUrl,
           s3Key: s3Key,
-          title: bannerData.title,
-          description: bannerData.description,
-          buttonText: bannerData.buttonText,
-          buttonLink: bannerData.buttonLink || '/products',
+          link: bannerData.link ?? '',
+          openInNewTab: bannerData.openInNewTab ?? false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };

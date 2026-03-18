@@ -2,22 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@repo/ui';
 
-interface SlideData {
+export interface SlideData {
   id: number;
   image: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  primaryButton: {
-    text: string;
-    onClick: () => void;
-  };
-  secondaryButton?: {
-    text: string;
-    onClick: () => void;
-  };
+  /** 배너 클릭 시 이동할 링크 (없으면 클릭 불가) */
+  link?: string;
+  /** 외부 링크일 때 새 탭 열기 */
+  openInNewTab?: boolean;
 }
 
 interface ImageSliderProps {
@@ -65,17 +57,14 @@ export function ImageSlider({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [slides.length]);
 
-  // 다음 슬라이드
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
 
-  // 이전 슬라이드
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
-  // 특정 슬라이드로 이동
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
   };
@@ -89,7 +78,7 @@ export function ImageSlider({
   }
 
   return (
-    <div 
+    <div
       className={`relative overflow-hidden ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -99,64 +88,49 @@ export function ImageSlider({
         className="flex transition-transform duration-500 ease-in-out"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
-        {slides.map((slide) => (
-          <div
-            key={slide.id}
-            className="w-full flex-shrink-0 relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]"
-          >
-            {/* 배경 이미지 */}
+        {slides.map((slide) => {
+          const hasLink = slide.link && slide.link.trim() !== '';
+          const slideContent = (
             <div
-              className="absolute inset-0 w-full h-full"
-              style={{
-                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url(${slide.image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-              }}
-            />
-            
-            {/* 슬라이드 콘텐츠 */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white animate-fade-in w-full">
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold mb-2 sm:mb-4 md:mb-6 text-white drop-shadow-lg leading-tight">
-                  {slide.title.split('<br />').map((line, index) => (
-                    <span key={index}>
-                      {line}
-                      {index < slide.title.split('<br />').length - 1 && <br />}
-                    </span>
-                  ))}
-                </h1>
-                <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl mb-4 sm:mb-6 md:mb-8 text-gray-100 drop-shadow-md px-2 sm:px-4">
-                  {slide.description}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 justify-center items-center px-2 sm:px-4">
-                  <Button
-                    size="sm"                     // 모바일 기준
-                    className="
-                      bg-white text-blue-600 hover:bg-gray-100
-                      text-[10px] sm:text-sm md:text-base
-                      h-7 sm:h-10 md:h-11
-                      px-3 sm:px-6 md:px-8
-                    "
-                    onClick={slide.primaryButton.onClick}
-                  >
-                    {slide.primaryButton.text}
-                  </Button>
-                  {slide.secondaryButton && (
-                    <Button 
-                      size="lg" 
-                      variant="outline" 
-                      className="border-white text-white hover:bg-white hover:text-blue-600 text-[10px] sm:text-sm md:text-base h-7 sm:h-10 md:h-11 px-3 sm:px-6 md:px-8"
-                      onClick={slide.secondaryButton.onClick}
-                    >
-                      {slide.secondaryButton.text}
-                    </Button>
-                  )}
-                </div>
-              </div>
+              className="w-full flex-shrink-0 relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]"
+              style={!hasLink ? { cursor: 'default' } : undefined}
+            >
+              {/* 배경 이미지 - 오버레이 없이 원본 그대로 */}
+              <div
+                className="absolute inset-0 w-full h-full bg-gray-100"
+                style={{
+                  backgroundImage: `url(${slide.image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                }}
+              />
             </div>
-          </div>
-        ))}
+          );
+
+          if (hasLink) {
+            const isExternal = slide.link!.startsWith('http://') || slide.link!.startsWith('https://');
+            const target = slide.openInNewTab || isExternal ? '_blank' : '_self';
+            const rel = target === '_blank' ? 'noopener noreferrer' : undefined;
+            return (
+              <a
+                key={slide.id}
+                href={slide.link}
+                target={target}
+                rel={rel}
+                className="block w-full flex-shrink-0"
+              >
+                {slideContent}
+              </a>
+            );
+          }
+
+          return (
+            <div key={slide.id} className="w-full flex-shrink-0">
+              {slideContent}
+            </div>
+          );
+        })}
       </div>
 
       {/* 네비게이션 화살표 */}
@@ -164,14 +138,14 @@ export function ImageSlider({
         <>
           <button
             onClick={prevSlide}
-            className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white p-1.5 sm:p-2 rounded-full transition-all duration-200"
+            className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white p-1.5 sm:p-2 rounded-full transition-all duration-200 z-10"
             aria-label="이전 슬라이드"
           >
             <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white p-1.5 sm:p-2 rounded-full transition-all duration-200"
+            className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white p-1.5 sm:p-2 rounded-full transition-all duration-200 z-10"
             aria-label="다음 슬라이드"
           >
             <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -181,7 +155,7 @@ export function ImageSlider({
 
       {/* 인디케이터 도트 */}
       {showDots && slides.length > 1 && (
-        <div className="absolute bottom-3 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-3 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
           {slides.map((_, index) => (
             <button
               key={index}
@@ -199,7 +173,7 @@ export function ImageSlider({
 
       {/* 슬라이드 카운터 */}
       {slides.length > 1 && (
-        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-black bg-opacity-30 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm">
+        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-black bg-opacity-30 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm z-10">
           {currentSlide + 1} / {slides.length}
         </div>
       )}

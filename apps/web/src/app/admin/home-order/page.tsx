@@ -217,10 +217,8 @@ export default function HomeOrderPage() {
   const [banners, setBanners] = useState<any[]>([]);
   const [editingBanner, setEditingBanner] = useState<any | null>(null);
   const [bannerForm, setBannerForm] = useState({
-    title: '',
-    description: '',
-    buttonText: '상품 둘러보기',
-    buttonLink: '/products',
+    link: '',
+    openInNewTab: false,
     image: null as File | null
   });
   
@@ -295,8 +293,8 @@ export default function HomeOrderPage() {
 
   // 배너 저장
   const handleSaveBanner = async () => {
-    if (!bannerForm.title || !bannerForm.description || (!bannerForm.image && !editingBanner)) {
-      showToast(toast.error('입력 오류', '제목, 설명, 이미지를 모두 입력해주세요.'));
+    if (!bannerForm.image && !editingBanner) {
+      showToast(toast.error('입력 오류', '이미지를 입력해주세요.'));
       return;
     }
 
@@ -305,10 +303,8 @@ export default function HomeOrderPage() {
       if (bannerForm.image) {
         formData.append('image', bannerForm.image);
       }
-      formData.append('title', bannerForm.title);
-      formData.append('description', bannerForm.description);
-      formData.append('buttonText', bannerForm.buttonText);
-      formData.append('buttonLink', bannerForm.buttonLink);
+      formData.append('link', bannerForm.link);
+      formData.append('openInNewTab', String(bannerForm.openInNewTab));
       if (editingBanner) {
         formData.append('id', editingBanner.id.toString());
       }
@@ -324,10 +320,8 @@ export default function HomeOrderPage() {
         if (data.success) {
           showToast(toast.success('저장 완료', editingBanner ? '배너가 수정되었습니다.' : '배너가 추가되었습니다.'));
           setBannerForm({
-            title: '',
-            description: '',
-            buttonText: '상품 둘러보기',
-            buttonLink: '/products',
+            link: '',
+            openInNewTab: false,
             image: null
           });
           setEditingBanner(null);
@@ -377,10 +371,8 @@ export default function HomeOrderPage() {
   const handleEditBanner = (banner: any) => {
     setEditingBanner(banner);
     setBannerForm({
-      title: banner.title,
-      description: banner.description,
-      buttonText: banner.buttonText,
-      buttonLink: banner.buttonLink || '/products',
+      link: banner.link || banner.buttonLink || '',
+      openInNewTab: banner.openInNewTab ?? false,
       image: null
     });
   };
@@ -639,60 +631,8 @@ export default function HomeOrderPage() {
                   {editingBanner ? '배너 수정' : '새 배너 추가'}
                 </h4>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      제목 *
-                    </label>
-                    <input
-                      type="text"
-                      value={bannerForm.title}
-                      onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
-                      placeholder="예: 호이드 오브제 무선청소기 출시"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      설명 *
-                    </label>
-                    <input
-                      type="text"
-                      value={bannerForm.description}
-                      onChange={(e) => setBannerForm({ ...bannerForm, description: e.target.value })}
-                      placeholder="예: 당신의 일상을 품격있게 청소하다"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      버튼 텍스트 *
-                    </label>
-                    <input
-                      type="text"
-                      value={bannerForm.buttonText}
-                      onChange={(e) => setBannerForm({ ...bannerForm, buttonText: e.target.value })}
-                      placeholder="예: 상품 둘러보기"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      버튼 링크
-                    </label>
-                    <input
-                      type="text"
-                      value={bannerForm.buttonLink}
-                      onChange={(e) => setBannerForm({ ...bannerForm, buttonLink: e.target.value })}
-                      placeholder="/products"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  
-                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       배너 이미지 {!editingBanner && '*'}
                     </label>
@@ -711,6 +651,47 @@ export default function HomeOrderPage() {
                       <p className="text-xs text-gray-500 mt-1">이미지를 변경하지 않으려면 비워두세요.</p>
                     )}
                   </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      배너 클릭 시 이동할 주소
+                    </label>
+                    <input
+                      type="text"
+                      value={bannerForm.link}
+                      onChange={(e) => setBannerForm({ ...bannerForm, link: e.target.value })}
+                      placeholder="예: /category/all 또는 https://example.com"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">비워두면 클릭 시 이동하지 않습니다.</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="openInNewTab"
+                      checked={bannerForm.openInNewTab}
+                      onChange={(e) => setBannerForm({ ...bannerForm, openInNewTab: e.target.checked })}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label htmlFor="openInNewTab" className="text-sm text-gray-700">
+                      외부 링크일 때 새 탭에서 열기
+                    </label>
+                  </div>
+                  
+                  {/* 미리보기 - 실제 노출 방식과 동일 (이미지 원본만, 오버레이/텍스트/버튼 없음) */}
+                  {(bannerForm.image || (editingBanner && editingBanner.image)) && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">미리보기</label>
+                      <div className="relative h-32 sm:h-40 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                        <img
+                          src={bannerForm.image ? URL.createObjectURL(bannerForm.image) : editingBanner?.image}
+                          alt="배너 미리보기"
+                          className="w-full h-full object-cover object-center"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex gap-2">
@@ -727,10 +708,8 @@ export default function HomeOrderPage() {
                       onClick={() => {
                         setEditingBanner(null);
                         setBannerForm({
-                          title: '',
-                          description: '',
-                          buttonText: '상품 둘러보기',
-                          buttonLink: '/products',
+                          link: '',
+                          openInNewTab: false,
                           image: null
                         });
                       }}
@@ -752,14 +731,14 @@ export default function HomeOrderPage() {
                       <div className="relative h-48 bg-gray-100">
                         <img
                           src={banner.image}
-                          alt={banner.title}
-                          className="w-full h-full object-cover"
+                          alt="배너"
+                          className="w-full h-full object-cover object-center"
                         />
                       </div>
                       <div className="p-4 space-y-2">
-                        <h5 className="font-semibold text-gray-900">{banner.title}</h5>
-                        <p className="text-sm text-gray-600">{banner.description}</p>
-                        <p className="text-xs text-gray-500">버튼: {banner.buttonText}</p>
+                        <p className="text-xs text-gray-500 truncate">
+                          링크: {banner.link || banner.buttonLink || '(없음)'}
+                        </p>
                         <div className="flex gap-2 mt-4">
                           <Button
                             size="sm"

@@ -68,10 +68,8 @@ export class AdminController {
     const bannerData = {
       id: body.id ? parseInt(body.id) : undefined,
       image: file,
-      title: body.title,
-      description: body.description,
-      buttonText: body.buttonText,
-      buttonLink: body.buttonLink,
+      link: body.link || '',
+      openInNewTab: body.openInNewTab === 'true' || body.openInNewTab === true,
     };
 
     return this.adminService.saveBanner(bannerData);

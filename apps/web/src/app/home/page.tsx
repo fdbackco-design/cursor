@@ -173,13 +173,8 @@ export default function HomePage() {
             const bannerSlides = data.data.map((banner: any) => ({
               id: banner.id,
               image: banner.image,
-              title: banner.title.replace(/\n/g, '<br />'),
-              subtitle: '',
-              description: banner.description,
-              primaryButton: {
-                text: banner.buttonText || '상품 둘러보기',
-                onClick: () => router.push(banner.buttonLink || '/products')
-              }
+              link: banner.link || banner.buttonLink || '',
+              openInNewTab: banner.openInNewTab ?? false,
             }));
             setBanners(bannerSlides);
           } else {
@@ -188,13 +183,8 @@ export default function HomePage() {
               {
                 id: 1,
                 image: '/main/HOIDBanner.png',
-                title: '호이드 오브제<br />무선청소기 출시',
-                subtitle: '프리미엄 라이프스타일',
-                description: '당신의 일상을 품격있게 청소하다',
-                primaryButton: {
-                  text: '상품 둘러보기',
-                  onClick: () => router.push('/products')
-                }
+                link: '/category/all',
+                openInNewTab: false,
               }
             ]);
           }
@@ -204,13 +194,8 @@ export default function HomePage() {
             {
               id: 1,
               image: '/main/HOIDBanner.png',
-              title: '호이드 오브제<br />무선청소기 출시',
-              subtitle: '프리미엄 라이프스타일',
-              description: '당신의 일상을 품격있게 청소하다',
-              primaryButton: {
-                text: '상품 둘러보기',
-                onClick: () => router.push('/products')
-              }
+              link: '/category/all',
+              openInNewTab: false,
             }
           ]);
         }
@@ -221,13 +206,8 @@ export default function HomePage() {
           {
             id: 1,
             image: '/main/HOIDBanner.png',
-            title: '호이드 오브제<br />무선청소기 출시',
-            subtitle: '프리미엄 라이프스타일',
-            description: '당신의 일상을 품격있게 청소하다',
-            primaryButton: {
-              text: '상품 둘러보기',
-              onClick: () => router.push('/products')
-            }
+            link: '/category/all',
+            openInNewTab: false,
           }
         ]);
       }
@@ -241,13 +221,8 @@ export default function HomePage() {
     {
       id: 1,
       image: '/main/HOIDBanner.png',
-      title: '호이드 오브제<br />무선청소기 출시',
-      subtitle: '프리미엄 라이프스타일',
-      description: '당신의 일상을 품격있게 청소하다',
-      primaryButton: {
-        text: '상품 둘러보기',
-        onClick: () => router.push('/products')
-      }
+      link: '/category/all',
+      openInNewTab: false,
     }
   ];
 

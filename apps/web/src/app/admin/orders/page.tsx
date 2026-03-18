@@ -102,7 +102,7 @@ const OrdersPage = () => {
         '원가': '',
         '판매가': formatNumber(order.totalAmount),
         '순이익': '',
-        '진행여부': order.status === 'CONFIRMED' ? '발주 필요' : getStatusLabel(order.status),
+        '진행여부': order.status === 'CONFIRMED' ? '발주필요' : getStatusLabel(order.status),
         '입금여부': order.status === 'CANCELLED' ? '취소' : '완료',
         '반품/교환': '',
         '발주처': order.items[0]?.product?.vendor?.name || '',

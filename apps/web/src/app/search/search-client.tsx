@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProductCard } from '@/components/products/product-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { Search, ArrowLeft, Filter, Info } from 'lucide-react';
+import { Search, ArrowLeft, Info } from 'lucide-react';
 import { productsApi } from '@/lib/api/products';
 import type { Product } from '@/types/product';
 
@@ -15,7 +15,6 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [filteredResults, setFilteredResults] = useState<Product[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -81,16 +80,6 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
     setFilteredResults(results);
   }, [searchQuery, allProducts, isSearching]);
 
-  // 카테고리 필터
-  useEffect(() => {
-    const results = selectedCategory === 'all'
-      ? searchResults
-      : searchResults.filter(p => p.category?.name === selectedCategory);
-    setFilteredResults(results);
-  }, [searchResults, selectedCategory]);
-
-  const categories = ['all', '생활가전', '주방용품', '피부&미용', '잡화', '마사지기', '침구류'];
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -109,8 +98,6 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
     params.set('q', keyword);
     router.push(`/search?${params.toString()}`);
   };
-
-  const clearFilters = () => setSelectedCategory('all');
 
   if (loading) {
     return (
@@ -155,44 +142,7 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
             <p className="text-gray-600">총 {filteredResults.length}개의 상품을 찾았습니다</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-1">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="flex items-center">
-                      <Filter className="h-5 w-5 mr-2" />
-                      필터
-                    </span>
-                    <button onClick={clearFilters} className="text-sm text-gray-500 hover:text-gray-700">초기화</button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-3">카테고리</h3>
-                    <div className="space-y-2">
-                      {categories.map((c) => (
-                        <label key={c || 'empty'} className="flex items-center">
-                          <input
-                            type="radio"
-                            name="category"
-                            value={c || ''}
-                            checked={selectedCategory === c}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
-                            className="mr-2"
-                          />
-                          <span className="text-sm text-gray-700">
-                            {c === 'all' ? '전체' : c}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="lg:col-span-3">
+          <div>
               {filteredResults.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredResults.map((p) => (<ProductCard key={p.id} product={p} />))}
@@ -202,7 +152,7 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
                   <CardContent className="text-center py-16">
                     <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">검색 결과가 없습니다</h3>
-                    <p className="text-gray-600">다른 검색어를 입력하거나 필터를 조정해보세요.</p>
+                    <p className="text-gray-600">다른 검색어를 입력해보세요.</p>
                   </CardContent>
                 </Card>
               )}

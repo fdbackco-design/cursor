@@ -36,9 +36,13 @@ export interface Order {
   };
 }
 
-/** 토스페이먼츠 결제수단 코드 → 한글 라벨 (영문 코드 + 한글 값 모두 지원) */
+/**
+ * 토스페이먼츠 결제수단 코드 → 한글 라벨
+ * @see https://docs.tosspayments.com - Payment 객체의 method 필드, 결제수단 이해하기
+ * 토스 API는 method를 한글로 반환: 카드, 가상계좌, 간편결제, 휴대폰, 계좌이체, 문화상품권, 도서문화상품권, 게임문화상품권, 해외간편결제
+ */
 export const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  // 영문 코드 (토스 API 일부 응답)
+  // 영문 코드 (일부 레거시/외부 연동)
   CARD: '카드',
   VIRTUAL_ACCOUNT: '가상계좌',
   TRANSFER: '계좌이체',
@@ -52,7 +56,7 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   PAYCO: '페이코',
   SAMSUNG_PAY: '삼성페이',
   APPLE_PAY: '애플페이',
-  // 한글 값 (토스 API가 한글로 반환하는 경우)
+  // 토스 API 한글 값 (결제 승인/조회 응답)
   카드: '카드',
   가상계좌: '가상계좌',
   간편결제: '간편결제',
@@ -61,11 +65,23 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   문화상품권: '문화상품권',
   도서문화상품권: '도서문화상품권',
   게임문화상품권: '게임문화상품권',
+  해외간편결제: '해외간편결제',
 };
 
-/** 결제 수단 한글 라벨 반환 (영문/한글 모두 처리) */
-export function getPaymentMethodLabel(method: string | null | undefined): string {
-  if (!method) return '카드'; // 기본값
+/**
+ * 결제 수단 한글 라벨 반환
+ * @param method - 토스 Payment.method (카드, 가상계좌, 간편결제 등)
+ * @param easyPayProvider - 간편결제 시 easyPay.provider (토스페이, 카카오페이 등)
+ */
+export function getPaymentMethodLabel(
+  method: string | null | undefined,
+  easyPayProvider?: string | null
+): string {
+  if (!method) return '카드';
+  // 간편결제인 경우 provider가 있으면 더 구체적으로 표시 (토스페이, 카카오페이 등)
+  if (method === '간편결제' && easyPayProvider) {
+    return PAYMENT_METHOD_LABELS[easyPayProvider] ?? easyPayProvider;
+  }
   return PAYMENT_METHOD_LABELS[method] ?? method;
 }
 

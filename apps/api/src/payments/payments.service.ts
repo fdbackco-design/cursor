@@ -460,6 +460,7 @@ export class PaymentsService {
             amount: tossData.totalAmount,
             status: tossData.status,
             method: tossData.method,
+            easyPay: tossData.easyPay || null,
             approvedAt: tossData.approvedAt,
             metadata: tossData.metadata || {}
           }
@@ -486,6 +487,7 @@ export class PaymentsService {
           amount: payment.amount,
           status: payment.status,
           method: payment.method ?? (metadata?.method as string),
+          easyPay: metadata?.easyPay || null,
           customerId: payment.customerId,
           metadata: metadata || {},
           // 추출된 쿠폰 정보

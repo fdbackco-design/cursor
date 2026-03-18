@@ -86,15 +86,23 @@ export default function PaymentSuccessPage() {
       // 처리 시작 시점에 세션 스토리지에 기록
       sessionStorage.setItem('lastProcessedOrderId', orderId);
 
-      // 토스페이먼츠 API에서 실제 결제수단 조회
-      let paymentMethod = 'CARD';
+      // 토스페이먼츠 API에서 실제 결제수단 조회 (토스 문서: method는 한글로 반환)
+      let paymentMethod = '카드';
+      let easyPayProvider: string | null = null;
       try {
         const paymentInfoRes = await paymentsApi.getPaymentInfo(paymentKey);
-        if (paymentInfoRes.success && paymentInfoRes.data?.method) {
-          paymentMethod = paymentInfoRes.data.method;
+        if (paymentInfoRes.success && paymentInfoRes.data) {
+          if (paymentInfoRes.data.method) {
+            paymentMethod = paymentInfoRes.data.method;
+          }
+          // 간편결제 시 easyPay.provider 저장 (토스페이, 카카오페이 등)
+          const easyPay = paymentInfoRes.data.easyPay ?? paymentInfoRes.data.metadata?.easyPay;
+          if (easyPay?.provider) {
+            easyPayProvider = easyPay.provider;
+          }
         }
       } catch (e) {
-        console.warn('결제수단 조회 실패, 기본값(CARD) 사용:', e);
+        console.warn('결제수단 조회 실패, 기본값 사용:', e);
       }
 
       // 바로결제 상품 정보 확인 (URL 파라미터에서)
@@ -373,7 +381,8 @@ export default function PaymentSuccessPage() {
         paidAmount: Number(amount),
         metadata: {
           createdFrom: 'payment_success_page',
-          originalCartId: cart.id
+          originalCartId: cart.id,
+          ...(easyPayProvider && { easyPayProvider })
         }
       };
 

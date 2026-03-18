@@ -85,6 +85,17 @@ export default function PaymentSuccessPage() {
       // 처리 시작 시점에 세션 스토리지에 기록
       sessionStorage.setItem('lastProcessedOrderId', orderId);
 
+      // 토스페이먼츠 API에서 실제 결제수단 조회
+      let paymentMethod = 'CARD';
+      try {
+        const paymentInfoRes = await paymentsApi.getPaymentInfo(paymentKey);
+        if (paymentInfoRes.success && paymentInfoRes.data?.method) {
+          paymentMethod = paymentInfoRes.data.method;
+        }
+      } catch (e) {
+        console.warn('결제수단 조회 실패, 기본값(CARD) 사용:', e);
+      }
+
       // 바로결제 상품 정보 확인 (URL 파라미터에서)
       const directProductParam = searchParams.get('product');
       //console.log('URL에서 받은 product 파라미터:', directProductParam);
@@ -357,7 +368,7 @@ export default function PaymentSuccessPage() {
         })),
         // DTO에서 필요한 결제 정보 필드들
         paymentKey,
-        paymentMethod: 'CARD',
+        paymentMethod,
         paidAmount: Number(amount),
         metadata: {
           createdFrom: 'payment_success_page',

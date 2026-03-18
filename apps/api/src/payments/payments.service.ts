@@ -441,6 +441,7 @@ export class PaymentsService {
           orderId: true,
           amount: true,
           status: true,
+          method: true,
           customerId: true,
           metadata: true,
           createdAt: true,
@@ -484,6 +485,7 @@ export class PaymentsService {
           orderId: payment.orderId,
           amount: payment.amount,
           status: payment.status,
+          method: payment.method ?? (metadata?.method as string),
           customerId: payment.customerId,
           metadata: metadata || {},
           // 추출된 쿠폰 정보

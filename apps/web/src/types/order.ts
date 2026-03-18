@@ -29,7 +29,29 @@ export interface Order {
     phoneNumber?: string;
   };
   shipments?: Shipment[];
+  metadata?: {
+    paymentKey?: string;
+    paymentMethod?: string;
+    [key: string]: any;
+  };
 }
+
+/** 토스페이먼츠 결제수단 코드 → 한글 라벨 */
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  CARD: '카드',
+  VIRTUAL_ACCOUNT: '가상계좌',
+  TRANSFER: '계좌이체',
+  MOBILE_PHONE: '휴대폰',
+  CULTURE_GIFT_CERTIFICATE: '문화상품권',
+  BOOK_GIFT_CERTIFICATE: '도서문화상품권',
+  GAME_GIFT_CERTIFICATE: '게임문화상품권',
+  TOSS_PAY: '토스페이',
+  KAKAO_PAY: '카카오페이',
+  NAVER_PAY: '네이버페이',
+  PAYCO: '페이코',
+  SAMSUNG_PAY: '삼성페이',
+  APPLE_PAY: '애플페이',
+};
 
 export interface Shipment {
   id: string;

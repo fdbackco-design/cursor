@@ -21,7 +21,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { ordersApi } from '@/lib/api/orders';
-import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, Order as DetailOrder } from '@/types/order';
+import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_METHOD_LABELS, Order as DetailOrder } from '@/types/order';
 import { returnsApi } from '@/lib/api/returns';
 import { reviewsApi, AvailableReviewItem } from '@/lib/api/reviews';
 import { useToast, toast } from '@/components/ui/toast';
@@ -668,7 +668,11 @@ export default function OrderDetailPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600 text-sm sm:text-base">결제 방법</span>
-                    <span className="font-medium text-sm sm:text-base">토스페이먼츠</span>
+                    <span className="font-medium text-sm sm:text-base">
+                      {(order as any).metadata?.paymentMethod
+                        ? (PAYMENT_METHOD_LABELS[(order as any).metadata.paymentMethod] ?? (order as any).metadata.paymentMethod)
+                        : '토스페이먼츠'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600 text-sm sm:text-base">결제 상태</span>

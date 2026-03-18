@@ -310,7 +310,7 @@ export default function HomePage() {
               </h2>
               <p className="text-base sm:text-lg text-gray-600">한달간 한정 수량으로 판매되는 상품들을 만나보세요</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+            <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               {top10Products.slice(0, 8).map((product) => (
                 <div key={product.id} className="relative group">
                   {/* 순위 배지 */}
@@ -399,7 +399,7 @@ export default function HomePage() {
               </Link>
             </div>
             {top10Products.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+              <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
                 {top10Products.slice(0, 6).map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

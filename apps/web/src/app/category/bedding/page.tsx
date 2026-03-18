@@ -7,15 +7,16 @@ import { productsApi } from '@/lib/api/products';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function BeddingPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!isAuthenticated || !user) {
-      router.push('/signin');
+      router.push(`/signin?redirect=${encodeURIComponent('/category/bedding')}`);
       return;
     }
     if (isAuthenticated && user && !user.approve) {
@@ -44,8 +45,15 @@ export default function BeddingPage() {
       }
     };
     loadProducts();
-  }, [isAuthenticated, user, router]);
+  }, [authLoading, isAuthenticated, user, router]);
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
   if (!isAuthenticated || !user) return null;
   if (isAuthenticated && user && !user.approve) return null;
 

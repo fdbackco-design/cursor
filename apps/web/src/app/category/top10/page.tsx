@@ -8,16 +8,19 @@ import { productsApi } from '@/lib/api/products';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Top10Page() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // 인증 로딩 중에는 리다이렉트하지 않음 (로딩 완료 후 판단)
+    if (authLoading) return;
+
     // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
     if (!isAuthenticated || !user) {
-      router.push('/signin');
+      router.push(`/signin?redirect=${encodeURIComponent('/category/top10')}`);
       return;
     }
 
@@ -53,7 +56,16 @@ export default function Top10Page() {
     };
 
     loadProducts();
-  }, [isAuthenticated, user, router]);
+  }, [authLoading, isAuthenticated, user, router]);
+
+  // 인증 로딩 중
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
   if (!isAuthenticated || !user) {

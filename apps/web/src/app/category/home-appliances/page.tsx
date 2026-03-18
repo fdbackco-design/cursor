@@ -7,16 +7,16 @@ import { productsApi } from '@/lib/api/products';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomeAppliancesPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+    if (authLoading) return;
     if (!isAuthenticated || !user) {
-      router.push('/signin');
+      router.push(`/signin?redirect=${encodeURIComponent('/category/home-appliances')}`);
       return;
     }
     
@@ -51,12 +51,16 @@ export default function HomeAppliancesPage() {
     };
 
     loadHomeAppliancesProducts();
-  }, [isAuthenticated, user, router]);
+  }, [authLoading, isAuthenticated, user, router]);
 
-  // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
-  if (!isAuthenticated || !user) {
-    return null;
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
+  if (!isAuthenticated || !user) return null;
   
   // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
   if (isAuthenticated && user && !user.approve) {

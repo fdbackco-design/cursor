@@ -92,12 +92,12 @@ export function ImageSlider({
           const hasLink = slide.link && slide.link.trim() !== '';
           const slideContent = (
             <div
-              className="w-full flex-shrink-0 relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]"
+              className="w-full flex-shrink-0 relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-gray-100"
               style={!hasLink ? { cursor: 'default' } : undefined}
             >
-              {/* 배경 이미지 - 오버레이 없이 원본 그대로 */}
+              {/* 모바일: cover - 기존 방식 유지 */}
               <div
-                className="absolute inset-0 w-full h-full bg-gray-100"
+                className="absolute inset-0 md:hidden w-full h-full"
                 style={{
                   backgroundImage: `url(${slide.image})`,
                   backgroundSize: 'cover',
@@ -105,6 +105,18 @@ export function ImageSlider({
                   backgroundRepeat: 'no-repeat',
                 }}
               />
+              {/* 웹/데스크톱: contain - 이미지 전체 노출, 좌우 여백은 배경색 */}
+              <div className="absolute inset-0 hidden md:flex items-center justify-center bg-gray-100">
+                <div
+                  className="w-full h-full"
+                  style={{
+                    backgroundImage: `url(${slide.image})`,
+                    backgroundSize: 'contain',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                  }}
+                />
+              </div>
             </div>
           );
 

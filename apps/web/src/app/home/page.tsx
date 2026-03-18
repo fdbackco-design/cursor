@@ -7,7 +7,7 @@ import { Search, Target, User, Truck, ShoppingCart } from 'lucide-react';
 import { ProductCard } from '@/components/products/product-card';
 import { productsApi } from '@/lib/api/products';
 import { Product } from '@/types/product';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ImageSlider } from '@/components/ui/ImageSlider';
 import { getImageUrl } from '@/lib/utils/image';
@@ -19,20 +19,17 @@ export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [banners, setBanners] = useState<any[]>([]);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const response = await productsApi.getProducts({ limit: 50 });
+        const response = await productsApi.getProducts({ limit: 500 });
         if (response.success && response.data) {
           setProducts(response.data.products || []);
         } else {
-          //console.error('상품 로드 실패:', response.error);
           setProducts([]);
         }
       } catch (error) {
-        //console.error('상품 로드 실패:', error);
         setProducts([]);
       } finally {
         setLoading(false);
@@ -76,88 +73,30 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, [isAuthenticated, user, router]);
 
-  // 마우스 휠 이벤트로 좌우 스크롤 처리
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      // Shift 키를 누르고 있거나 수직 스크롤이 아닌 경우에만 좌우 스크롤
-      if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        e.preventDefault();
-        scrollContainer.scrollLeft += e.deltaY;
-      }
-    };
-
-    scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
-
-    return () => {
-      scrollContainer.removeEventListener('wheel', handleWheel);
-    };
-  }, []);
-
   // 카테고리별 상품 분류 (안전한 필터링)
   const safeProducts = Array.isArray(products) ? products : [];
-  
-
-  
-  // length 순서대로 정렬된 상품들 (홈페이지 노출 순서 관리에서 설정된 순서)
-  const sortedProducts = safeProducts.sort((a, b) => {
-    // length 값이 있는 상품들을 먼저 정렬 (오름차순)
-    if (a.length && b.length) {
-      return a.length - b.length;
-    }
-    if (a.length && !b.length) return -1;
-    if (!a.length && b.length) return 1;
-    
-    // length 값이 없는 상품들은 createdAt 기준 내림차순
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
-
-  // MD's Pick 상품들을 width 순서대로 정렬
-  const mdPicks = safeProducts
-    .filter(p => p.isFeatured)
-    .sort((a, b) => {
-      // width 값이 있는 상품들을 먼저 정렬 (오름차순)
-      if (a.width && b.width) {
-        // Decimal 타입인지 확인하고 안전하게 변환
-        const aWidth = typeof a.width === 'number' ? a.width : 
-          (a.width && typeof a.width === 'object' && 'toNumber' in a.width) ? 
-            (a.width as any).toNumber() : Number(a.width);
-        const bWidth = typeof b.width === 'number' ? b.width : 
-          (b.width && typeof b.width === 'object' && 'toNumber' in b.width) ? 
-            (b.width as any).toNumber() : Number(b.width);
-        return aWidth - bWidth;
-      }
-      if (a.width && !b.width) return -1;
-      if (!a.width && b.width) return 1;
-      
-      // width 값이 없는 상품들은 createdAt 기준 내림차순
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-
-  // 디버깅: MD's Pick 정렬 결과 확인
-  // console.log('MD\'s Pick 정렬 결과:', mdPicks.map(p => {
-  //   const widthValue = p.width ? 
-  //     (typeof p.width === 'number' ? p.width : 
-  //       (p.width && typeof p.width === 'object' && 'toNumber' in p.width) ? 
-  //         (p.width as any).toNumber() : Number(p.width)) : null;
-    
-  //   return {
-  //     id: p.id,
-  //     name: p.name,
-  //     width: p.width,
-  //     widthType: typeof p.width,
-  //     widthValue: widthValue
-  //   };
-  // }));
-  const allProducts = sortedProducts.slice(0, 6); // 전체 상품 중 6개
 
   // Top10 상품 - weight가 1~10인 상품들을 순위별로 정렬
   const top10Products = safeProducts
     .filter(p => p.weight && p.weight > 0 && p.weight <= 10)
     .sort((a, b) => (a.weight || 0) - (b.weight || 0))
     .slice(0, 10);
+
+  // 카테고리별 상품 (6개씩) - API category name과 표시명 매핑
+  const CATEGORY_SECTIONS = [
+    { key: '생활가전', label: '생활가전', href: '/category/home-appliances' },
+    { key: '주방용품', label: '주방용품', href: '/category/kitchen' },
+    { key: '화장품', label: '피부&미용', href: '/category/cosmetics' },
+    { key: '잡화', label: '잡화', href: '/category/miscellaneous' },
+    { key: '마사지기', label: '마사지기', href: '/category/massager' },
+    { key: '침구류', label: '침구류', href: '/category/bedding' },
+  ] as const;
+
+  const getProductsByCategory = (categoryName: string) =>
+    safeProducts
+      .filter(p => p.category?.name === categoryName)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 6);
 
   // 배너 데이터 로드
   useEffect(() => {
@@ -322,90 +261,33 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* MD's Pick Section - 스크롤 가능한 그리드 */}
-      <section className="py-8 sm:py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">MD's Pick</h2>
-            <p className="text-base sm:text-lg text-gray-600">엄선된 프리미엄 제품들을 만나보세요</p>
-          </div>
-          {mdPicks.length > 0 ? (
-            <div className="relative">
-              {/* 스크롤 가능한 상품 그리드 */}
-              <div ref={scrollContainerRef} className="horizontal-scroll">
-                <div className="flex gap-4 sm:gap-6 lg:gap-8 pb-4" style={{ width: 'max-content' }}>
-                  {mdPicks.map((product) => (
-                    <div key={product.id} className="flex-shrink-0 w-80 sm:w-96">
-                      <ProductCard product={product} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* 스크롤 힌트 */}
-              {mdPicks.length > 3 && (
-                <div className="text-center mt-4">
-                  <p className="text-sm text-gray-500">← 좌우로 스크롤하여 더 많은 상품을 확인하세요 →</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-8 sm:py-12">
-              <p className="text-gray-500">추천 상품이 없습니다.</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Category Sections - 3월 한정: 3월달 한정수량, 전체상품만 */}
+      {/* Category Sections - 카테고리별 상품 6개씩 */}
       <section className="py-8 sm:py-12 lg:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">상품 둘러보기</h2>
-            <p className="text-base sm:text-lg text-gray-600">3월 한정 상품과 전체 상품을 확인해보세요</p>
-          </div>
-          
-          {/* 3월달 한정수량 */}
-          <div className="mb-8 sm:mb-12 lg:mb-16">
-            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">3월달 한정수량</h3>
-              <Link href="/category/top10" className="text-primary hover:text-primary/80 font-medium text-sm sm:text-base">
-                더보기 →
-              </Link>
-            </div>
-            {top10Products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-                {top10Products.slice(0, 6).map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+          {CATEGORY_SECTIONS.map(({ key, label, href }) => {
+            const categoryProducts = getProductsByCategory(key);
+            return (
+              <div key={key} className="mb-8 sm:mb-12 lg:mb-16 last:mb-0">
+                <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900">{label}</h3>
+                  <Link href={href} className="text-primary hover:text-primary/80 font-medium text-sm sm:text-base">
+                    더보기 →
+                  </Link>
+                </div>
+                {categoryProducts.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+                    {categoryProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 sm:py-12">
+                    <p className="text-gray-500">{label} 상품이 없습니다.</p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="text-center py-8 sm:py-12">
-                <p className="text-gray-500">3월달 한정수량 상품이 없습니다.</p>
-              </div>
-            )}
-          </div>
-
-          {/* 전체상품 */}
-          <div>
-            <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">전체상품</h3>
-              <Link href="/category/all" className="text-primary hover:text-primary/80 font-medium text-sm sm:text-base">
-                더보기 →
-              </Link>
-            </div>
-            {allProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {allProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 sm:py-12">
-                <p className="text-gray-500">상품이 없습니다.</p>
-              </div>
-            )}
-          </div>
+            );
+          })}
         </div>
       </section>
 

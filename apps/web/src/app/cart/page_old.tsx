@@ -202,7 +202,7 @@ export default function CartPage() {
       
       const payButton = document.createElement('button');
       payButton.innerText = `${total.toLocaleString()}원 결제하기`;
-      payButton.style.cssText = 'background: #3182F6; color: white; border: none; padding: 16px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%;';
+      payButton.style.cssText = 'background: #FF6F0F; color: white; border: none; padding: 16px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%;';
       
       const closeButton = document.createElement('button');
       closeButton.innerText = '취소';

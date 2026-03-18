@@ -352,7 +352,7 @@ export function ProductCard({ product }: ProductCardProps) {
               className={`w-full sm:col-span-2 lg:col-span-1 text-xs ${
                 product.stockQuantity <= 0 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-[#FF6F0F] text-white hover:bg-[#E5640D]'
               }`}
               onClick={handleDirectPayment}
               disabled={product.stockQuantity <= 0}

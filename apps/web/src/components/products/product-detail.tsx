@@ -411,7 +411,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <Button
               size="lg"
               className="
-                ml-auto bg-black text-white hover:bg-gray-800 font-bold
+                ml-auto bg-[#FF6F0F] text-white hover:bg-[#E5640D] font-bold
                 h-12 px-6 py-2 text-sm     /* 기본(모바일) */
                 md:h-16 md:px-12 md:py-4 md:text-lg /* 태블릿 */
                 lg:h-20 lg:px-16 lg:py-6 lg:text-xl /* 데스크탑 */

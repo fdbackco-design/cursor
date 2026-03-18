@@ -439,7 +439,7 @@ export default function CheckoutPage() {
       
       const payButton = document.createElement('button');
       payButton.innerText = `${finalTotal.toLocaleString()}원 결제하기`;
-      payButton.style.cssText = 'background: #3182F6; color: white; border: none; padding: 16px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%;';
+      payButton.style.cssText = 'background: #FF6F0F; color: white; border: none; padding: 16px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%;';
       
       const closeButton = document.createElement('button');
       closeButton.innerText = '취소';
@@ -921,7 +921,7 @@ export default function CheckoutPage() {
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-lg font-bold">
                       <span>최종 결제금액</span>
-                      <span className="text-blue-600">{finalTotal.toLocaleString()}원</span>
+                      <span className="text-primary">{finalTotal.toLocaleString()}원</span>
                     </div>
                   </div>
                 </div>

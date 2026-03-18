@@ -84,7 +84,7 @@ export default function Top10Page() {
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">3월달 한정수량</h1>
-            <p className="text-lg text-gray-600">가장 인기 있는 상품들을 순위별로 만나보세요</p>
+            <p className="text-lg text-gray-600">이번달 한정 수량 제품을 만나보세요</p>
           </div>
         </div>
       </section>

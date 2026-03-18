@@ -94,7 +94,7 @@ export default function AllProductsPage() {
               <p className="text-red-600">{error}</p>
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-6">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

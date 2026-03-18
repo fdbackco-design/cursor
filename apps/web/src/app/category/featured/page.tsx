@@ -82,7 +82,7 @@ const FeaturedProductsPage = () => {
             <p className="text-gray-500">현재 추천상품으로 등록된 상품이 없습니다.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 gap-4 sm:gap-6">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

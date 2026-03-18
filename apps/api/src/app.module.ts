@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { resolve } from 'path';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { JwtModule } from '@nestjs/jwt';
 
@@ -30,13 +29,7 @@ import { S3Module } from './s3/s3.module';
     // 1) 전역 환경변수
     ConfigModule.forRoot({
       isGlobal: true,
-      // monorepo: apps/api에서 실행 시 루트 .env도 로드
-      envFilePath: [
-        '.env.local',
-        '.env',
-        resolve(process.cwd(), '..', '.env'),
-        resolve(process.cwd(), '..', '..', '.env'),
-      ],
+      envFilePath: ['.env.local', '.env'],
     }),
 
     // 2) 전역 JWT (환경변수로 secret 주입)

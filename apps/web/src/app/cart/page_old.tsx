@@ -176,7 +176,7 @@ export default function CartPage() {
   const initializePayment = async (orderId: string, orderName: string) => {
     try {
       // 토스페이먼츠 결제위젯 연동 키 (문서 테스트 키)
-      const clientKey = process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY || 'test_ck_yL0qZ4G1VOaYLXJOzqLR8oWb2MQY';
+      const clientKey = process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY || 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm';
       
       // 1. 토스페이먼츠 SDK 초기화
       const tossPayments = (window as any).TossPayments(clientKey);

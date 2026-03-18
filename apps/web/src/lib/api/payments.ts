@@ -40,26 +40,6 @@ export const paymentsApi = {
     }
   },
 
-  // 결제 승인만 수행 (주문 생성 없음) - 토스페이먼츠 필수 단계
-  async confirmPaymentOnly(data: PaymentConfirmRequest) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/payments/confirm-only`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || '결제 승인에 실패했습니다.');
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('결제 승인 실패:', error);
-      throw error;
-    }
-  },
-
   // 결제 승인
   async confirmPayment(data: PaymentConfirmRequest) {
     try {

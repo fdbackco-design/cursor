@@ -86,32 +86,23 @@ export default function PaymentSuccessPage() {
       // 처리 시작 시점에 세션 스토리지에 기록
       sessionStorage.setItem('lastProcessedOrderId', orderId);
 
-      // 1. 토스페이먼츠 결제 승인 (필수) - successUrl 리다이렉트 후 반드시 호출해야 함
-      //    승인 전에는 GET /payments/{paymentKey}가 404를 반환함
+      // 토스페이먼츠 API에서 실제 결제수단 조회 (토스 문서: method는 한글로 반환)
       let paymentMethod = '카드';
       let easyPayProvider: string | null = null;
       try {
-        const confirmRes = await paymentsApi.confirmPaymentOnly({ paymentKey, orderId, amount });
-        if (confirmRes.success && confirmRes.data) {
-          paymentMethod = confirmRes.data.method || paymentMethod;
-          const ep = confirmRes.data.easyPay;
-          easyPayProvider = (typeof ep === 'object' && ep?.provider) ? ep.provider : (typeof ep === 'string' ? ep : null);
-        }
-      } catch (confirmError) {
-        console.error('결제 승인 실패:', confirmError);
-        throw new Error(confirmError instanceof Error ? confirmError.message : '결제 승인이 실패했습니다.');
-      }
-
-      // 2. 결제 정보 조회 (쿠폰, 배송지 등 - 승인 후에는 정상 조회 가능)
-      try {
         const paymentInfoRes = await paymentsApi.getPaymentInfo(paymentKey);
         if (paymentInfoRes.success && paymentInfoRes.data) {
-          if (paymentInfoRes.data.method) paymentMethod = paymentInfoRes.data.method;
+          if (paymentInfoRes.data.method) {
+            paymentMethod = paymentInfoRes.data.method;
+          }
+          // 간편결제 시 easyPay.provider 저장 (토스페이, 카카오페이 등)
           const easyPay = paymentInfoRes.data.easyPay ?? paymentInfoRes.data.metadata?.easyPay;
-          if (easyPay?.provider) easyPayProvider = easyPay.provider;
+          if (easyPay?.provider) {
+            easyPayProvider = easyPay.provider;
+          }
         }
       } catch (e) {
-        console.warn('결제 정보 조회 실패 (승인 완료, 기본값 사용):', e);
+        console.warn('결제수단 조회 실패, 기본값 사용:', e);
       }
 
       // 바로결제 상품 정보 확인 (URL 파라미터에서)

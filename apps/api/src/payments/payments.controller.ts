@@ -47,21 +47,6 @@ export class PaymentsController {
     });
   }
 
-  // 결제 승인만 수행 (주문 생성 없음) - 토스페이먼츠 결제 승인 필수 단계
-  @Post('confirm-only')
-  @UseGuards(JwtAuthGuard)
-  async confirmPaymentOnly(
-    @Body() body: { paymentKey: string; orderId: string; amount: number },
-    @Req() req: Request
-  ) {
-    const user = req.user as any;
-    this.logger.log(`결제 승인 요청 (confirm-only): paymentKey=${body.paymentKey}, orderId=${body.orderId}, amount=${body.amount}`);
-    return this.paymentsService.confirmPaymentOnly({
-      ...body,
-      customerId: user?.id,
-    });
-  }
-
   // 결제 승인 (POST - 프론트엔드용, JWT 인증 필요)
   @Post('confirm')
   @UseGuards(JwtAuthGuard)

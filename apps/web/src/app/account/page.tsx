@@ -120,7 +120,7 @@ export default function AccountPage() {
               id: item.productId,
               name: item.productName,
               description: '',
-              images: [], // API에서 이미지 정보가 없으므로 빈 배열
+              images: (item as any).product?.images ?? [],
               priceB2C: item.unitPrice,
               category: {
                 name: ''

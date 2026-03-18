@@ -412,8 +412,10 @@ export class OrdersService {
     search?: string;
     vendorId?: string;
     paymentMethod?: string;
+    startDate?: string;
+    endDate?: string;
   } = {}) {
-    const { page = 1, limit = 10, status, search, vendorId, paymentMethod } = options;
+    const { page = 1, limit = 10, status, search, vendorId, paymentMethod, startDate, endDate } = options;
     const skip = (page - 1) * limit;
 
     try {
@@ -422,6 +424,17 @@ export class OrdersService {
       
       if (status && status !== 'all') {
         where.status = status;
+      }
+
+      // 기간 필터 (선택된 startDate, endDate에 해당하는 주문만)
+      if (startDate || endDate) {
+        where.createdAt = {};
+        if (startDate) {
+          where.createdAt.gte = new Date(startDate + 'T00:00:00.000Z');
+        }
+        if (endDate) {
+          where.createdAt.lte = new Date(endDate + 'T23:59:59.999Z');
+        }
       }
 
       if (search) {

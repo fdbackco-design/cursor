@@ -78,12 +78,14 @@ const OrdersPage = () => {
     try {
       setLoading(true);
       
-      // 선택된 기간의 모든 주문 데이터 가져오기
+      // 선택된 기간의 주문 데이터 가져오기 (기간 필터 적용)
       const response = await adminApi.getOrders({
         page: 1,
         limit: 10000, // 충분히 큰 수
         status: selectedStatus,
         vendorId: selectedVendor,
+        startDate,
+        endDate,
         ...(searchTerm && { search: searchTerm }),
       });
       
@@ -100,7 +102,7 @@ const OrdersPage = () => {
         '원가': '',
         '판매가': formatNumber(order.totalAmount),
         '순이익': '',
-        '진행여부': getStatusLabel(order.status),
+        '진행여부': order.status === 'CONFIRMED' ? '발주 필요' : getStatusLabel(order.status),
         '입금여부': order.status === 'CANCELLED' ? '취소' : '완료',
         '반품/교환': '',
         '발주처': order.items[0]?.product?.vendor?.name || '',
@@ -172,6 +174,8 @@ const OrdersPage = () => {
         limit: 10,
         status: selectedStatus,
         vendorId: selectedVendor,
+        startDate,
+        endDate,
         ...(searchTerm && { search: searchTerm }),
       });
       
@@ -369,14 +373,14 @@ const OrdersPage = () => {
     loadVendors();
   }, []);
 
-  // 필터 변경 시 자동 검색
+  // 필터/기간 변경 시 자동 검색
   useEffect(() => {
     if (currentPage === 1) {
       loadOrders(1);
     } else {
       setCurrentPage(1);
     }
-  }, [selectedStatus, selectedVendor]);
+  }, [selectedStatus, selectedVendor, startDate, endDate]);
 
   return (
     <div className="min-h-screen bg-gray-50">

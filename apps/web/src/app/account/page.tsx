@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
@@ -20,11 +21,23 @@ import { useConfirm } from '@/components/ui/confirm-modal';
 import { getImageUrl } from '@/lib/utils/image';
 import { formatNumber } from '@/lib/utils/price';
 
+const VALID_TABS = ['profile', 'orders', 'wishlist', 'address', 'coupons', 'settings', 'delete'];
+
 export default function AccountPage() {
+  const searchParams = useSearchParams();
   const { user, isAuthenticated, loading } = useAuth();
   const { showToast } = useToast();
   const { confirm } = useConfirm();
-  const [activeTab, setActiveTab] = useState('profile');
+  const tabParam = searchParams.get('tab');
+  const initialTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : 'profile';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // URL ?tab= 파라미터 변경 시 activeTab 동기화
+  useEffect(() => {
+    if (tabParam && VALID_TABS.includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);

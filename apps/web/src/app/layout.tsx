@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { DialogProvider } from '@/components/ui/dialog-provider';
 
@@ -68,13 +69,16 @@ export default function RootLayout({
               {/* 상단 헤더 */}
               <Header />
               
-              {/* 메인 콘텐츠 영역 */}
-              <main className="flex-1">
+              {/* 메인 콘텐츠 영역 - 모바일 하단바 높이만큼 패딩 */}
+              <main className="flex-1 pb-16 md:pb-0">
                 {children}
               </main>
               
               {/* 하단 푸터 */}
               <Footer />
+              
+              {/* 모바일 하단 네비게이션 */}
+              <MobileBottomNav />
             </div>
           </DialogProvider>
         </AuthProvider>

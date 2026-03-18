@@ -112,6 +112,8 @@ export const adminApi = {
     status?: string;
     search?: string;
     vendorId?: string;
+    startDate?: string;
+    endDate?: string;
   } = {}): Promise<AdminOrderListResponse> {
     const params = new URLSearchParams();
     if (options.page) params.append('page', options.page.toString());
@@ -119,6 +121,8 @@ export const adminApi = {
     if (options.status && options.status !== 'all') params.append('status', options.status);
     if (options.search) params.append('search', options.search);
     if (options.vendorId && options.vendorId !== 'all') params.append('vendorId', options.vendorId);
+    if (options.startDate) params.append('startDate', options.startDate);
+    if (options.endDate) params.append('endDate', options.endDate);
     
     const queryString = params.toString();
     const endpoint = `/orders/admin/all${queryString ? `?${queryString}` : ''}`;

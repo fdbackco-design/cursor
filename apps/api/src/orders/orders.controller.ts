@@ -101,7 +101,9 @@ export class OrdersController {
     @Query('status') status?: string,
     @Query('search') search?: string,
     @Query('vendorId') vendorId?: string,
-    @Query('paymentMethod') paymentMethod?: string
+    @Query('paymentMethod') paymentMethod?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string
   ) {
     const user = req.user as any;
     
@@ -110,7 +112,7 @@ export class OrdersController {
       throw new Error('관리자 권한이 필요합니다.');
     }
 
-    this.logger.log(`관리자 주문 목록 조회: adminId=${user.id}, page=${page}, limit=${limit}, status=${status}, search=${search}, vendorId=${vendorId}, paymentMethod=${paymentMethod}`);
+    this.logger.log(`관리자 주문 목록 조회: adminId=${user.id}, page=${page}, limit=${limit}, status=${status}, search=${search}, vendorId=${vendorId}, startDate=${startDate}, endDate=${endDate}`);
     
     return this.ordersService.getAllOrdersForAdmin({
       page: page ? parseInt(page, 10) : 1,
@@ -118,7 +120,9 @@ export class OrdersController {
       status,
       search,
       vendorId,
-      paymentMethod
+      paymentMethod,
+      startDate,
+      endDate
     });
   }
 

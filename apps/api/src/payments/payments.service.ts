@@ -6,10 +6,10 @@ import axios from 'axios';
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
   private readonly tossPaymentsUrl = 'https://api.tosspayments.com/v1/payments';
-  private readonly secretKey = process.env.TOSS_PAYMENTS_SECRET_KEY || 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6';
+  private readonly secretKey = (process.env.TOSS_PAYMENTS_SECRET_KEY || process.env.TOSS_SECRET_KEY || 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6').trim();
 
   constructor(private prisma: PrismaService) {
-    if (!process.env.TOSS_PAYMENTS_SECRET_KEY) {
+    if (!process.env.TOSS_PAYMENTS_SECRET_KEY && !process.env.TOSS_SECRET_KEY) {
       this.logger.warn('TOSS_PAYMENTS_SECRET_KEY가 설정되지 않았습니다. 기본 테스트 키를 사용합니다.');
     }
     this.logger.log(`토스페이먼츠 시크릿 키 로드됨: ${this.secretKey.substring(0, 20)}...`);
@@ -484,6 +484,11 @@ export class PaymentsService {
     } catch (error) {
       const errorData = error.response?.data;
       this.logger.error('토스페이먼츠 승인 실패:', errorData || error.message);
+
+      // INVALID_API_KEY: 클라이언트 키와 시크릿 키가 쌍이어야 함
+      if (errorData?.code === 'INVALID_API_KEY') {
+        this.logger.error('토스페이먼츠 API 키 불일치. TOSS_PAYMENTS_SECRET_KEY가 프론트엔드 NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY와 매칭되는 시크릿 키인지 확인하세요.');
+      }
 
       // [S008] 기존 요청을 처리중입니다 오류 처리
       if (errorData?.code === 'FAILED_PAYMENT_INTERNAL_SYSTEM_PROCESSING' && 

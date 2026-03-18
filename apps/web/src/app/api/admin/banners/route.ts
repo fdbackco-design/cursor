@@ -56,14 +56,14 @@ export async function POST(request: NextRequest) {
 
     // FormData를 명시적으로 재구성하여 백엔드로 전달 (필드 누락 방지)
     const formData = new FormData();
-    for (const [key, value] of incomingFormData.entries()) {
+    Array.from(incomingFormData.entries()).forEach(([key, value]) => {
       if (value instanceof Blob) {
         const filename = value instanceof File ? value.name : 'image';
         formData.append(key, value, filename);
       } else {
         formData.append(key, String(value));
       }
-    }
+    });
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.feedbackmall.com';
     const response = await fetch(`${apiUrl}/api/v1/admin/banners`, {

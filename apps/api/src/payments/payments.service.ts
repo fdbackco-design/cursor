@@ -72,6 +72,99 @@ export class PaymentsService {
     }
   }
 
+  /**
+   * 결제 승인만 수행 (주문 생성 없음)
+   * 토스페이먼츠 문서: successUrl 리다이렉트 후 반드시 POST /confirm 호출 필요
+   * GET /payments/{paymentKey}는 승인 완료 후에만 조회 가능 (승인 전 404 발생)
+   */
+  async confirmPaymentOnly(data: {
+    paymentKey: string;
+    orderId: string;
+    amount: number;
+    customerId?: string;
+  }) {
+    try {
+      const existingPayment = await this.prisma.payment.findFirst({
+        where: { orderId: data.orderId }
+      });
+
+      if (existingPayment?.status === 'COMPLETED' && existingPayment.paymentKey === data.paymentKey) {
+        this.logger.log(`이미 승인된 결제: orderId=${data.orderId}, paymentKey=${data.paymentKey}`);
+        return {
+          success: true,
+          message: '이미 승인된 결제입니다.',
+          data: {
+            paymentKey: existingPayment.paymentKey,
+            orderId: existingPayment.orderId,
+            amount: existingPayment.amount,
+            status: existingPayment.status,
+            method: existingPayment.method,
+            metadata: (existingPayment.metadata as object) || {},
+          }
+        };
+      }
+
+      const tossResponse = await this.confirmWithTossPayments({
+        paymentKey: data.paymentKey,
+        orderId: data.orderId,
+        amount: data.amount,
+      });
+
+      if (existingPayment) {
+        await this.prisma.payment.update({
+          where: { id: existingPayment.id },
+          data: {
+            paymentKey: data.paymentKey,
+            status: 'COMPLETED',
+            method: tossResponse.method,
+            pgTransactionId: tossResponse.lastTransactionKey || tossResponse.transactionKey,
+            approvedAt: new Date(tossResponse.approvedAt),
+            metadata: tossResponse,
+          }
+        });
+      } else {
+        if (!data.customerId) {
+          throw new BadRequestException('결제 정보를 찾을 수 없습니다. 결제 준비 후 다시 시도해주세요.');
+        }
+        await this.prisma.payment.create({
+          data: {
+            orderId: data.orderId,
+            orderName: tossResponse.orderName || data.orderId,
+            amount: data.amount,
+            customerKey: data.customerId,
+            customerId: data.customerId,
+            status: 'COMPLETED',
+            method: tossResponse.method,
+            paymentKey: data.paymentKey,
+            pgTransactionId: tossResponse.lastTransactionKey || tossResponse.transactionKey,
+            approvedAt: new Date(tossResponse.approvedAt),
+            metadata: tossResponse,
+          }
+        });
+      }
+
+      this.logger.log(`결제 승인 완료 (주문 생성 없음): orderId=${data.orderId}, paymentKey=${data.paymentKey}`);
+
+      return {
+        success: true,
+        message: '결제가 승인되었습니다.',
+        data: {
+          paymentKey: data.paymentKey,
+          orderId: data.orderId,
+          amount: tossResponse.totalAmount ?? data.amount,
+          status: tossResponse.status || 'DONE',
+          method: tossResponse.method,
+          easyPay: tossResponse.easyPay || null,
+          approvedAt: tossResponse.approvedAt,
+          metadata: tossResponse.metadata || {},
+        }
+      };
+    } catch (error) {
+      this.logger.error('결제 승인 실패:', error);
+      throw error;
+    }
+  }
+
   async confirmPayment(data: {
     paymentKey: string;
     orderId: string;

@@ -310,8 +310,8 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardContent>
         
         <CardFooter className="pt-0 px-2 sm:px-4 pb-3 sm:pb-4">
-          {/* 모바일: 세로 배치, 태블릿: 2열, 데스크톱: 3열 */}
-          <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2 w-full">
+          {/* 1행 3열 배치 */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full">
             <Button 
               size="sm" 
               variant="outline"
@@ -349,7 +349,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </Button>
             <Button 
               size="sm" 
-              className={`w-full sm:col-span-2 lg:col-span-1 text-xs ${
+              className={`w-full text-xs ${
                 product.stockQuantity <= 0 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-[#FF6F0F] text-white hover:bg-[#E5640D]'

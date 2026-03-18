@@ -214,8 +214,8 @@ const Header = () => {
               href="/category/top10" 
               className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap flex items-center"
             >
-              <span className="text-orange-500 mr-1">🏆</span>
-              Top 10
+              <span className="text-orange-500 mr-1"></span>
+              한정수량
             </Link>
             <Link 
               href="/category/home-appliances" 

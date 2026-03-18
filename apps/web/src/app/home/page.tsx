@@ -329,7 +329,7 @@ export default function HomePage() {
         className=""
       />
 
-      {/* Top 10 Section */}
+      {/* 한정수량 Section */}
       {top10Products.length > 0 && (
         <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-br from-white to-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -338,7 +338,7 @@ export default function HomePage() {
                 <span className="text-orange-500 mr-3"></span>
                 3월달 한정수량
               </h2>
-              <p className="text-base sm:text-lg text-gray-600">가장 인기 있는 상품들을 순위별로 만나보세요</p>
+              <p className="text-base sm:text-lg text-gray-600">한달간 한정 수량으로 판매되는 상품들을 만나보세요</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {top10Products.slice(0, 8).map((product) => (
@@ -370,7 +370,7 @@ export default function HomePage() {
                 href="/category/top10" 
                 className="inline-flex items-center px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors duration-200"
               >
-                전체 Top 10 보기 →
+                전체 한정수량 제품 보기 →
               </Link>
             </div>
           </div>

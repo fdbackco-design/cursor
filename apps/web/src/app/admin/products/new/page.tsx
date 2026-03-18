@@ -427,7 +427,7 @@ const NewProductPage = () => {
                       <option value="1">Top 1</option>
                     </select>
                     <p className="text-xs text-gray-500 mt-1">
-                      Top10 순위를 지정하면 메인 페이지의 Top10 섹션에 표시됩니다.
+                      Top10 순위를 지정하면 메인 페이지의 한정수량 섹션에 표시됩니다.
                     </p>
                   </div>
 

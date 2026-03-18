@@ -473,7 +473,7 @@ const AnalyticsPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Award className="h-5 w-5 text-yellow-500" />
-                  <span>인기 상품 TOP 10</span>
+                  <span>3월달 한정수량</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>

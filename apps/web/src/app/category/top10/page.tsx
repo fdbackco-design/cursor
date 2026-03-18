@@ -174,9 +174,9 @@ export default function Top10Page() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🏆</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Top 10 상품이 없습니다</h3>
-            <p className="text-gray-600">아직 베스트셀러 상품이 등록되지 않았습니다.</p>
+            <div className="text-6xl mb-4"></div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">한정수량 상품이 없습니다</h3>
+            <p className="text-gray-600">아직 한정수량 상품이 등록되지 않았습니다.</p>
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@repo/ui';
-import { ArrowLeft, Search, Package, Truck, CheckCircle, Clock, AlertCircle, Filter, Calendar } from 'lucide-react';
+import { ArrowLeft, Package, Truck, CheckCircle, Clock, AlertCircle, Filter, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { deliveryApi, DeliveryTrackingInfo, DeliveryStats } from '@/lib/api/delivery';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +18,6 @@ export default function DeliveryPage() {
   const [deliveryStats, setDeliveryStats] = useState<DeliveryStats | null>(null);
   const [trackingData, setTrackingData] = useState<DeliveryTrackingInfo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchOrderNumber, setSearchOrderNumber] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
@@ -96,26 +95,6 @@ export default function DeliveryPage() {
       loadUserDeliveryTracking();
     }
   }, [isAuthenticated, loadUserDeliveryTracking]);
-
-  const handleSearchByOrderNumber = async () => {
-    if (!searchOrderNumber.trim()) return;
-    
-    try {
-      setLoading(true);
-      const response = await deliveryApi.trackByOrderNumber(searchOrderNumber.trim());
-      if (response.success && response.data) {
-        setTrackingData(response.data);
-      } else {
-        showToast(toast.warning('주문 없음', '주문을 찾을 수 없습니다.'));
-        setTrackingData([]);
-      }
-    } catch (error) {
-      console.error('주문 검색 실패:', error);
-      showToast(toast.error('주문 검색 오류', '주문 검색 중 오류가 발생했습니다.'));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleFilterChange = () => {
     if (isAuthenticated) {
@@ -202,39 +181,9 @@ export default function DeliveryPage() {
           </Link>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">배송 조회</h1>
           <p className="text-sm sm:text-base text-gray-600 mt-2">
-            주문번호로 배송 상태를 확인하거나 내 배송 내역을 조회할 수 있습니다.
+            내 배송 내역을 조회할 수 있습니다.
           </p>
         </div>
-
-        {/* 주문번호 검색 */}
-        <Card className="mb-6 sm:mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center text-lg sm:text-xl">
-              <Search className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-blue-600" />
-              주문번호로 배송 조회
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <input
-                type="text"
-                placeholder="주문번호를 입력하세요 (예: ORD-20240101-001)"
-                value={searchOrderNumber}
-                onChange={(e) => setSearchOrderNumber(e.target.value)}
-                className="flex-1 px-3 py-3 sm:px-4 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-                onKeyPress={(e) => e.key === 'Enter' && handleSearchByOrderNumber()}
-              />
-              <Button 
-                onClick={handleSearchByOrderNumber}
-                disabled={!searchOrderNumber.trim()}
-                className="w-full sm:w-auto min-h-[44px] sm:min-h-[40px] px-6 text-sm sm:text-base"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                조회
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* 배송 통계 */}
         {deliveryStats && (

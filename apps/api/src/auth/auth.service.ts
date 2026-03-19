@@ -237,6 +237,9 @@ export class AuthService {
     const cleanEmail = user.email?.trim() || null;
     const cleanRef = referralCode?.trim();
     const shouldAutoApproveByReferral = !!cleanRef;
+    this.logger.log(
+      `추천인 자동 승인 플래그: cleanRef="${cleanRef ?? ''}", shouldAutoApproveByReferral=${shouldAutoApproveByReferral}`,
+    );
     const cleanPhoneNumber = this.normalizePhoneNumber(user.phoneNumber);
     const cleanShippingAddress = user.shippingAddress || null;
     const cleanTalkMessageAgreed = user.talkMessageAgreed ?? false;
@@ -379,6 +382,19 @@ export class AuthService {
       if (shouldAutoApproveByReferral && !dbUser.approve) {
         this.logger.log(`추천인 코드 유효 - 즉시 승인 처리: id=${dbUser.id}, approve=true`);
       }
+    }
+
+    // 안전장치:
+    // 유효 추천인 코드 로그인인데 approve가 false로 남아있으면 강제로 true 보정
+    if (shouldAutoApproveByReferral && !dbUser.approve) {
+      this.logger.warn(
+        `approve 보정 실행: userId=${dbUser.id}, 현재 approve=${dbUser.approve} -> true`,
+      );
+      dbUser = await this.prisma.user.update({
+        where: { id: dbUser.id },
+        data: { approve: true },
+      });
+      this.logger.log(`approve 보정 완료: userId=${dbUser.id}, approve=${dbUser.approve}`);
     }
   
         // 5) JWT

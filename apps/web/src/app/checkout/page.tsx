@@ -600,6 +600,10 @@ export default function CheckoutPage() {
   const totalBeforeDiscount = subtotal + shippingFee;
   const finalTotal = totalBeforeDiscount - paymentInfo.couponDiscount;
   const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
+  const isNameMissing = !ordererInfo.name?.trim();
+  const isEmailMissing = !ordererInfo.email?.trim();
+  const isPhoneMissing = !ordererInfo.phone?.trim();
+  const isOrdererInfoMissing = isNameMissing || isEmailMissing || isPhoneMissing;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -637,7 +641,11 @@ export default function CheckoutPage() {
                     type="text"
                     value={ordererInfo.name}
                     onChange={(e) => setOrdererInfo(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 ${
+                      isNameMissing
+                        ? 'border-red-400 focus:ring-red-200 focus:border-red-500'
+                        : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
                     placeholder="주문자 이름을 입력하세요"
                   />
                 </div>
@@ -647,7 +655,11 @@ export default function CheckoutPage() {
                     type="email"
                     value={ordererInfo.email}
                     onChange={(e) => setOrdererInfo(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 ${
+                      isEmailMissing
+                        ? 'border-red-400 focus:ring-red-200 focus:border-red-500'
+                        : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
                     placeholder="이메일을 입력하세요"
                   />
                 </div>
@@ -657,10 +669,19 @@ export default function CheckoutPage() {
                     type="tel"
                     value={ordererInfo.phone}
                     onChange={(e) => setOrdererInfo(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 ${
+                      isPhoneMissing
+                        ? 'border-red-400 focus:ring-red-200 focus:border-red-500'
+                        : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
                     placeholder="휴대폰 번호를 입력하세요"
                   />
                 </div>
+                {isOrdererInfoMissing && (
+                  <p className="text-sm text-red-600">
+                    주문자 정보(이름, 이메일, 휴대폰 번호)를 모두 입력해주세요.
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -936,7 +957,7 @@ export default function CheckoutPage() {
                   className="w-full" 
                   size="lg" 
                   onClick={handleOrder}
-                  disabled={!selectedAddress || !ordererInfo.name || !ordererInfo.email || !ordererInfo.phone || paymentLoading}
+                  disabled={!selectedAddress || isOrdererInfoMissing || paymentLoading}
                 >
                   {paymentLoading ? (
                     <>

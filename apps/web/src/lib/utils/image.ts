@@ -10,7 +10,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 export function getImageUrl(imagePath: any): string {
   // null, undefined, 빈 문자열 처리
   if (!imagePath) {
-    return '/images/placeholder-product.jpg';
+    return '/images/placeholder-product.png';
   }
 
   // S3 이미지 객체인 경우
@@ -24,7 +24,7 @@ export function getImageUrl(imagePath: any): string {
     
     // 빈 문자열 처리
     if (path.length === 0) {
-      return '/images/placeholder-product.jpg';
+      return '/images/placeholder-product.png';
     }
 
     // 이미 전체 URL인 경우 그대로 반환
@@ -41,7 +41,7 @@ export function getImageUrl(imagePath: any): string {
   }
 
   // 다른 타입인 경우 기본 이미지 반환
-  return '/images/placeholder-product.jpg';
+  return '/images/placeholder-product.png';
 }
 
 /**
@@ -51,7 +51,7 @@ export function getImageUrl(imagePath: any): string {
  */
 export function getS3ImageUrl(s3Image: any): string {
   if (!s3Image || typeof s3Image !== 'object') {
-    return '/images/placeholder-product.jpg';
+    return '/images/placeholder-product.png';
   }
 
   // cdnUrl이 있는 경우
@@ -65,7 +65,7 @@ export function getS3ImageUrl(s3Image: any): string {
     return `${cdnBaseUrl}/${s3Image.s3Key}`.trim();
   }
 
-  return '/images/placeholder-product.jpg';
+  return '/images/placeholder-product.png';
 }
 
 /**
@@ -82,7 +82,7 @@ export function getOptimizedImageUrl(
   height: number = 400, 
   quality: number = 80
 ): string {
-  if (!imageUrl || imageUrl.includes('/images/placeholder-product.jpg')) {
+  if (!imageUrl || imageUrl.includes('/images/placeholder-product.png')) {
     return imageUrl;
   }
 
@@ -107,7 +107,7 @@ export function getOptimizedImageUrl(
 export function getProductImageUrls(images: any): string[] {
   // null, undefined, 빈 배열 처리
   if (!images || !Array.isArray(images) || images.length === 0) {
-    return ['/images/placeholder-product.jpg'];
+    return ['/images/placeholder-product.png'];
   }
 
   // S3 이미지 배열인지 확인
@@ -126,11 +126,11 @@ export function getProductImageUrls(images: any): string[] {
  */
 export function getProductMainImageUrl(images: any): string {
   if (!images || !Array.isArray(images) || images.length === 0) {
-    return '/images/placeholder-product.jpg'; // 기본 이미지
+    return '/images/placeholder-product.png'; // 기본 이미지
   }
 
   const urls = getProductImageUrls(images);
-  return urls[0] || '/images/placeholder-product.jpg';
+  return urls[0] || '/images/placeholder-product.png';
 }
 
 /**
@@ -142,15 +142,15 @@ export function getProductMainImageUrl(images: any): string {
  */
 export function getProductThumbnailUrl(images: any, index: number = 0, updatedAt?: string | Date | null): string {
   if (!images || !Array.isArray(images) || images.length === 0) {
-    return '/images/placeholder-product.jpg';
+    return '/images/placeholder-product.png';
   }
 
   const urls = getProductImageUrls(images);
-  const url = urls[index] || urls[0] || '/images/placeholder-product.jpg';
+  const url = urls[index] || urls[0] || '/images/placeholder-product.png';
   
   // Next.js Image 컴포넌트 캐싱 문제 해결을 위해 쿼리 파라미터 추가
   // updatedAt이 있으면 사용, 없으면 현재 시간 사용
-  if (url && !url.includes('placeholder-product.jpg') && !url.includes('?')) {
+  if (url && !url.includes('placeholder-product.png') && !url.includes('?')) {
     try {
       const urlObj = new URL(url);
       // updatedAt을 기반으로 캐시 버스팅 (같은 시간에는 같은 URL)

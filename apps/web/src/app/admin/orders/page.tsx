@@ -641,7 +641,10 @@ const OrdersPage = () => {
                                 <div className="flex items-center space-x-2">
                                   <CreditCard className="h-3 w-3 text-gray-400" />
                                   <span className="text-xs text-gray-900">
-                                    {getPaymentMethodLabel((order as any).metadata?.paymentMethod, (order as any).metadata?.easyPayProvider)}
+                                    {getPaymentMethodLabel(
+                                      (order as any).metadata?.paymentMethod || (order as any).metadata?.method,
+                                      (order as any).metadata?.easyPayProvider || (order as any).metadata?.easyPay?.provider
+                                    )}
                                   </span>
                                 </div>
                               </td>
@@ -752,7 +755,10 @@ const OrdersPage = () => {
                           <div className="flex items-center space-x-1">
                             <CreditCard className="h-3 w-3 text-gray-400" />
                             <span className="text-xs text-gray-500">
-                              {getPaymentMethodLabel((order as any).metadata?.paymentMethod, (order as any).metadata?.easyPayProvider)}
+                              {getPaymentMethodLabel(
+                                (order as any).metadata?.paymentMethod || (order as any).metadata?.method,
+                                (order as any).metadata?.easyPayProvider || (order as any).metadata?.easyPay?.provider
+                              )}
                             </span>
                           </div>
                         </div>

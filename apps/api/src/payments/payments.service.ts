@@ -267,6 +267,9 @@ export class PaymentsService {
                 paymentKey: data.paymentKey,
                 paidAmount: totalAmount,
                 method: tossResponse.method,
+                paymentMethod: tossResponse.method,
+                easyPayProvider: tossResponse.easyPay?.provider ?? null,
+                easyPay: tossResponse.easyPay ?? null,
               },
               items: {
                 create: orderItems.map((item) => ({

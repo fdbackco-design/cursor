@@ -670,9 +670,10 @@ export default function OrderDetailPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-600 text-sm sm:text-base">결제 방법</span>
                     <span className="font-medium text-sm sm:text-base">
-                      {(order as any).metadata?.paymentMethod
-                        ? getPaymentMethodLabel((order as any).metadata.paymentMethod, (order as any).metadata?.easyPayProvider)
-                        : '토스페이먼츠'}
+                      {getPaymentMethodLabel(
+                        (order as any).metadata?.paymentMethod || (order as any).metadata?.method,
+                        (order as any).metadata?.easyPayProvider || (order as any).metadata?.easyPay?.provider
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between">

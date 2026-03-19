@@ -281,9 +281,9 @@ export function ProductCard({ product }: ProductCardProps) {
         
         <CardContent className="flex-1 px-3 sm:px-4 pb-2 sm:pb-3 cursor-pointer">
           <div className="space-y-1 sm:space-y-2">
-            <div className="flex justify-between items-center gap-2 min-w-0">
+            <div className="flex justify-between items-start sm:items-center gap-2 min-w-0">
               <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap flex-shrink-0">{priceDisplay.text}</span>
-              <div className="flex items-center gap-1 flex-shrink-0 min-w-0">
+              <div className="flex flex-col items-end sm:flex-row sm:items-center gap-0.5 sm:gap-1 flex-shrink-0 min-w-0">
                 {priceDisplay.price ? (
                   <span className="text-sm sm:text-base font-extrabold text-gray-900 whitespace-nowrap">
                     {priceDisplay.price}
@@ -296,7 +296,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 {comparePriceNum && 
                  comparePriceNum > 0 && 
                  comparePriceNum > currentPriceNum && (
-                  <span className="text-xs text-gray-500 line-through whitespace-nowrap">
+                  <span className="text-xs text-gray-500 line-through">
                     {formatPriceWithCurrency(comparePriceNum)}
                   </span>
                 )}

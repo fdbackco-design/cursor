@@ -1,18 +1,69 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+
+/** Toss Payments 결제 승인 API 응답 (참조용) */
+interface TossConfirmResponse {
+  paymentKey: string;
+  orderId: string;
+  status: string;
+  method?: string;
+  totalAmount: number;
+  approvedAt: string;
+  transactionKey?: string;
+  metadata?: Record<string, unknown>;
+  easyPay?: { provider?: string };
+}
+
+/** 결제 승인 시 전달 가능한 주문 메타데이터 (직접결제/장바구니) */
+export interface ConfirmOrderMetadata {
+  items?: Array<{
+    productId: string;
+    productName: string;
+    productSku: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    finalPrice: number;
+  }>;
+  shippingAddress?: Record<string, unknown>;
+  billingAddress?: Record<string, unknown>;
+  addressId?: string;
+  couponId?: string;
+  discountAmount?: number;
+  shippingAmount?: number;
+}
 
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
   private readonly tossPaymentsUrl = 'https://api.tosspayments.com/v1/payments';
-  private readonly secretKey = process.env.TOSS_PAYMENTS_SECRET_KEY || 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6';
+  private readonly secretKey: string;
 
-  constructor(private prisma: PrismaService) {
-    if (!process.env.TOSS_PAYMENTS_SECRET_KEY) {
-      this.logger.warn('TOSS_PAYMENTS_SECRET_KEY가 설정되지 않았습니다. 기본 테스트 키를 사용합니다.');
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {
+    // TOSS_SECRET_KEY 또는 TOSS_PAYMENTS_SECRET_KEY (Payment Widget Secret Key 사용)
+    this.secretKey =
+      this.configService.get<string>('TOSS_SECRET_KEY') ||
+      this.configService.get<string>('TOSS_PAYMENTS_SECRET_KEY') ||
+      '';
+
+    if (!this.secretKey) {
+      this.logger.warn(
+        'TOSS_SECRET_KEY 또는 TOSS_PAYMENTS_SECRET_KEY가 설정되지 않았습니다. 결제 승인이 불가합니다.',
+      );
+    } else {
+      const prefix = this.secretKey.substring(0, 12);
+      this.logger.log(`토스페이먼츠 시크릿 키 로드됨: ${prefix}...`);
     }
-    this.logger.log(`토스페이먼츠 시크릿 키 로드됨: ${this.secretKey.substring(0, 20)}...`);
+  }
+
+  private getAuthHeader(): string {
+    // Basic base64(secretKey + ':') - 콜론 필수 (Toss 문서)
+    return `Basic ${Buffer.from(this.secretKey + ':', 'utf-8').toString('base64')}`;
   }
 
   async preparePayment(data: {
@@ -26,16 +77,14 @@ export class PaymentsService {
     customerMobilePhone?: string;
   }) {
     try {
-      // 주문 ID가 이미 존재하는지 확인
       const existingPayment = await this.prisma.payment.findFirst({
-        where: { orderId: data.orderId }
+        where: { orderId: data.orderId },
       });
 
       if (existingPayment) {
         throw new BadRequestException('이미 존재하는 주문 ID입니다.');
       }
 
-      // 결제 정보를 데이터베이스에 저장 (PENDING 상태)
       const payment = await this.prisma.payment.create({
         data: {
           orderId: data.orderId,
@@ -51,7 +100,7 @@ export class PaymentsService {
           paymentKey: null,
           pgTransactionId: null,
           metadata: {},
-        }
+        },
       });
 
       this.logger.log(`결제 준비 완료: orderId=${data.orderId}, amount=${data.amount}`);
@@ -64,7 +113,7 @@ export class PaymentsService {
           orderName: payment.orderName,
           amount: payment.amount,
           customerKey: payment.customerKey,
-        }
+        },
       };
     } catch (error) {
       this.logger.error('결제 준비 실패:', error);
@@ -77,43 +126,45 @@ export class PaymentsService {
     orderId: string;
     amount: number;
     customerId?: string;
+    orderMetadata?: ConfirmOrderMetadata;
   }) {
     try {
-      // 기존 결제 정보 조회
       const existingPayment = await this.prisma.payment.findFirst({
-        where: { orderId: data.orderId }
+        where: { orderId: data.orderId },
       });
 
       if (!existingPayment) {
         throw new BadRequestException('결제 정보를 찾을 수 없습니다.');
       }
 
-      // 이미 승인된 결제인지 확인
       if (existingPayment.status === 'COMPLETED') {
-        this.logger.log(`이미 승인된 결제: orderId=${data.orderId}, paymentKey=${data.paymentKey}`);
+        this.logger.log(`이미 승인된 결제: orderId=${data.orderId}`);
+        const order = await this.prisma.order.findFirst({
+          where: { orderNumber: data.orderId },
+          include: { items: { include: { product: true } } },
+        });
         return {
           success: true,
           message: '이미 승인된 결제입니다.',
-          payment: existingPayment
+          data: {
+            orderId: data.orderId,
+            paymentKey: data.paymentKey,
+            amount: existingPayment.amount,
+            status: 'COMPLETED',
+            order,
+          },
         };
       }
 
-      // 이미 승인 요청 중인지 확인 (paymentKey가 동일한지)
-      if (existingPayment.paymentKey === data.paymentKey && existingPayment.status === 'PENDING') {
-        this.logger.warn(`중복 승인 요청 감지: orderId=${data.orderId}, paymentKey=${data.paymentKey}`);
-        throw new BadRequestException('이미 처리중인 결제입니다. 잠시 후 다시 시도해주세요.');
-      }
-
-      // 토스페이먼츠 결제 승인 요청
+      // 1. 토스페이먼츠 결제 승인 API 호출 (반드시 먼저 수행)
       const tossResponse = await this.confirmWithTossPayments({
         paymentKey: data.paymentKey,
         orderId: data.orderId,
         amount: data.amount,
       });
 
-      // 트랜잭션으로 결제 승인과 주문 생성을 함께 처리
+      // 2. 결제 승인 성공 시에만 주문 생성
       const result = await this.prisma.$transaction(async (tx) => {
-        // 결제 정보 업데이트
         const payment = await tx.payment.update({
           where: { id: existingPayment.id },
           data: {
@@ -122,108 +173,152 @@ export class PaymentsService {
             method: tossResponse.method,
             pgTransactionId: tossResponse.transactionKey,
             approvedAt: new Date(tossResponse.approvedAt),
-            metadata: tossResponse,
-          }
+            metadata: tossResponse as object,
+          },
         });
 
-        // 기존 주문이 있는지 확인
-        const existingOrder = await tx.order.findFirst({
-          where: { orderNumber: data.orderId }
+        let existingOrder = await tx.order.findFirst({
+          where: { orderNumber: data.orderId },
         });
 
-        let order;
         if (!existingOrder) {
           this.logger.log(`새 주문 생성 시작: orderNumber=${data.orderId}`);
-          // 사용자의 장바구니 아이템 조회
-          const cart = await tx.cart.findFirst({
-            where: { userId: existingPayment.customerId },
-            include: {
-              items: {
-                include: {
-                  product: true
-                }
-              }
-            }
-          });
 
-          if (!cart || cart.items.length === 0) {
-            throw new Error('장바구니가 비어있습니다.');
+          const metadata = (tossResponse.metadata || {}) as Record<string, unknown>;
+          const addressId =
+            (data.orderMetadata?.addressId as string) ||
+            (metadata.addressId as string | undefined);
+
+          let shippingAddress: Record<string, unknown> =
+            (data.orderMetadata?.shippingAddress as Record<string, unknown>) || {};
+          let billingAddress: Record<string, unknown> =
+            (data.orderMetadata?.billingAddress as Record<string, unknown>) || shippingAddress;
+
+          if (addressId && Object.keys(shippingAddress).length === 0) {
+            const addr = await this.prisma.userAddress.findUnique({
+              where: { id: addressId },
+            });
+            if (addr) {
+              shippingAddress = {
+                receiver_name: addr.receiverName,
+                base_address: addr.baseAddress,
+                detail_address: addr.detailAddress || '',
+                zone_number: addr.zoneNumber || '',
+                phone: addr.receiverPhoneNumber1 || '',
+              };
+              billingAddress = { ...shippingAddress };
+            }
           }
 
-          // 주문 생성
-          order = await tx.order.create({
+          let orderItems: Array<{
+            productId: string;
+            productName: string;
+            productSku: string;
+            quantity: number;
+            unitPrice: number;
+            totalPrice: number;
+            finalPrice: number;
+          }> = [];
+          let subtotal = payment.amount;
+          let discountAmount = data.orderMetadata?.discountAmount ?? 0;
+          let shippingAmount = data.orderMetadata?.shippingAmount ?? 0;
+
+          if (data.orderMetadata?.items && data.orderMetadata.items.length > 0) {
+            orderItems = data.orderMetadata.items;
+            subtotal = orderItems.reduce((s, i) => s + i.totalPrice, 0);
+          } else {
+            const cart = await tx.cart.findFirst({
+              where: { userId: existingPayment.customerId },
+              include: { items: { include: { product: true } } },
+            });
+
+            if (!cart || cart.items.length === 0) {
+              throw new BadRequestException('장바구니가 비어있습니다. 주문할 상품이 없습니다.');
+            }
+
+            orderItems = cart.items.map((item) => ({
+              productId: item.productId,
+              productName: item.product.name,
+              productSku: item.product.sku,
+              quantity: item.quantity,
+              unitPrice: item.product.priceB2C.toNumber(),
+              totalPrice: item.product.priceB2C.toNumber() * item.quantity,
+              finalPrice: item.product.priceB2C.toNumber() * item.quantity,
+            }));
+          }
+
+          const totalAmount = payment.amount;
+          const couponId = data.orderMetadata?.couponId || (metadata.couponId as string | undefined);
+
+          const newOrder = await tx.order.create({
             data: {
               orderNumber: data.orderId,
               userId: existingPayment.customerId,
-              subtotal: payment.amount,
-              totalAmount: payment.amount,
+              couponId: couponId || null,
+              subtotal,
+              discountAmount,
+              shippingAmount,
+              taxAmount: 0,
+              totalAmount,
               status: 'CONFIRMED',
-              shippingAddress: {}, // 기본값, 나중에 사용자 주소로 업데이트 가능
-              billingAddress: {}, // 기본값
+              shippingAddress: shippingAddress as object,
+              billingAddress: billingAddress as object,
+              metadata: {
+                paymentKey: data.paymentKey,
+                paidAmount: totalAmount,
+                method: tossResponse.method,
+              },
               items: {
-                create: cart.items.map(item => ({
+                create: orderItems.map((item) => ({
                   productId: item.productId,
-                  productName: item.product.name,
-                  productSku: item.product.sku,
+                  productName: item.productName,
+                  productSku: item.productSku,
                   quantity: item.quantity,
-                  unitPrice: item.product.priceB2C.toNumber(),
-                  totalPrice: item.product.priceB2C.toNumber() * item.quantity,
-                  finalPrice: item.product.priceB2C.toNumber() * item.quantity,
-                }))
-              }
+                  unitPrice: item.unitPrice,
+                  totalPrice: item.totalPrice,
+                  discountAmount: 0,
+                  finalPrice: item.finalPrice,
+                })),
+              },
             },
             include: {
-              items: {
-                include: {
-                  product: true
-                }
-              }
-            }
+              items: { include: { product: true } },
+            },
           });
 
-          // 재고 차감 처리
-          for (const item of cart.items) {
+          for (const item of orderItems) {
             const product = await tx.product.findUnique({
               where: { id: item.productId },
-              select: { stockQuantity: true, name: true }
+              select: { stockQuantity: true, name: true },
             });
-
             if (!product) {
-              throw new Error(`상품을 찾을 수 없습니다: ${item.productId}`);
+              throw new BadRequestException(`상품을 찾을 수 없습니다: ${item.productId}`);
             }
-
             if (product.stockQuantity < item.quantity) {
-              throw new Error(`재고가 부족합니다. 상품: ${product.name}, 요청 수량: ${item.quantity}, 현재 재고: ${product.stockQuantity}`);
+              throw new BadRequestException(
+                `재고 부족: ${product.name}, 요청=${item.quantity}, 재고=${product.stockQuantity}`,
+              );
             }
-
-            // 재고 차감
             await tx.product.update({
               where: { id: item.productId },
-              data: {
-                stockQuantity: {
-                  decrement: item.quantity
-                }
-              }
+              data: { stockQuantity: { decrement: item.quantity } },
             });
-
-            this.logger.log(`재고 차감 완료: productId=${item.productId}, quantity=${item.quantity}`);
           }
 
-          // 장바구니 비우기
-          await tx.cartItem.deleteMany({
-            where: { cartId: cart.id }
+          const cart = await tx.cart.findFirst({
+            where: { userId: existingPayment.customerId },
+            include: { items: true },
           });
+          if (cart?.items?.length) {
+            await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+          }
 
-          this.logger.log(`주문 생성 완료: orderNumber=${data.orderId}, orderItems=${order.items.length}개`);
-        } else {
-          order = existingOrder;
-          this.logger.log(`기존 주문 확인: orderId=${data.orderId}`);
+          this.logger.log(`주문 생성 완료: orderNumber=${data.orderId}, items=${orderItems.length}개`);
+          return { payment, order: newOrder };
         }
 
-        return { payment, order };
+        return { payment, order: existingOrder };
       });
-
-      this.logger.log(`결제 승인 완료: orderId=${data.orderId}, paymentKey=${data.paymentKey}`);
 
       return {
         success: true,
@@ -235,129 +330,34 @@ export class PaymentsService {
           status: result.payment.status,
           approvedAt: result.payment.approvedAt,
           order: result.order,
-        }
+        },
       };
     } catch (error) {
       this.logger.error('결제 승인 실패:', error);
-      
-      // 결제 실패 시 상태 업데이트
+
       try {
-        const failedPayment = await this.prisma.payment.findFirst({
-          where: { orderId: data.orderId }
+        const failed = await this.prisma.payment.findFirst({
+          where: { orderId: data.orderId },
         });
-        if (failedPayment) {
+        if (failed) {
           await this.prisma.payment.update({
-            where: { id: failedPayment.id },
+            where: { id: failed.id },
             data: {
               status: 'FAILED',
-              failureReason: error.message?.substring(0, 500) || '결제 승인 실패',
-            }
+              failureReason: (error as Error).message?.substring(0, 500) || '결제 승인 실패',
+            },
           });
         }
-      } catch (updateError) {
-        this.logger.error('결제 실패 상태 업데이트 실패:', updateError);
+      } catch (ue) {
+        this.logger.error('결제 실패 상태 업데이트 실패:', ue);
       }
 
-      throw new BadRequestException('결제 승인에 실패했습니다.');
-    }
-  }
-
-  async getPayment(paymentKey: string) {
-    try {
-      const payment = await this.prisma.payment.findFirst({
-        where: { paymentKey }
-      });
-
-      if (!payment) {
-        throw new BadRequestException('결제 정보를 찾을 수 없습니다.');
+      if (error instanceof BadRequestException) {
+        throw error;
       }
-
-      return {
-        success: true,
-        data: payment
-      };
-    } catch (error) {
-      this.logger.error('결제 조회 실패:', error);
-      throw error;
-    }
-  }
-
-  async getPaymentByOrderId(orderId: string) {
-    try {
-      const payment = await this.prisma.payment.findFirst({
-        where: { orderId }
-      });
-
-      if (!payment) {
-        throw new BadRequestException('결제 정보를 찾을 수 없습니다.');
-      }
-
-      return {
-        success: true,
-        data: payment
-      };
-    } catch (error) {
-      this.logger.error('결제 조회 실패:', error);
-      throw error;
-    }
-  }
-
-  async cancelPayment(paymentKey: string, data: {
-    cancelReason: string;
-    cancelAmount?: number;
-  }) {
-    try {
-      if (!this.secretKey) {
-        throw new BadRequestException('토스페이먼츠 시크릿 키가 설정되지 않았습니다.');
-      }
-
-      const cancelData: any = {
-        cancelReason: data.cancelReason,
-      };
-
-      if (data.cancelAmount) {
-        cancelData.cancelAmount = data.cancelAmount;
-      }
-
-      const response = await axios.post(
-        `${this.tossPaymentsUrl}/${paymentKey}/cancel`,
-        cancelData,
-        {
-          headers: {
-            'Authorization': `Basic ${Buffer.from(this.secretKey + ':').toString('base64')}`,
-            'Content-Type': 'application/json',
-          }
-        }
+      throw new BadRequestException(
+        (error as Error).message || '결제 승인에 실패했습니다.',
       );
-
-      // 기존 결제 정보 조회
-      const existingPayment = await this.prisma.payment.findFirst({
-        where: { paymentKey }
-      });
-
-      if (!existingPayment) {
-        throw new BadRequestException('결제 정보를 찾을 수 없습니다.');
-      }
-
-      // 데이터베이스 업데이트
-      const payment = await this.prisma.payment.update({
-        where: { id: existingPayment.id },
-        data: {
-          status: data.cancelAmount ? 'PARTIALLY_CANCELLED' : 'CANCELLED',
-          metadata: response.data,
-        }
-      });
-
-      this.logger.log(`결제 취소 완료: paymentKey=${paymentKey}`);
-
-      return {
-        success: true,
-        message: '결제가 취소되었습니다.',
-        data: payment
-      };
-    } catch (error) {
-      this.logger.error('결제 취소 실패:', error);
-      throw new BadRequestException('결제 취소에 실패했습니다.');
     }
   }
 
@@ -365,13 +365,13 @@ export class PaymentsService {
     paymentKey: string;
     orderId: string;
     amount: number;
-  }) {
+  }): Promise<TossConfirmResponse> {
     if (!this.secretKey) {
       throw new BadRequestException('토스페이먼츠 시크릿 키가 설정되지 않았습니다.');
     }
 
     try {
-      const response = await axios.post(
+      const response = await axios.post<TossConfirmResponse>(
         `${this.tossPaymentsUrl}/confirm`,
         {
           paymentKey: data.paymentKey,
@@ -380,105 +380,130 @@ export class PaymentsService {
         },
         {
           headers: {
-            'Authorization': `Basic ${Buffer.from(this.secretKey + ':').toString('base64')}`,
+            Authorization: this.getAuthHeader(),
             'Content-Type': 'application/json',
-          }
-        }
+          },
+          timeout: 15000,
+        },
       );
 
-      this.logger.log(`토스페이먼츠 결제 승인 성공: orderId=${data.orderId}, paymentKey=${data.paymentKey}`);
+      this.logger.log(`토스페이먼츠 결제 승인 성공: orderId=${data.orderId}`);
       return response.data;
-    } catch (error) {
-      const errorData = error.response?.data;
-      this.logger.error('토스페이먼츠 승인 실패:', errorData || error.message);
+    } catch (err) {
+      const axiosError = err as AxiosError<{ code?: string; message?: string }>;
+      const status = axiosError.response?.status;
+      const body = axiosError.response?.data;
 
-      // [S008] 기존 요청을 처리중입니다 오류 처리
-      if (errorData?.code === 'FAILED_PAYMENT_INTERNAL_SYSTEM_PROCESSING' && 
-          errorData?.message?.includes('기존 요청을 처리중입니다')) {
-        this.logger.warn(`토스페이먼츠 중복 요청 감지, 결제 상태 조회 시도: paymentKey=${data.paymentKey}`);
-        
-        // 잠시 대기 후 결제 상태 조회
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        try {
-          const statusResponse = await this.getPaymentStatus(data.paymentKey);
-          if (statusResponse.status === 'DONE') {
-            this.logger.log(`결제 상태 조회 성공 - 이미 완료된 결제: orderId=${data.orderId}, paymentKey=${data.paymentKey}`);
-            return statusResponse;
-          }
-        } catch (statusError) {
-          this.logger.error('결제 상태 조회 실패:', statusError.response?.data || statusError.message);
-        }
+      this.logger.error('토스페이먼츠 API 오류', {
+        status,
+        code: body?.code,
+        message: body?.message,
+        fullBody: JSON.stringify(body || {}),
+      });
+
+      if (status === 401) {
+        throw new BadRequestException(
+          '결제 인증 실패: 시크릿 키가 올바르지 않습니다. TOSS_SECRET_KEY를 확인하세요.',
+        );
+      }
+      if (status === 403) {
+        throw new BadRequestException(
+          '결제 권한 오류: Payment Widget용 Secret Key(test_sk_/live_sk_)를 사용해야 합니다. API 개별키가 아닌 시크릿 키를 확인하세요.',
+        );
+      }
+      if (status && status >= 400) {
+        const msg = body?.message || axiosError.message || '결제 승인에 실패했습니다.';
+        throw new BadRequestException(msg);
       }
 
-      throw error;
+      throw err;
     }
   }
 
-  // 토스페이먼츠 결제 상태 조회
-  private async getPaymentStatus(paymentKey: string) {
-    const response = await axios.get(
-      `${this.tossPaymentsUrl}/${paymentKey}`,
-      {
-        headers: {
-          'Authorization': `Basic ${Buffer.from(this.secretKey + ':').toString('base64')}`,
-        },
-      }
-    );
-
-    return response.data;
+  async getPayment(paymentKey: string) {
+    const payment = await this.prisma.payment.findFirst({
+      where: { paymentKey },
+    });
+    if (!payment) {
+      throw new BadRequestException('결제 정보를 찾을 수 없습니다.');
+    }
+    return { success: true, data: payment };
   }
 
-  // 결제 정보 조회 (public 메서드)
+  async getPaymentByOrderId(orderId: string) {
+    const payment = await this.prisma.payment.findFirst({
+      where: { orderId },
+    });
+    if (!payment) {
+      throw new BadRequestException('결제 정보를 찾을 수 없습니다.');
+    }
+    return { success: true, data: payment };
+  }
+
+  async cancelPayment(
+    paymentKey: string,
+    data: { cancelReason: string; cancelAmount?: number },
+  ) {
+    if (!this.secretKey) {
+      throw new BadRequestException('토스페이먼츠 시크릿 키가 설정되지 않았습니다.');
+    }
+
+    const cancelPayload: Record<string, unknown> = { cancelReason: data.cancelReason };
+    if (data.cancelAmount) cancelPayload.cancelAmount = data.cancelAmount;
+
+    const response = await axios.post(
+      `${this.tossPaymentsUrl}/${paymentKey}/cancel`,
+      cancelPayload,
+      {
+        headers: {
+          Authorization: this.getAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+
+    const existingPayment = await this.prisma.payment.findFirst({
+      where: { paymentKey },
+    });
+    if (!existingPayment) {
+      throw new BadRequestException('결제 정보를 찾을 수 없습니다.');
+    }
+
+    await this.prisma.payment.update({
+      where: { id: existingPayment.id },
+      data: {
+        status: data.cancelAmount ? 'PARTIALLY_CANCELLED' : 'CANCELLED',
+        metadata: response.data,
+      },
+    });
+
+    return {
+      success: true,
+      message: '결제가 취소되었습니다.',
+      data: existingPayment,
+    };
+  }
+
   async getPaymentInfo(paymentKey: string) {
-    try {
-      // DB에서 결제 정보 조회
-      const payment = await this.prisma.payment.findFirst({
-        where: { paymentKey },
-        select: {
-          id: true,
-          paymentKey: true,
-          orderId: true,
-          amount: true,
-          status: true,
-          method: true,
-          customerId: true,
-          metadata: true,
-          createdAt: true,
-          updatedAt: true,
-        }
-      });
+    const payment = await this.prisma.payment.findFirst({
+      where: { paymentKey },
+      select: {
+        id: true,
+        paymentKey: true,
+        orderId: true,
+        amount: true,
+        status: true,
+        method: true,
+        customerId: true,
+        metadata: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-      if (!payment) {
-        // DB에 없으면 토스페이먼츠에서 직접 조회
-        const tossData = await this.getPaymentStatus(paymentKey);
-        return {
-          success: true,
-          data: {
-            paymentKey: tossData.paymentKey,
-            orderId: tossData.orderId,
-            amount: tossData.totalAmount,
-            status: tossData.status,
-            method: tossData.method,
-            easyPay: tossData.easyPay || null,
-            approvedAt: tossData.approvedAt,
-            metadata: tossData.metadata || {}
-          }
-        };
-      }
-
-      // DB에서 메타데이터 파싱하여 쿠폰 정보 추출
-      const metadata = payment.metadata as any;
-      //console.log('결제 메타데이터 구조:', JSON.stringify(metadata, null, 2));
-      
-      // 메타데이터에서 쿠폰 정보 추출 (여러 가능한 경로 시도)
-      const couponId = metadata?.couponId || metadata?.metadata?.couponId || null;
-      const couponDiscount = metadata?.couponDiscount || metadata?.metadata?.couponDiscount || 0;
-      const addressId = metadata?.addressId || metadata?.metadata?.addressId || null;
-      const pointsUsed = metadata?.pointsUsed || metadata?.metadata?.pointsUsed || 0;
-      
-      //console.log('추출된 쿠폰 정보:', { couponId, couponDiscount, addressId, pointsUsed });
-      
+    if (payment) {
+      const metadata = (payment.metadata || {}) as Record<string, unknown>;
+      const inner = (metadata.metadata as Record<string, unknown>) || metadata;
       return {
         success: true,
         data: {
@@ -486,25 +511,22 @@ export class PaymentsService {
           orderId: payment.orderId,
           amount: payment.amount,
           status: payment.status,
-          method: payment.method ?? (metadata?.method as string),
-          easyPay: metadata?.easyPay || null,
+          method: payment.method ?? (metadata.method as string),
+          easyPay: metadata.easyPay || inner.easyPay || null,
           customerId: payment.customerId,
-          metadata: metadata || {},
-          // 추출된 쿠폰 정보
-          couponId,
-          couponDiscount,
-          addressId,
-          pointsUsed,
+          metadata,
+          couponId: metadata.couponId ?? inner.couponId ?? null,
+          couponDiscount: metadata.couponDiscount ?? inner.couponDiscount ?? 0,
+          addressId: metadata.addressId ?? inner.addressId ?? null,
+          pointsUsed: metadata.pointsUsed ?? inner.pointsUsed ?? 0,
           createdAt: payment.createdAt,
           updatedAt: payment.updatedAt,
-        }
-      };
-    } catch (error) {
-      this.logger.error('결제 정보 조회 실패:', error);
-      return {
-        success: false,
-        error: error.message || '결제 정보 조회에 실패했습니다.'
+        },
       };
     }
+
+    throw new BadRequestException(
+      '결제 정보를 찾을 수 없습니다. 결제 승인(confirm) 후에만 조회할 수 있습니다.',
+    );
   }
 }

@@ -416,7 +416,7 @@ export default function CheckoutPage() {
   // 토스페이먼츠 결제위젯 초기화
   const initializePayment = async (orderId: string, orderName: string) => {
     try {
-      const clientKey = process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY || 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm';
+      const clientKey = process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY || '';
       
       const tossPayments = (window as any).TossPayments(clientKey);
       const widgets = tossPayments.widgets({
@@ -530,9 +530,12 @@ export default function CheckoutPage() {
           // 바로결제 상품 정보를 successUrl에 추가
           if (directProduct) {
             successUrl.searchParams.set('product', encodeURIComponent(JSON.stringify(directProduct)));
-            //console.log('✅ successUrl에 바로결제 상품 정보 추가:', directProduct);
           }
-          
+          // 배송지 ID를 successUrl에 추가 (결제 승인 시 주문 생성에 사용)
+          if (selectedAddressId) {
+            successUrl.searchParams.set('addressId', selectedAddressId);
+          }
+
           await widgets.requestPayment({
             orderId: orderId,
             orderName: orderName,

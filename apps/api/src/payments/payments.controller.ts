@@ -55,12 +55,32 @@ export class PaymentsController {
       paymentKey: string;
       orderId: string;
       amount: number;
+      orderMetadata?: {
+        items?: Array<{
+          productId: string;
+          productName: string;
+          productSku: string;
+          quantity: number;
+          unitPrice: number;
+          totalPrice: number;
+          finalPrice: number;
+        }>;
+        shippingAddress?: Record<string, unknown>;
+        billingAddress?: Record<string, unknown>;
+        addressId?: string;
+        couponId?: string;
+        discountAmount?: number;
+        shippingAmount?: number;
+      };
     }
   ) {
     this.logger.log(`결제 승인 요청 (POST): paymentKey=${body.paymentKey}, orderId=${body.orderId}, amount=${body.amount}`);
-    
+
     return this.paymentsService.confirmPayment({
-      ...body,
+      paymentKey: body.paymentKey,
+      orderId: body.orderId,
+      amount: body.amount,
+      orderMetadata: body.orderMetadata,
     });
   }
 

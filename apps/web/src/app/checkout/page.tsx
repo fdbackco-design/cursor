@@ -412,6 +412,7 @@ export default function CheckoutPage() {
       setPaymentLoading(false);
     }
   };
+  
 
   // 토스페이먼츠 결제위젯 초기화
   const initializePayment = async (orderId: string, orderName: string) => {

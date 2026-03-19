@@ -248,13 +248,55 @@ export class PaymentsService {
           }
 
           const totalAmount = payment.amount;
-          const couponId = data.orderMetadata?.couponId || (metadata.couponId as string | undefined);
+          const rawCouponId =
+            data.orderMetadata?.couponId || (metadata.couponId as string | undefined);
+
+          // couponId는 프론트에서 UserCoupon.id로 전달될 수 있으므로
+          // Order FK(Coupon.id)에 맞게 정규화한다.
+          let normalizedCouponId: string | null = null;
+          let userCouponToProcess: { id: string; couponId: string; usageCount: number } | null = null;
+          if (rawCouponId && rawCouponId !== 'null') {
+            const userCoupon = await tx.userCoupon.findFirst({
+              where: {
+                id: rawCouponId,
+                userId: existingPayment.customerId,
+                deletedAt: null,
+              },
+              include: { coupon: true },
+            });
+
+            if (userCoupon) {
+              normalizedCouponId = userCoupon.couponId;
+              userCouponToProcess = {
+                id: userCoupon.id,
+                couponId: userCoupon.couponId,
+                usageCount: userCoupon.usageCount,
+              };
+              this.logger.log(
+                `쿠폰 정규화 성공: userCouponId=${rawCouponId} -> couponId=${normalizedCouponId}`,
+              );
+            } else {
+              // 이미 Coupon.id로 전달된 케이스도 허용
+              const coupon = await tx.coupon.findUnique({
+                where: { id: rawCouponId },
+                select: { id: true },
+              });
+              if (coupon) {
+                normalizedCouponId = coupon.id;
+                this.logger.log(`쿠폰 ID 직접 사용: couponId=${normalizedCouponId}`);
+              } else {
+                this.logger.warn(
+                  `유효하지 않은 쿠폰 ID - 주문에는 저장하지 않음: rawCouponId=${rawCouponId}, userId=${existingPayment.customerId}`,
+                );
+              }
+            }
+          }
 
           const newOrder = await tx.order.create({
             data: {
               orderNumber: data.orderId,
               userId: existingPayment.customerId,
-              couponId: couponId || null,
+              couponId: normalizedCouponId || null,
               subtotal,
               discountAmount,
               shippingAmount,
@@ -270,6 +312,7 @@ export class PaymentsService {
                 paymentMethod: tossResponse.method,
                 easyPayProvider: tossResponse.easyPay?.provider ?? null,
                 easyPay: tossResponse.easyPay ?? null,
+                userCouponId: userCouponToProcess?.id ?? null,
               },
               items: {
                 create: orderItems.map((item) => ({
@@ -305,6 +348,26 @@ export class PaymentsService {
             await tx.product.update({
               where: { id: item.productId },
               data: { stockQuantity: { decrement: item.quantity } },
+            });
+          }
+
+          // 쿠폰 사용 처리 (UserCoupon 소프트 삭제 + Coupon 사용 횟수 증가)
+          if (userCouponToProcess) {
+            await tx.userCoupon.update({
+              where: { id: userCouponToProcess.id },
+              data: {
+                deletedAt: new Date(),
+                usageCount: userCouponToProcess.usageCount + 1,
+              },
+            });
+
+            await tx.coupon.update({
+              where: { id: userCouponToProcess.couponId },
+              data: {
+                currentUses: {
+                  increment: 1,
+                },
+              },
             });
           }
 

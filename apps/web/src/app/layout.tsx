@@ -5,6 +5,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import MobileScrollButtons from '@/components/ui/MobileScrollButtons';
+import MobileKakaoChannelButton from '@/components/ui/MobileKakaoChannelButton';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { DialogProvider } from '@/components/ui/dialog-provider';
 
@@ -79,6 +80,7 @@ export default function RootLayout({
               <Footer />
               
               {/* 모바일 하단 네비게이션 */}
+              <MobileKakaoChannelButton />
               <MobileScrollButtons />
               <MobileBottomNav />
             </div>

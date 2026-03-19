@@ -914,11 +914,6 @@ export default function AccountPage() {
                               <div className="text-base sm:text-lg font-bold text-gray-900 mb-1">
                                 {coupon.code}
                               </div>
-                              {coupon.maxUses && (
-                                <div className="text-xs text-gray-500">
-                                  {coupon.currentUses}/{coupon.maxUses} 사용
-                                </div>
-                              )}
                             </div>
                           </div>
                         </div>

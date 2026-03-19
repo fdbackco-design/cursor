@@ -159,7 +159,6 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
             </div>
           </div>
         </div>
-      </div>
     );
   }
 

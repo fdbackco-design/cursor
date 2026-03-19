@@ -215,8 +215,8 @@ export class AuthService {
 
   /**
    * 카카오 로그인 처리
-   * - 신규 가입 시에만 referrerCodeUsed 기록 (정책: "신규 가입 1회만")
-   * - 기존 회원은 추천인 코드 미기록/미수정
+   * - 추천인 코드가 유효하게 전달되면 로그인 시점에 즉시 approve=true 처리
+   * - 추천인 코드가 없거나 무효면 기존 승인 정책 유지
    * - 카카오 추가 동의 항목들 저장
    */
   async handleKakaoLogin(
@@ -236,6 +236,7 @@ export class AuthService {
     const cleanName = (user.name ?? '').trim() || '카카오사용자';
     const cleanEmail = user.email?.trim() || null;
     const cleanRef = referralCode?.trim();
+    const shouldAutoApproveByReferral = !!cleanRef;
     const cleanPhoneNumber = this.normalizePhoneNumber(user.phoneNumber);
     const cleanShippingAddress = user.shippingAddress || null;
     const cleanTalkMessageAgreed = user.talkMessageAgreed ?? false;
@@ -262,9 +263,13 @@ export class AuthService {
           shippingAddress: cleanShippingAddress,
           talkMessageAgreed: cleanTalkMessageAgreed,
           updatedAt: new Date(),
+          ...(shouldAutoApproveByReferral ? { approve: true } : {}),
         };
         dbUser = await this.prisma.user.update({ where: { id: byEmail.id }, data: updateData });
         this.logger.log(`Linked existing by email: id=${dbUser.id}, role=${dbUser.role}, ref=${dbUser.referrerCodeUsed ?? ''}`);
+        if (shouldAutoApproveByReferral) {
+          this.logger.log(`추천인 코드 유효 - 즉시 승인 처리: id=${dbUser.id}, approve=true`);
+        }
       }
     }
   
@@ -308,7 +313,7 @@ export class AuthService {
         name: cleanName,
         kakaoSub: user.kakaoSub,
         role: userRole,
-        approve: false, // 기본적으로 승인되지 않음
+        approve: shouldAutoApproveByReferral, // 유효 추천인 코드 로그인 시 즉시 승인
         isActive: true,
         // 카카오 추가 정보
         phoneNumber: cleanPhoneNumber,
@@ -354,6 +359,7 @@ export class AuthService {
         shippingAddress: cleanShippingAddress ?? dbUser.shippingAddress,
         talkMessageAgreed: cleanTalkMessageAgreed,
         updatedAt: new Date(),
+        ...(shouldAutoApproveByReferral && !dbUser.approve ? { approve: true } : {}),
       };
   
       // 최초 연동 타이밍 한정 1회 백필 규칙
@@ -370,6 +376,9 @@ export class AuthService {
   
       dbUser = await this.prisma.user.update({ where: { id: dbUser.id }, data: updateData });
       this.logger.log(`User updated: id=${dbUser.id}, role=${dbUser.role}, ref=${dbUser.referrerCodeUsed ?? ''}`);
+      if (shouldAutoApproveByReferral && !dbUser.approve) {
+        this.logger.log(`추천인 코드 유효 - 즉시 승인 처리: id=${dbUser.id}, approve=true`);
+      }
     }
   
         // 5) JWT

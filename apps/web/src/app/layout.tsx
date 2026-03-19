@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
+import MobileScrollButtons from '@/components/ui/MobileScrollButtons';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { DialogProvider } from '@/components/ui/dialog-provider';
 
@@ -78,6 +79,7 @@ export default function RootLayout({
               <Footer />
               
               {/* 모바일 하단 네비게이션 */}
+              <MobileScrollButtons />
               <MobileBottomNav />
             </div>
           </DialogProvider>

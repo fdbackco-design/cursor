@@ -10,6 +10,7 @@ interface User {
   kakaoSub: string;
   referrerCodeUsed?: string;
   approve: boolean;
+  originalApprove?: boolean;
   phoneNumber?: string;
   shippingAddress?: any;
   talkMessageAgreed?: boolean;
@@ -56,7 +57,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // 사용자 정보가 유효한지 확인 (필수 필드 존재 여부)
         if (normalizedUser && normalizedUser.id && normalizedUser.email && normalizedUser.name) {
-          setUser(normalizedUser);
+          const hasValidReferralCode =
+            typeof normalizedUser.referrerCodeUsed === 'string' &&
+            normalizedUser.referrerCodeUsed.trim().length > 0;
+
+          // 접근 제어 정책:
+          // - 기존: approve=true 인 사용자만 접근 허용
+          // - 변경: 유효 추천인 코드(referrerCodeUsed)가 있으면 approve와 무관하게 접근 허용
+          // 승인 필드는 원본값을 originalApprove로 유지한다.
+          const accessAwareUser: User = {
+            ...normalizedUser,
+            originalApprove: Boolean(normalizedUser.approve),
+            approve: Boolean(normalizedUser.approve || hasValidReferralCode),
+          };
+
+          setUser(accessAwareUser);
         } else {
           setUser(null);
         }

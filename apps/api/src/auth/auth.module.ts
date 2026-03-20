@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuditLogModule } from '../audit-log/audit-log.module';
 import { AddressesModule } from '../addresses/addresses.module';
 import { ReferralCodesModule } from '../referral-codes/referral-codes.module';
+import { CouponsModule } from '../coupons/coupons.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ReferralCodesModule } from '../referral-codes/referral-codes.module';
     AuditLogModule,
     AddressesModule,
     ReferralCodesModule,
+    CouponsModule,
   ],
   providers: [AuthService, KakaoStrategy, JwtStrategy],
   controllers: [AuthController],

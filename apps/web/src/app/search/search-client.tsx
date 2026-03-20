@@ -11,6 +11,8 @@ import type { Product } from '@/types/product';
 export default function SearchClient({ initialQuery }: { initialQuery: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  /** URL의 q만 반영. searchQuery를 deps에 넣으면 모바일에서 입력할 때마다 빈 q로 덮어써져 입력 불가 */
+  const queryFromUrl = searchParams.get('q') ?? '';
   const [searchQuery, setSearchQuery] = useState(initialQuery || '');
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -43,21 +45,11 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
     load();
   }, [initialQuery]);
 
-  // URL 파라미터 변경 감지
+  // URL(q) 변경 시에만 상태 동기화 — 브라우저 뒤로가기·공유 링크·폼 제출 반영 (입력 중 덮어쓰기 방지)
   useEffect(() => {
-    const query = searchParams.get('q') || '';
-    //console.log('URL 파라미터 감지:', { query, searchQuery, isSearching });
-    if (query !== searchQuery) {
-      setSearchQuery(query);
-      if (query.trim()) {
-        //console.log('검색 모드로 전환:', query);
-        setIsSearching(true);
-      } else {
-        //console.log('검색 모드 해제');
-        setIsSearching(false);
-      }
-    }
-  }, [searchParams, searchQuery]);
+    setSearchQuery(queryFromUrl);
+    setIsSearching(!!queryFromUrl.trim());
+  }, [queryFromUrl]);
 
   // 검색어 필터
   useEffect(() => {
@@ -124,14 +116,20 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
               >
                 <ArrowLeft className="h-6 w-6 text-gray-600" />
               </button>
-              <form onSubmit={handleSearch} className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <form onSubmit={handleSearch} className="flex-1 relative min-w-0">
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 z-0 h-4 w-4 -translate-y-1/2 text-gray-400"
+                  aria-hidden
+                />
                 <input
-                  type="text"
+                  type="search"
+                  enterKeyHint="search"
+                  autoComplete="off"
+                  autoCorrect="off"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="상품명 또는 브랜드 입력"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className="relative z-[1] w-full min-h-[44px] pl-10 pr-4 py-2.5 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent md:text-sm"
                 />
               </form>
             </div>
@@ -178,14 +176,20 @@ export default function SearchClient({ initialQuery }: { initialQuery: string })
             </button>
             
             {/* 검색 입력 */}
-            <form onSubmit={handleSearch} className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <form onSubmit={handleSearch} className="flex-1 relative min-w-0">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 z-0 h-4 w-4 -translate-y-1/2 text-gray-400"
+                aria-hidden
+              />
               <input
-                type="text"
+                type="search"
+                enterKeyHint="search"
+                autoComplete="off"
+                autoCorrect="off"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="상품명 또는 브랜드 입력"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="relative z-[1] w-full min-h-[44px] pl-10 pr-4 py-2.5 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent md:text-sm"
                 autoFocus
               />
             </form>

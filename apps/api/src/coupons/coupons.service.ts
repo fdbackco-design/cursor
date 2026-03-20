@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCouponDto, UpdateCouponDto } from './dto';
 import { Prisma } from '@repo/db';
 
+/** 신규 가입 시 자동 지급 쿠폰 코드 (쿠폰 마스터에 동일 코드로 등록 필요) */
+export const SIGNUP_WELCOME_COUPON_CODE = 'FBM10000';
+
 @Injectable()
 export class CouponsService {
+  private readonly logger = new Logger(CouponsService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   // 모든 쿠폰 조회
@@ -432,5 +437,64 @@ export class CouponsService {
 
       return userCoupon;
     });
+  }
+
+  /**
+   * 신규 회원가입 직후 1회만 지급. 동일 userId+couponId가 이미 있으면 스킵(사용/삭제 이력 포함).
+   * 쿠폰 마스터에 없거나 비활성·기간 외·전역 한도 초과 시 발급하지 않음(가입은 성공 유지).
+   */
+  async issueSignupWelcomeCouponOnce(
+    userId: string,
+    couponCode: string = SIGNUP_WELCOME_COUPON_CODE,
+  ): Promise<{ issued: boolean; reason?: string }> {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const coupon = await tx.coupon.findUnique({
+          where: { code: couponCode },
+        });
+
+        if (!coupon) {
+          this.logger.warn(`가입 환영 쿠폰: 마스터에 코드 "${couponCode}" 없음 — 발급 생략`);
+          return { issued: false, reason: 'coupon_not_found' };
+        }
+
+        if (!coupon.isActive) {
+          this.logger.warn(`가입 환영 쿠폰: "${couponCode}" 비활성 — 발급 생략`);
+          return { issued: false, reason: 'coupon_inactive' };
+        }
+
+        const now = new Date();
+        if (coupon.startsAt && coupon.startsAt > now) {
+          return { issued: false, reason: 'not_started' };
+        }
+        if (coupon.endsAt && coupon.endsAt < now) {
+          return { issued: false, reason: 'expired' };
+        }
+        if (coupon.maxUses != null && coupon.currentUses >= coupon.maxUses) {
+          this.logger.warn(`가입 환영 쿠폰: "${couponCode}" 전역 사용 한도 초과 — 발급 생략`);
+          return { issued: false, reason: 'global_limit' };
+        }
+
+        const existing = await tx.userCoupon.findUnique({
+          where: {
+            userId_couponId: { userId, couponId: coupon.id },
+          },
+        });
+
+        if (existing) {
+          return { issued: false, reason: 'already_issued' };
+        }
+
+        await tx.userCoupon.create({
+          data: { userId, couponId: coupon.id },
+        });
+
+        this.logger.log(`가입 환영 쿠폰 발급: userId=${userId}, code=${couponCode}`);
+        return { issued: true };
+      });
+    } catch (error) {
+      this.logger.error(`가입 환영 쿠폰 발급 실패: userId=${userId}`, error);
+      return { issued: false, reason: 'error' };
+    }
   }
 }

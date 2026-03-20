@@ -5,6 +5,7 @@ import { PrismaClient, UserRole } from '@repo/db';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { AddressesService } from '../addresses/addresses.service';
 import { ReferralCodesService } from '../referral-codes/referral-codes.service';
+import { CouponsService } from '../coupons/coupons.service';
 
 
 @Injectable()
@@ -15,7 +16,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly auditLogService: AuditLogService,
     private readonly addressesService: AddressesService,
-    private readonly referralCodesService: ReferralCodesService
+    private readonly referralCodesService: ReferralCodesService,
+    private readonly couponsService: CouponsService,
   ) {}
 
   async getCurrentUser(req: Request) {
@@ -346,6 +348,20 @@ export class AuthService {
         } catch (error) {
           this.logger.error('기본 배송지 생성 실패:', error);
         }
+      }
+
+      // 신규 가입 1회: 쿠폰 마스터 FBM10000 → UserCoupon 1건 (중복/기존 회원 경로는 호출 안 함)
+      try {
+        const couponResult = await this.couponsService.issueSignupWelcomeCouponOnce(dbUser.id);
+        if (couponResult.issued) {
+          this.logger.log(`신규 가입 환영 쿠폰 지급 완료: userId=${dbUser.id}`);
+        } else if (couponResult.reason && couponResult.reason !== 'already_issued') {
+          this.logger.debug(
+            `신규 가입 환영 쿠폰 미지급: userId=${dbUser.id}, reason=${couponResult.reason}`,
+          );
+        }
+      } catch (error) {
+        this.logger.error(`신규 가입 환영 쿠폰 지급 예외: userId=${dbUser.id}`, error);
       }
     } else {
       // 4) 기존 유저 (이미 kakaoSub 보유)

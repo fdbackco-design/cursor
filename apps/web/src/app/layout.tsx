@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import MobileScrollButtons from '@/components/ui/MobileScrollButtons';
 import MobileKakaoChannelButton from '@/components/ui/MobileKakaoChannelButton';
+import AndroidInAppChromeIntent from '@/components/ui/AndroidInAppChromeIntent';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { DialogProvider } from '@/components/ui/dialog-provider';
 
@@ -64,6 +65,7 @@ export default function RootLayout({
         <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
       </head>
       <body className={inter.className}>
+        <AndroidInAppChromeIntent />
         <AuthProvider>
           <DialogProvider>
             {/* 전역 레이아웃: Header + Main Content + Footer */}

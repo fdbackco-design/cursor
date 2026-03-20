@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 
 const STORAGE_KEY = 'fm_promotion_popup_hide_date';
@@ -38,15 +38,24 @@ function saveHideForToday(): void {
 type PromotionEntryPopupProps = {
   /** 로그인·승인된 사용자가 /home 본문을 볼 때만 true */
   eligible: boolean;
+  /** 열림/닫힘 상태 (순차 팝업용) */
+  onOpenChange?: (open: boolean) => void;
+  /** 닫힌 직후 1회 (열었다가 닫았을 때만 호출) */
+  onAfterClose?: () => void;
 };
 
 /**
  * 당근/회원가입 쿠폰 안내 팝업 — /home에서만 사용.
  * 로그인 전에는 마운트하지 않음. 같은 탭에서 /home 첫 진입 시에만 표시(sessionStorage).
  */
-export default function PromotionEntryPopup({ eligible }: PromotionEntryPopupProps) {
+export default function PromotionEntryPopup({
+  eligible,
+  onOpenChange,
+  onAfterClose,
+}: PromotionEntryPopupProps) {
   const [open, setOpen] = useState(false);
   const [dontShowToday, setDontShowToday] = useState(false);
+  const prevOpenRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !eligible) {
@@ -72,6 +81,14 @@ export default function PromotionEntryPopup({ eligible }: PromotionEntryPopupPro
       document.body.style.overflow = prev;
     };
   }, [open]);
+
+  useEffect(() => {
+    onOpenChange?.(open);
+    if (prevOpenRef.current && !open) {
+      onAfterClose?.();
+    }
+    prevOpenRef.current = open;
+  }, [open, onOpenChange, onAfterClose]);
 
   const dismiss = useCallback(() => {
     if (dontShowToday) {

@@ -739,18 +739,36 @@ export default function AccountPage() {
                       <div key={item.id} className="relative">
                         <ProductCard product={{
                           ...item.product,
-                          sku: '',
-                          categoryId: '',
-                          isFeatured: false,
-                          stockQuantity: 0,
-                          lowStockThreshold: 0,
-                          tags: [],
-                          metadata: {},
-                          createdAt: new Date(),
-                          updatedAt: new Date(),
-                          category: typeof item.product.category === 'string' 
-                            ? { id: '', name: item.product.category, slug: '' }
-                            : { id: '', name: '', slug: '' }
+                          sku: item.product.sku ?? '',
+                          categoryId: item.product.categoryId ?? '',
+                          isFeatured: item.product.isFeatured ?? false,
+                          stockQuantity:
+                            typeof item.product.stockQuantity === 'number'
+                              ? item.product.stockQuantity
+                              : Number(item.product.stockQuantity) || 0,
+                          lowStockThreshold: item.product.lowStockThreshold ?? 0,
+                          tags: Array.isArray(item.product.tags)
+                            ? item.product.tags
+                            : [],
+                          metadata: item.product.metadata ?? {},
+                          createdAt: item.product.createdAt
+                            ? new Date(item.product.createdAt)
+                            : new Date(),
+                          updatedAt: item.product.updatedAt
+                            ? new Date(item.product.updatedAt)
+                            : new Date(),
+                          category:
+                            item.product.category &&
+                            typeof item.product.category === 'object' &&
+                            'name' in item.product.category
+                              ? {
+                                  id: String((item.product.category as { id?: string }).id ?? ''),
+                                  name: String((item.product.category as { name?: string }).name ?? ''),
+                                  slug: String((item.product.category as { slug?: string }).slug ?? ''),
+                                }
+                              : typeof item.product.category === 'string'
+                                ? { id: '', name: item.product.category, slug: '' }
+                                : { id: '', name: '', slug: '' },
                         }} />
                         <button
                           onClick={() => removeFromWishlist(item.productId)}

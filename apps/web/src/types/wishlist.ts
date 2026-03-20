@@ -1,20 +1,12 @@
+import type { Product } from './product';
+
+/** API `include: { product: true }` 기준 — ProductCard 등에 그대로 전달 */
 export interface WishlistItem {
   id: string;
   productId: string;
   userId: string;
   createdAt: Date;
-  product: {
-    id: string;
-    name: string;
-    brand: string;
-    description: string;
-    priceB2B: number;
-    priceB2C: number;
-    images: string[];
-    descriptionImages?: string[];
-    category: string;
-    isActive: boolean;
-  };
+  product: Product;
 }
 
 export interface WishlistResponse {

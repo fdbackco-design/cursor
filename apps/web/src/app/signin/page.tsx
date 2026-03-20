@@ -1,11 +1,33 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { Button } from '@repo/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
 import { MessageCircle, Gift, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { sanitizePostLoginPath } from '@/lib/utils/safe-redirect';
+
+const POST_LOGIN_REDIRECT_KEY = 'post_login_redirect';
+
+function buildKakaoLoginHref(refCode: string, redirectParam: string | null): string {
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const loginUrl = new URL(`${apiBase}/api/v1/auth/kakao`);
+  loginUrl.searchParams.set('ref', refCode.trim());
+  let r = redirectParam ?? '';
+  if (!r && typeof window !== 'undefined') {
+    try {
+      r = sessionStorage.getItem(POST_LOGIN_REDIRECT_KEY) ?? '';
+    } catch {
+      r = '';
+    }
+  }
+  const safe = sanitizePostLoginPath(r);
+  if (safe) {
+    loginUrl.searchParams.set('redirect', safe);
+  }
+  return loginUrl.toString();
+}
 
 // 유틸리티 함수들
 const saveReferralCodeToCookie = (code: string) => {
@@ -59,87 +81,46 @@ function SignInPageInner() {
   
   const searchParams = useSearchParams();
   const router = useRouter();
+  const referralBootstrapDone = useRef(false);
 
-  // URL 파라미터 읽기를 별도 useEffect에서 처리
+  // error / login 쿼리 동기화
   useEffect(() => {
-    const parseUrlParams = () => {
-      if (typeof window === 'undefined') return;
-      
-      try {
-        // window.location을 직접 사용
-        const url = new URL(window.location.href);
-        const ref = url.searchParams.get('ref');
-        const error = url.searchParams.get('error');
-        const login = url.searchParams.get('login');
-        
-
-        
-        setUrlRef(ref);
-        setUrlError(error);
-        setLoginSuccess(login);
-        
-        // useSearchParams도 시도
-        try {
-          const searchRef = searchParams.get('ref');
-          const searchError = searchParams.get('error');
-          const searchLogin = searchParams.get('login');
-          
-
-          
-          // useSearchParams가 작동한다면 그 값을 우선 사용
-          if (searchRef !== null || searchError !== null || searchLogin !== null) {
-            setUrlRef(searchRef);
-            setUrlError(searchError);
-            setLoginSuccess(searchLogin);
-          }
-        } catch (searchError) {
-          console.warn('useSearchParams 실패, window.location 사용:', searchError);
-        }
-      } catch (error) {
-        console.error('URL 파라미터 읽기 실패:', error);
-      }
-    };
-
-    parseUrlParams();
+    const err = searchParams.get('error');
+    const login = searchParams.get('login');
+    setUrlError(err);
+    setLoginSuccess(login);
   }, [searchParams]);
 
-  // 이미 로그인된 사용자는 홈으로 리다이렉트
+  // 이미 로그인된 사용자: redirect 쿼리가 있으면 해당 경로(검증된 상대 경로만), 없으면 /home
   useEffect(() => {
-    if (isAuthenticated && user) {
-      if (user.approve) {
-        // 승인된 사용자는 홈으로 리다이렉트
-        router.push('/home');
+    if (!isAuthenticated || !user) return;
+    const redirectRaw = searchParams.get('redirect');
+    const safe = sanitizePostLoginPath(redirectRaw);
+    if (user.approve) {
+      if (safe) {
+        router.replace(safe);
       } else {
-        // 승인되지 않은 사용자는 승인 대기 페이지로 리다이렉트
-        router.push('/approval-pending');
+        router.replace('/home');
       }
+    } else {
+      router.replace('/approval-pending');
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, searchParams]);
 
-  // 로그인 성공 시 자동 리다이렉트
+  // 로그인 성공 시 자동 리다이렉트(레거시: signin?login=success)
   useEffect(() => {
     if (loginSuccess === 'success') {
-      // 2초 후 리다이렉트 (URL 파라미터 확인)
       const timer = setTimeout(() => {
-        // URL에서 redirect 파라미터 확인
         const urlParams = new URLSearchParams(window.location.search);
         const redirectUrl = urlParams.get('redirect');
-        
-        if (redirectUrl) {
-          // 원래 접근하려던 페이지로 리다이렉트
-          window.location.href = redirectUrl;
-        } else {
-          // 리다이렉트 URL이 없으면 홈으로
-          window.location.href = '/home';
-        }
+        const safe = sanitizePostLoginPath(redirectUrl);
+        window.location.href = safe ?? '/home';
       }, 2000);
-      
+
       return () => clearTimeout(timer);
     }
-    
-    // cleanup 함수가 필요하지 않은 경우 undefined 반환
     return undefined;
-  }, [loginSuccess, router]);
+  }, [loginSuccess]);
 
   // 추천인 코드 유효성 검증 함수
   const validateReferralCode = async (code: string, silent = false): Promise<boolean> => {
@@ -186,62 +167,75 @@ function SignInPageInner() {
 
   const verifyReferralCode = () => validateReferralCode(referralCode);
 
-  // 카카오 로그인 함수 (useEffect보다 먼저 정의)
-  const handleKakaoLogin = (bypassValidation = false) => {
-    if (!bypassValidation && verificationStatus !== 'valid') {
-      setError('먼저 추천인 코드를 확인해주세요.');
-      return;
-    }
-
-    setIsLoading(true);
-    setError('');
-    
-    // 추천인 코드와 함께 카카오 로그인 URL로 이동
-    const loginUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/auth/kakao?ref=${encodeURIComponent(referralCode.trim())}`;
-
-    window.location.href = loginUrl;
-  };
-
-  // 페이지 로드시 URL ref 파라미터 또는 저장된 코드 처리
+  // 로그인 후 복귀 URL — 미들웨어 redirect 쿼리를 세션에 백업(OAuth 중 유실 방지)
   useEffect(() => {
-    // urlRef가 아직 설정되지 않았으면 기다림
-    if (urlRef === null && typeof window !== 'undefined') {
-      return;
-    }
-    
-    const initializeReferralCode = async () => {
-      let codeToUse = '';
-      
-      // 1. URL ref 파라미터 우선 확인
-      if (urlRef) {
-        codeToUse = urlRef;
-        setReferralCode(urlRef);
-        
-        // URL ref가 있으면 즉시 유효성 검증
-        const isValid = await validateReferralCode(urlRef, true);
-        
-        if (isValid) {
-          setAutoVerificationDone(true);
-          // 유효하면 바로 카카오 로그인으로 이동 (유효성 검증 우회)
-          setTimeout(() => {
-            handleKakaoLogin(true);
-          }, 1000); // 1초 후 자동 로그인
-        } else {
-          setAutoVerificationDone(true);
-        }
-      } else {
-        // 2. URL ref가 없으면 저장된 코드 확인
-        const storedCode = getReferralCodeFromStorage();
-        if (storedCode) {
-          codeToUse = storedCode;
-          setReferralCode(storedCode);
-        }
-        setAutoVerificationDone(true);
+    const r = searchParams.get('redirect');
+    if (r) {
+      try {
+        sessionStorage.setItem(POST_LOGIN_REDIRECT_KEY, r);
+      } catch {
+        /* ignore */
       }
+    }
+  }, [searchParams]);
+
+  // 카카오 로그인: ref + redirect(원래 방문 경로)를 API에 전달 → OAuth state에 포함
+  const handleKakaoLogin = useCallback(
+    (bypassValidation = false) => {
+      if (!bypassValidation && verificationStatus !== 'valid') {
+        setError('먼저 추천인 코드를 확인해주세요.');
+        return;
+      }
+
+      setIsLoading(true);
+      setError('');
+
+      const redirectFromQuery = searchParams.get('redirect');
+      window.location.href = buildKakaoLoginHref(referralCode, redirectFromQuery);
+    },
+    [referralCode, verificationStatus, searchParams],
+  );
+
+  // 최초 1회: ref 자동입력·검증·유효 시 카카오 자동 이동 (handleKakaoLogin 클로저 stale 방지: buildKakaoLoginHref 사용)
+  useEffect(() => {
+    if (typeof window === 'undefined' || referralBootstrapDone.current) return;
+    referralBootstrapDone.current = true;
+
+    const u = new URL(window.location.href);
+    const refFromUrl = u.searchParams.get('ref');
+    const redirectFromQuery = u.searchParams.get('redirect');
+    if (redirectFromQuery) {
+      try {
+        sessionStorage.setItem(POST_LOGIN_REDIRECT_KEY, redirectFromQuery);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const run = async () => {
+      if (refFromUrl) {
+        setUrlRef(refFromUrl);
+        setReferralCode(refFromUrl);
+        const isValid = await validateReferralCode(refFromUrl, true);
+        setAutoVerificationDone(true);
+        if (isValid) {
+          setTimeout(() => {
+            window.location.href = buildKakaoLoginHref(refFromUrl, redirectFromQuery);
+          }, 1000);
+        }
+        return;
+      }
+
+      setUrlRef(null);
+      const storedCode = getReferralCodeFromStorage();
+      if (storedCode) {
+        setReferralCode(storedCode);
+      }
+      setAutoVerificationDone(true);
     };
 
-    initializeReferralCode();
-  }, [urlRef]);
+    void run();
+  }, []);
 
   // 입력 필드 blur 시 자동 유효성 검증
   const handleReferralCodeBlur = () => {

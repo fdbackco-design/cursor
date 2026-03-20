@@ -95,10 +95,11 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 1) ref 저장 로직 (그대로 사용)
+  // 1) ref 쿠키 저장 후 URL에서 ref 제거(다른 쿼리는 유지)
   const ref = searchParams.get('ref');
   if (ref && pathname !== '/signin') {
-    const url = new URL(pathname, origin);
+    const url = req.nextUrl.clone();
+    url.searchParams.delete('ref');
     const res = NextResponse.redirect(url);
     res.cookies.set('referral_code', ref, {
       httpOnly: true,
@@ -138,10 +139,18 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 4) 나머지 전부 로그인 필요
+  // 4) 나머지 전부 로그인 필요 — signin에 redirect + (가능하면) ref 쿼리로 전달(httpOnly 쿠키는 JS에서 못 읽음)
   if (!loggedIn) {
     const url = new URL('/signin', origin);
-    url.searchParams.set('redirect', pathname + (req.nextUrl.search || ''));
+    const fullPath = pathname + (req.nextUrl.search || '');
+    url.searchParams.set('redirect', fullPath);
+    const refFromQuery = searchParams.get('ref');
+    const refCookie = req.cookies.get('referral_code');
+    if (refFromQuery) {
+      url.searchParams.set('ref', refFromQuery);
+    } else if (refCookie?.value) {
+      url.searchParams.set('ref', refCookie.value);
+    }
     return NextResponse.redirect(url);
   }
 

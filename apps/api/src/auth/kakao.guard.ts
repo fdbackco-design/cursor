@@ -4,13 +4,18 @@ import type { Request, Response } from 'express';
 
 const log = new Logger('KakaoAuthGuard');
 
-function toStateFromRef(ref?: string): string {
-  if (!ref) return '';
-  const payload = { referralCode: String(ref).trim() };
+/** OAuth state: 추천인 + 로그인 후 복귀 경로(상대 경로만 클라이언트에서 전달) */
+function buildOAuthState(ref?: string, redirect?: string): string {
+  const referralCode = ref?.trim();
+  const redirectPath = redirect?.trim();
+  if (!referralCode && !redirectPath) return '';
+  const payload: Record<string, string> = {};
+  if (referralCode) payload.referralCode = referralCode;
+  if (redirectPath) payload.redirect = redirectPath;
   return Buffer.from(JSON.stringify(payload), 'utf8')
     .toString('base64')
     .replace(/\+/g, '-')
-    .replace(/\//g, '_'); // URL-safe base64
+    .replace(/\//g, '_');
 }
 
 @Injectable()
@@ -23,10 +28,11 @@ export class KakaoAuthGuard extends AuthGuard('kakao') {
     const base = super.getAuthenticateOptions(context) ?? {};
 
     const qState = typeof req.query.state === 'string' ? req.query.state : '';
-    const qRef   = typeof req.query.ref   === 'string' ? req.query.ref   : '';
+    const qRef = typeof req.query.ref === 'string' ? req.query.ref : '';
+    const qRedirect =
+      typeof req.query.redirect === 'string' ? req.query.redirect : '';
 
-    // ref → state
-    const state = qState || toStateFromRef(qRef);
+    const state = qState || buildOAuthState(qRef, qRedirect);
 
     // 유실 대비로 cookie에도 백업
     if (state) {
@@ -58,7 +64,7 @@ export class KakaoAuthGuard extends AuthGuard('kakao') {
     };
 
     log.log(
-      `Start OAuth: q.ref="${qRef}", q.state="${qState}", send.state="${state}", scope=${JSON.stringify(scope)}`
+      `Start OAuth: q.ref="${qRef}", q.redirect="${qRedirect}", q.state="${qState}", send.state.len=${state?.length ?? 0}, scope=${JSON.stringify(scope)}`
     );
 
     return opts;

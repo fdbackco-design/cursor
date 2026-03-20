@@ -7,14 +7,21 @@ import axios from 'axios';
 
 const log = new Logger('KakaoStrategy');
 
-function parseState(raw?: string): { referralCode?: string } | null {
+function parseOAuthStateQuery(req: Request): { referralCode?: string; redirect?: string } {
   try {
-    if (!raw) return null;
-    const norm = String(raw).replace(/-/g, '+').replace(/_/g, '/'); // URL-safe → base64
+    const rawState = req.query?.state as string | undefined;
+    if (!rawState) return {};
+    const norm = String(rawState).replace(/-/g, '+').replace(/_/g, '/');
     const json = Buffer.from(norm, 'base64').toString('utf8');
-    return JSON.parse(json);
+    const p = JSON.parse(json);
+    const ref = (p?.ref ?? p?.referralCode) as string | undefined;
+    const redirect = p?.redirect as string | undefined;
+    return {
+      referralCode: ref?.trim() || undefined,
+      redirect: redirect?.trim() || undefined,
+    };
   } catch {
-    return null;
+    return {};
   }
 }
 
@@ -45,29 +52,24 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
   ) {
     const { id, username, _json } = profile;
 
+    const fromState = parseOAuthStateQuery(req);
+    const returnPathFromState = fromState.redirect;
+
     // state 처리 (OAuth state에서 ref 파라미터 추출)
     const referralCode = (() => {
       try {
-        // 1. OAuth state에서 ref 파라미터 확인
-        const rawState = req.query?.state as string | undefined;
-        if (rawState) {
-          const norm = rawState.replace(/-/g, '+').replace(/_/g, '/');
-          const json = Buffer.from(norm, 'base64').toString('utf8');
-          const parsed = JSON.parse(json);
-          const stateRef = parsed?.ref ?? parsed?.referralCode;
-          if (stateRef) {
-            log.log(`OAuth state에서 추천인 코드 발견: ${stateRef}`);
-            return stateRef as string;
-          }
+        if (fromState.referralCode) {
+          log.log(`OAuth state에서 추천인 코드 발견: ${fromState.referralCode}`);
+          return fromState.referralCode;
         }
-        
+
         // 2. middleware에서 설정한 referral_code 쿠키 확인
         const referralCodeCookie = req.cookies?.referral_code;
         if (referralCodeCookie) {
           log.log(`쿠키에서 추천인 코드 발견: ${referralCodeCookie}`);
           return referralCodeCookie as string;
         }
-        
+
         // 3. 기존 ref 쿠키 확인 (base64 인코딩)
         const refCookie = req.cookies?.ref;
         if (refCookie) {
@@ -80,7 +82,7 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
             return cookieRef as string;
           }
         }
-        
+
         log.log('추천인 코드를 찾을 수 없음');
         return null;
       } catch (error) {
@@ -135,6 +137,6 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
 
     log.log(`카카오 추가 정보: phone=${user.phoneNumber}, address=${!!user.shippingAddress}, talkMsg=${user.talkMessageAgreed}`);
 
-    return done(null, user, { referralCode });
+    return done(null, user, { referralCode, returnPath: returnPathFromState });
   }
 }

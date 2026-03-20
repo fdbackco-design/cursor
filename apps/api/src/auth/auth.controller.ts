@@ -7,6 +7,20 @@ import { KakaoAuthGuard } from './kakao.guard';
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';                 // ⬅️ 추가
 
+function sanitizePostLoginPath(raw: unknown): string | null {
+  if (typeof raw !== 'string' || !raw.trim()) return null;
+  const s = raw.trim();
+  if (!s.startsWith('/') || s.startsWith('//')) return null;
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(s)) return null;
+  if (s.length > 2048) return null;
+  return s;
+}
+
+function appendLoginSuccessQuery(path: string): string {
+  const login = 'login=success';
+  return path.includes('?') ? `${path}&${login}` : `${path}?${login}`;
+}
+
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthService.name);
@@ -174,6 +188,7 @@ export class AuthController {
       const user = req.user as any;
 
       const fromInfo: string | undefined = (req.authInfo as any)?.referralCode;
+      const returnPathRaw = (req.authInfo as any)?.returnPath as string | undefined;
 
       const fromCookie: string | undefined = (() => {
         try {
@@ -242,8 +257,11 @@ export class AuthController {
       this.logger.log(`쿠키 설정 완료: access_token, user_role=${result.user.role}`);
 
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      this.logger.log(`리다이렉트: ${frontendUrl}/home?login=success`);
-      return res.redirect(`${frontendUrl}/home?login=success`);
+      const safePath = sanitizePostLoginPath(returnPathRaw) ?? '/home';
+      const target = appendLoginSuccessQuery(safePath);
+      const dest = `${frontendUrl}${target}`;
+      this.logger.log(`리다이렉트(로그인 후): ${dest}`);
+      return res.redirect(dest);
     } catch (error) {
       this.logger.error('카카오 로그인 에러:', error as any);
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';

@@ -360,32 +360,35 @@ export function ProductDetail({ product }: ProductDetailProps) {
       </div>
 
       {/* Product Info */}
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-                          <p className="text-muted-foreground">{product.category?.name || '카테고리 없음'}</p>
+          <h1 className="text-lg font-bold leading-snug text-gray-900 sm:text-xl md:text-2xl mb-1.5">
+            {product.name}
+          </h1>
+          <p className="text-xs text-muted-foreground sm:text-sm">
+            {product.category?.name || '카테고리 없음'}
+          </p>
         </div>
 
-        {/* Price */}
+        {/* Price — 한 줄 유지(숫자/통화 줄바꿈 방지) */}
         <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-bold text-primary">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3">
+            <div className="flex min-w-0 flex-nowrap items-baseline gap-2 sm:gap-2.5">
+              <span className="text-xl font-bold tabular-nums text-primary whitespace-nowrap sm:text-2xl">
                 {formatPriceWithCurrency(displayPrice)}
               </span>
               {comparePriceNum && comparePriceNum > 0 && comparePriceNum > displayPrice && (
-                <span className="text-lg text-gray-500 line-through">
+                <span className="shrink-0 text-sm tabular-nums text-gray-500 line-through whitespace-nowrap sm:text-base">
                   {formatPriceWithCurrency(comparePriceNum)}
                 </span>
               )}
             </div>
             {discount > 0 && (
-              <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-medium">
+              <span className="shrink-0 whitespace-nowrap rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-600 sm:px-2 sm:text-sm">
                 {discount}% 할인
               </span>
             )}
           </div>
-          
         </div>
 
         {/* Quantity */}
@@ -410,16 +413,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
             {/* 결제하기 버튼 */}
             <Button
               size="lg"
-              className="
-                ml-auto bg-[#FF6F0F] text-white hover:bg-[#E5640D] font-bold
-                h-12 px-6 py-2 text-sm     /* 기본(모바일) */
-                md:h-16 md:px-12 md:py-4 md:text-lg /* 태블릿 */
-                lg:h-20 lg:px-16 lg:py-6 lg:text-xl /* 데스크탑 */
-              "
+              className="ml-auto h-10 shrink-0 bg-[#FF6F0F] px-4 text-xs font-bold text-white hover:bg-[#E5640D] sm:h-11 sm:px-5 sm:text-sm md:h-12 md:px-6"
               onClick={handleDirectPayment}
               disabled={product.stockQuantity === 0}
             >
-              <CreditCard className="h-4 w-4 mr-2 md:h-6 md:w-6 lg:h-8 lg:w-8" />
+              <CreditCard className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
               결제하기
             </Button>
           </div>

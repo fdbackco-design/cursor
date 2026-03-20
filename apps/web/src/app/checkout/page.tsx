@@ -412,12 +412,12 @@ export default function CheckoutPage() {
       setPaymentLoading(false);
     }
   };
-  
+
 
   // 토스페이먼츠 결제위젯 초기화
   const initializePayment = async (orderId: string, orderName: string) => {
     try {
-      const clientKey = process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY || 'test_gck_KNbdOvk5rkWgB1QOoM1Arn07xlzm';
+      const clientKey = process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY || 'live_gck_oEjb0gm23Pw9pvpwJ6xp8pGwBJn5';
       
       const tossPayments = (window as any).TossPayments(clientKey);
       const widgets = tossPayments.widgets({

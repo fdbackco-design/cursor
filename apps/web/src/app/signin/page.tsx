@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo
 import { MessageCircle, Gift, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { sanitizePostLoginPath } from '@/lib/utils/safe-redirect';
-
-const POST_LOGIN_REDIRECT_KEY = 'post_login_redirect';
+import {
+  POST_LOGIN_REDIRECT_KEY,
+  sanitizePostLoginPath,
+} from '@/lib/utils/safe-redirect';
 
 function buildKakaoLoginHref(refCode: string, redirectParam: string | null): string {
   const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';

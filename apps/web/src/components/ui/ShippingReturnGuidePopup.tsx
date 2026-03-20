@@ -4,6 +4,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import {
+  clearPostLoginRedirect,
+  getPostLoginRedirectOrHome,
+} from '@/lib/utils/safe-redirect';
 
 const STORAGE_KEY = 'fm_shipping_guide_popup_hide_date';
 
@@ -54,20 +58,27 @@ export default function ShippingReturnGuidePopup({ open, onClose }: ShippingRetu
     };
   }, [open]);
 
+  const goSavedOrHome = useCallback(() => {
+    const dest = getPostLoginRedirectOrHome();
+    clearPostLoginRedirect();
+    router.push(dest);
+  }, [router]);
+
   const dismiss = useCallback(() => {
     if (dontShowToday) {
       saveHideForToday();
     }
     onClose();
-  }, [dontShowToday, onClose]);
+    goSavedOrHome();
+  }, [dontShowToday, onClose, goSavedOrHome]);
 
   const handleConfirm = useCallback(() => {
     if (dontShowToday) {
       saveHideForToday();
     }
     onClose();
-    router.push('/home');
-  }, [dontShowToday, onClose, router]);
+    goSavedOrHome();
+  }, [dontShowToday, onClose, goSavedOrHome]);
 
   if (!open) return null;
 

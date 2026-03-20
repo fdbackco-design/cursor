@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 
@@ -144,16 +143,17 @@ export default function PromotionEntryPopup({
         </div>
 
         <div className="border-t border-gray-100 bg-white px-4 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
-          <Link
-            href="/home"
+          <button
+            type="button"
             onClick={handleCtaClick}
             className="flex w-full flex-col items-center justify-center rounded-xl bg-[#FF7E36] px-4 py-3.5 text-center text-white shadow-md transition hover:bg-[#f56f28] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2"
+            aria-label="다음 안내로 이동"
           >
             <span className="text-base font-bold sm:text-lg">쿠폰 사용하러 가기</span>
             <span className="mt-0.5 text-xs font-medium text-white/90 sm:text-sm">
               (전체 상품 보기)
             </span>
-          </Link>
+          </button>
 
           <div className="mt-4 flex flex-wrap items-center justify-end gap-x-3 gap-y-2 text-sm text-gray-600">
             <label className="flex cursor-pointer items-center gap-2 select-none">

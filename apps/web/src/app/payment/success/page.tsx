@@ -9,6 +9,7 @@ import { paymentsApi } from '@/lib/api/payments';
 import { cartApi } from '@/lib/api/cart';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatNumber } from '@/lib/utils/price';
+import { DEFAULT_SHIPPING_FEE } from '@/lib/constants/shipping';
 
 export default function PaymentSuccessPage() {
   const { user } = useAuth();
@@ -175,7 +176,7 @@ export default function PaymentSuccessPage() {
       }
 
       const subtotal = orderItems.reduce((s, i) => s + i.totalPrice, 0);
-      const shippingAmount = subtotal >= 50000 ? 0 : 3000;
+      const shippingAmount = DEFAULT_SHIPPING_FEE;
       const totalBeforeDiscount = subtotal + shippingAmount;
       const actualDiscount = totalBeforeDiscount - amount;
 

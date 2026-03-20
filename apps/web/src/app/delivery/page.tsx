@@ -469,8 +469,7 @@ export default function DeliveryPage() {
             <div>
               <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">🚚 배송비</h4>
               <ul className="text-xs sm:text-sm text-gray-600 space-y-1">
-                <li>• 3만원 이상 주문 시 무료배송</li>
-                <li>• 3만원 미만 주문 시 배송비 3,000원</li>
+                <li>• 전 상품 무료배송</li>
                 <li>• 제주/도서산간 지역 추가 배송비 별도</li>
               </ul>
             </div>

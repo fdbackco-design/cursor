@@ -12,6 +12,7 @@ import { paymentsApi } from '@/lib/api/payments';
 import { couponsApi, UserCoupon } from '@/lib/api/coupons';
 import { getImageUrl } from '@/lib/utils/image';
 import { formatNumber } from '@/lib/utils/price';
+import { DEFAULT_SHIPPING_FEE } from '@/lib/constants/shipping';
 import { AddressFormModal, AddressCard } from '@/components/address';
 import { useToast, toast } from '@/components/ui/toast';
 
@@ -596,7 +597,7 @@ export default function CheckoutPage() {
 
   const cartItems = cart?.items || [];
   const subtotal = calculateSubtotal();
-  const shippingFee = subtotal >= 50000 ? 0 : 3000;
+  const shippingFee = DEFAULT_SHIPPING_FEE;
   const totalBeforeDiscount = subtotal + shippingFee;
   const finalTotal = totalBeforeDiscount - paymentInfo.couponDiscount;
   const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);

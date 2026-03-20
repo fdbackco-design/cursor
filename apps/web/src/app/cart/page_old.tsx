@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { cartApi, Cart, CartItem } from '@/lib/api/cart';
 import { getImageUrl } from '@/lib/utils/image';
 import { formatNumber } from '@/lib/utils/price';
+import { DEFAULT_SHIPPING_FEE } from '@/lib/constants/shipping';
 import { useRouter } from 'next/navigation';
 import { useToast, toast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-modal';
@@ -378,7 +379,7 @@ export default function CartPage() {
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartItems.reduce((sum, item) => 
     sum + (getItemPrice(item, user?.role || 'CONSUMER') * item.quantity), 0);
-  const shippingFee = subtotal > 50000 ? 0 : 3000;
+  const shippingFee = DEFAULT_SHIPPING_FEE;
   const total = subtotal + shippingFee;
 
   // 로딩 상태
@@ -567,7 +568,7 @@ export default function CartPage() {
                   </div>
                   {shippingFee > 0 && (
                     <div className="text-sm text-gray-500">
-                      * 5만원 이상 구매 시 배송비 무료
+                      * 전 상품 무료배송
                     </div>
                   )}
                   <div className="border-t pt-2">

@@ -6,6 +6,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 
 const STORAGE_KEY = 'fm_promotion_popup_hide_date';
+/** 같은 브라우저 탭에서 /home 최초 진입 1회만 팝업 (로그인 후 첫 리다이렉트에 해당) */
+const SESSION_FIRST_HOME_KEY = 'fm_home_entry_promo_shown';
 
 function getLocalDateKey(d: Date): string {
   const y = d.getFullYear();
@@ -33,18 +35,34 @@ function saveHideForToday(): void {
   }
 }
 
+type PromotionEntryPopupProps = {
+  /** 로그인·승인된 사용자가 /home 본문을 볼 때만 true */
+  eligible: boolean;
+};
+
 /**
- * 당근/회원가입 쿠폰 안내 팝업 — 이미지 + CTA + 오늘 하루 숨김(localStorage 날짜 키)
+ * 당근/회원가입 쿠폰 안내 팝업 — /home에서만 사용.
+ * 로그인 전에는 마운트하지 않음. 같은 탭에서 /home 첫 진입 시에만 표시(sessionStorage).
  */
-export default function PromotionEntryPopup() {
+export default function PromotionEntryPopup({ eligible }: PromotionEntryPopupProps) {
   const [open, setOpen] = useState(false);
   const [dontShowToday, setDontShowToday] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !eligible) {
+      setOpen(false);
+      return;
+    }
     if (isHiddenForToday()) return;
+    try {
+      if (sessionStorage.getItem(SESSION_FIRST_HOME_KEY) === '1') return;
+      // 같은 탭에서 /home 최초 1회만 노출(리다이렉트 직후 포함). 표시 직전에 소비 처리.
+      sessionStorage.setItem(SESSION_FIRST_HOME_KEY, '1');
+    } catch {
+      /* ignore */
+    }
     setOpen(true);
-  }, []);
+  }, [eligible]);
 
   useEffect(() => {
     if (!open || typeof document === 'undefined') return;
@@ -62,7 +80,11 @@ export default function PromotionEntryPopup() {
     setOpen(false);
   }, [dontShowToday]);
 
-  if (!open) return null;
+  const handleCtaClick = useCallback(() => {
+    setOpen(false);
+  }, []);
+
+  if (!eligible || !open) return null;
 
   return (
     <div
@@ -106,8 +128,8 @@ export default function PromotionEntryPopup() {
 
         <div className="border-t border-gray-100 bg-white px-4 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
           <Link
-            href="/home"
-            onClick={() => setOpen(false)}
+            href="/products"
+            onClick={handleCtaClick}
             className="flex w-full flex-col items-center justify-center rounded-xl bg-[#FF7E36] px-4 py-3.5 text-center text-white shadow-md transition hover:bg-[#f56f28] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2"
           >
             <span className="text-base font-bold sm:text-lg">쿠폰 사용하러 가기</span>

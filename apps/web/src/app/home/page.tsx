@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ImageSlider } from '@/components/ui/ImageSlider';
 import { getImageUrl } from '@/lib/utils/image';
 import Head from 'next/head';
+import PromotionEntryPopup from '@/components/ui/PromotionEntryPopup';
 
 export default function HomePage() {
   const { user, isAuthenticated } = useAuth();
@@ -188,6 +189,7 @@ export default function HomePage() {
 
   return (
     <>
+      <PromotionEntryPopup eligible />
       <Head>
         <title>FeedbackMall - 프리미엄 쇼핑몰</title>
         <meta name="description" content="프리미엄 쇼핑몰, 피드백몰에서 최고의 상품을 만나보세요" />

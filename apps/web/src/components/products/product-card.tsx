@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@repo/ui';
 import { Button } from '@repo/ui';
-import { ShoppingCart, Package, Heart, CreditCard } from 'lucide-react';
+import { Package, Heart } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { wishlistApi } from '@/lib/api/wishlist';
@@ -322,10 +322,10 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         </CardContent>
         
-        <CardFooter className="pt-0 px-2 sm:px-4 pb-3 sm:pb-4">
-          <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full">
+        <CardFooter className="pt-0 px-2 sm:px-4 pb-3 sm:pb-4 min-w-0">
+          <div className="grid grid-cols-2 gap-1.5 sm:gap-2.5 w-full min-w-0">
             <Button
-              className={`w-full min-h-[44px] h-auto py-2.5 sm:py-3 px-2 sm:px-3 text-sm sm:text-base font-semibold ${
+              className={`w-full min-w-0 min-h-[44px] h-auto inline-flex items-center justify-center gap-0 px-2 sm:px-3 py-2.5 sm:py-3 text-[13px] sm:text-sm md:text-base font-semibold leading-none whitespace-nowrap text-center ${
                 product.stockQuantity <= 0
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-gray-900 text-white hover:bg-gray-800'
@@ -333,13 +333,10 @@ export function ProductCard({ product }: ProductCardProps) {
               onClick={addToCart}
               disabled={cartLoading || product.stockQuantity <= 0}
             >
-              <ShoppingCart className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] mr-1.5 shrink-0" />
-              <span className="truncate">
-                {cartLoading ? '추가 중…' : product.stockQuantity <= 0 ? '품절' : '장바구니'}
-              </span>
+              {cartLoading ? '추가 중…' : product.stockQuantity <= 0 ? '품절' : '장바구니'}
             </Button>
             <Button
-              className={`w-full min-h-[44px] h-auto py-2.5 sm:py-3 px-2 sm:px-3 text-sm sm:text-base font-semibold ${
+              className={`w-full min-w-0 min-h-[44px] h-auto inline-flex items-center justify-center gap-0 px-2 sm:px-3 py-2.5 sm:py-3 text-[13px] sm:text-sm md:text-base font-semibold leading-none whitespace-nowrap text-center ${
                 product.stockQuantity <= 0
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-[#FF6F0F] text-white hover:bg-[#E5640D]'
@@ -347,8 +344,7 @@ export function ProductCard({ product }: ProductCardProps) {
               onClick={handleDirectPayment}
               disabled={product.stockQuantity <= 0}
             >
-              <CreditCard className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] mr-1.5 shrink-0" />
-              <span className="truncate">{product.stockQuantity <= 0 ? '품절' : '결제하기'}</span>
+              {product.stockQuantity <= 0 ? '품절' : '결제하기'}
             </Button>
           </div>
         </CardFooter>

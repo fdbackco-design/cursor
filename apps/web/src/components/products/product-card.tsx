@@ -207,12 +207,10 @@ export function ProductCard({ product }: ProductCardProps) {
   // });
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // 버튼 영역 클릭이 아닌 경우에만 상품 상세로 이동
     const target = e.target as HTMLElement;
-    if (target.closest('button')) {
+    if (target.closest('button') || target.closest('[data-wishlist-heart]')) {
       return;
     }
-    
     window.location.href = `/products/${product.id}`;
   };
 
@@ -256,18 +254,37 @@ export function ProductCard({ product }: ProductCardProps) {
                 <Package className="h-12 w-12 text-gray-400" />
               </div>
             )}
-            
-            
+
+            {/* 찜하기 — 이미지 우상단 (카드 클릭과 분리) */}
+            <button
+              type="button"
+              data-wishlist-heart
+              className="absolute top-2 right-2 z-30 flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-white/95 shadow-md ring-1 ring-black/5 backdrop-blur-sm transition hover:bg-white hover:ring-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:opacity-60"
+              onClick={toggleWishlist}
+              disabled={wishlistLoading}
+              aria-label={isWishlisted ? '찜 해제' : '찜하기'}
+              aria-pressed={isWishlisted}
+            >
+              <Heart
+                className={`h-[1.15rem] w-[1.15rem] sm:h-5 sm:w-5 shrink-0 transition-colors ${
+                  isWishlisted
+                    ? 'fill-[#FF6F0F] text-[#FF6F0F]'
+                    : 'fill-transparent text-gray-700'
+                }`}
+                strokeWidth={2}
+              />
+            </button>
+
             {/* 브랜드 배지 */}
             {product.brand && (
-              <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-white/90 backdrop-blur-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                <span className="text-xs font-semibold text-gray-700">{product.brand}</span>
+              <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-20 bg-white/90 backdrop-blur-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full max-w-[calc(100%-5rem)]">
+                <span className="text-xs font-semibold text-gray-700 truncate block">{product.brand}</span>
               </div>
             )}
-            
-            {/* 품절 배지 */}
+
+            {/* 품절 배지 — 하트와 겹치지 않도록 우측 하단 쪽 */}
             {product.stockQuantity <= 0 && (
-              <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-red-500 text-white px-2 py-1 rounded-full">
+              <div className="absolute bottom-2 right-2 z-20 bg-red-500 text-white px-2 py-1 rounded-full shadow-sm">
                 <span className="text-xs font-semibold">품절</span>
               </div>
             )}
@@ -306,60 +323,32 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardContent>
         
         <CardFooter className="pt-0 px-2 sm:px-4 pb-3 sm:pb-4">
-          {/* 1행 3열 배치 */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full">
-            <Button 
-              size="sm" 
-              variant="outline"
-              className={`w-full border-gray-300 hover:border-red-500 transition-colors duration-200 text-xs ${
-                isWishlisted ? 'text-red-500 border-red-500' : 'text-gray-700'
-              }`}
-              onClick={toggleWishlist}
-              disabled={wishlistLoading}
-            >
-              <Heart 
-                className={`h-3 w-3 mr-1 ${isWishlisted ? 'fill-current' : ''}`} 
-              />
-              <span className="hidden xs:inline">
-                {wishlistLoading ? '처리중...' : (isWishlisted ? '찜됨' : '찜하기')}
-              </span>
-              <span className="xs:hidden">찜</span>
-            </Button>
-            <Button 
-              size="sm" 
-              className={`w-full text-xs ${
-                product.stockQuantity <= 0 
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+          <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full">
+            <Button
+              className={`w-full min-h-[44px] h-auto py-2.5 sm:py-3 px-2 sm:px-3 text-sm sm:text-base font-semibold ${
+                product.stockQuantity <= 0
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-gray-900 text-white hover:bg-gray-800'
               }`}
               onClick={addToCart}
               disabled={cartLoading || product.stockQuantity <= 0}
             >
-              <ShoppingCart className="h-3 w-3 mr-1" />
-              <span className="hidden xs:inline">
-                {cartLoading ? '추가중...' : product.stockQuantity <= 0 ? '품절' : '장바구니'}
-              </span>
-              <span className="xs:hidden">
-                {cartLoading ? '추가중...' : product.stockQuantity <= 0 ? '품절' : '장바구니'}
+              <ShoppingCart className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] mr-1.5 shrink-0" />
+              <span className="truncate">
+                {cartLoading ? '추가 중…' : product.stockQuantity <= 0 ? '품절' : '장바구니'}
               </span>
             </Button>
-            <Button 
-              size="sm" 
-              className={`w-full text-xs ${
-                product.stockQuantity <= 0 
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+            <Button
+              className={`w-full min-h-[44px] h-auto py-2.5 sm:py-3 px-2 sm:px-3 text-sm sm:text-base font-semibold ${
+                product.stockQuantity <= 0
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-[#FF6F0F] text-white hover:bg-[#E5640D]'
               }`}
               onClick={handleDirectPayment}
               disabled={product.stockQuantity <= 0}
             >
-              <CreditCard className="h-3 w-3 mr-1" />
-              <span className="hidden xs:inline">
-                {product.stockQuantity <= 0 ? '품절' : '결제하기'}
-              </span>
-              <span className="xs:hidden">
-                {product.stockQuantity <= 0 ? '품절' : '결제'}
-              </span>
+              <CreditCard className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem] mr-1.5 shrink-0" />
+              <span className="truncate">{product.stockQuantity <= 0 ? '품절' : '결제하기'}</span>
             </Button>
           </div>
         </CardFooter>

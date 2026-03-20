@@ -128,7 +128,7 @@ export default function PromotionEntryPopup({ eligible }: PromotionEntryPopupPro
 
         <div className="border-t border-gray-100 bg-white px-4 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
           <Link
-            href="/products"
+            href="/home"
             onClick={handleCtaClick}
             className="flex w-full flex-col items-center justify-center rounded-xl bg-[#FF7E36] px-4 py-3.5 text-center text-white shadow-md transition hover:bg-[#f56f28] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2"
           >

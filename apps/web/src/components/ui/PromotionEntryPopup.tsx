@@ -1,0 +1,142 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+
+const STORAGE_KEY = 'fm_promotion_popup_hide_date';
+
+function getLocalDateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function isHiddenForToday(): boolean {
+  if (typeof window === 'undefined') return true;
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return false;
+    return saved === getLocalDateKey(new Date());
+  } catch {
+    return false;
+  }
+}
+
+function saveHideForToday(): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, getLocalDateKey(new Date()));
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * 당근/회원가입 쿠폰 안내 팝업 — 이미지 + CTA + 오늘 하루 숨김(localStorage 날짜 키)
+ */
+export default function PromotionEntryPopup() {
+  const [open, setOpen] = useState(false);
+  const [dontShowToday, setDontShowToday] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (isHiddenForToday()) return;
+    setOpen(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open || typeof document === 'undefined') return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  const dismiss = useCallback(() => {
+    if (dontShowToday) {
+      saveHideForToday();
+    }
+    setOpen(false);
+  }, [dontShowToday]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="promotion-popup-title"
+    >
+      <div
+        className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
+        aria-hidden
+        onClick={dismiss}
+      />
+
+      <div className="relative w-full max-w-[min(100%,24rem)] sm:max-w-md md:max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden">
+        <button
+          type="button"
+          onClick={dismiss}
+          className="absolute right-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md transition hover:bg-white hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+          aria-label="팝업 닫기"
+        >
+          <X className="h-5 w-5" strokeWidth={2.2} />
+        </button>
+
+        <div className="relative w-full bg-white pt-2 px-2 sm:pt-3 sm:px-3">
+          <span id="promotion-popup-title" className="sr-only">
+            회원가입 축하 쿠폰 안내
+          </span>
+          <div className="relative w-full overflow-hidden rounded-xl bg-white">
+            <Image
+              src="/images/promotion-entry-popup.png"
+              alt="회원가입 축하 1만원 할인 쿠폰 즉시 지급 안내"
+              width={720}
+              height={1280}
+              className="h-auto w-full object-contain"
+              sizes="(max-width: 768px) 100vw, 28rem"
+              priority
+            />
+          </div>
+        </div>
+
+        <div className="border-t border-gray-100 bg-white px-4 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
+          <Link
+            href="/home"
+            onClick={() => setOpen(false)}
+            className="flex w-full flex-col items-center justify-center rounded-xl bg-[#FF7E36] px-4 py-3.5 text-center text-white shadow-md transition hover:bg-[#f56f28] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2"
+          >
+            <span className="text-base font-bold sm:text-lg">쿠폰 사용하러 가기</span>
+            <span className="mt-0.5 text-xs font-medium text-white/90 sm:text-sm">
+              (전체 상품 보기)
+            </span>
+          </Link>
+
+          <div className="mt-4 flex flex-wrap items-center justify-end gap-x-3 gap-y-2 text-sm text-gray-600">
+            <label className="flex cursor-pointer items-center gap-2 select-none">
+              <input
+                type="checkbox"
+                checked={dontShowToday}
+                onChange={(e) => setDontShowToday(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-[#FF7E36] focus:ring-orange-400"
+              />
+              <span>오늘 하루 보지 않기</span>
+            </label>
+            <span className="hidden h-4 w-px bg-gray-200 sm:inline-block" aria-hidden />
+            <button
+              type="button"
+              onClick={dismiss}
+              className="font-medium text-gray-700 underline-offset-2 hover:text-gray-900 hover:underline"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

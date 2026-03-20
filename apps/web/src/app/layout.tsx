@@ -7,6 +7,7 @@ import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import MobileScrollButtons from '@/components/ui/MobileScrollButtons';
 import MobileKakaoChannelButton from '@/components/ui/MobileKakaoChannelButton';
 import AndroidInAppChromeIntent from '@/components/ui/AndroidInAppChromeIntent';
+import PromotionEntryPopup from '@/components/ui/PromotionEntryPopup';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { DialogProvider } from '@/components/ui/dialog-provider';
 
@@ -85,6 +86,7 @@ export default function RootLayout({
               <MobileKakaoChannelButton />
               <MobileScrollButtons />
               <MobileBottomNav />
+              <PromotionEntryPopup />
             </div>
           </DialogProvider>
         </AuthProvider>

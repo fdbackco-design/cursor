@@ -144,6 +144,11 @@ const Header = () => {
                             <Truck className="h-5 w-5" />
                           </Button>
                         </Link>
+                        <Link href="/cart" title="장바구니">
+                          <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
+                            <ShoppingCart className="h-5 w-5" />
+                          </Button>
+                        </Link>
                         <Button onClick={handleLogout} variant="outline" size="sm" className="text-gray-600 hover:text-gray-900 border-gray-300">
                           <LogOut className="h-4 w-4 lg:mr-2" />
                           <span className="hidden lg:inline">로그아웃</span>

@@ -202,70 +202,65 @@ export default function CartPage() {
                           <p className="text-xs sm:text-sm text-gray-500 mb-2">
                             {item.product.category?.name}
                           </p>
-                          <div className="flex items-start justify-between gap-2 sm:block">
-                            <div className="min-w-0 flex w-full max-w-md flex-col gap-1">
-                              {(() => {
-                                const cp = toPriceNumber(item.product.comparePrice);
-                                const sale = toPriceNumber(item.product.priceB2C);
-                                const unitDisc = memberDiscountPerUnit(cp, sale);
-                                const showCompare = cp > 0 && cp > sale;
-                                const labelCol =
-                                  'shrink-0 w-[5.25rem] pt-0.5 text-left sm:w-24';
-                                return (
-                                  <>
-                                    {showCompare && (
-                                      <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
-                                        <span className={`${labelCol} text-xs font-medium text-gray-600 sm:text-sm`}>
-                                          정가
-                                        </span>
-                                        <span className="min-w-0 flex-1 text-right text-sm tabular-nums text-red-600 line-through sm:text-base">
-                                          {formatNumber(cp)}원
-                                        </span>
-                                      </div>
-                                    )}
-                                    {showCompare && unitDisc > 0 && (
-                                      <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
-                                        <span className={`${labelCol} text-[11px] font-medium leading-none text-red-600 sm:text-xs`}>
-                                          회원 할인
-                                        </span>
-                                        <span className="min-w-0 flex-1 text-right text-[11px] font-semibold tabular-nums leading-none text-red-600 whitespace-nowrap sm:text-xs">
-                                          -{formatNumber(unitDisc)}원
-                                        </span>
-                                      </div>
-                                    )}
+                          <div className="flex min-w-0 w-full max-w-md flex-col gap-1">
+                            {(() => {
+                              const cp = toPriceNumber(item.product.comparePrice);
+                              const sale = toPriceNumber(item.product.priceB2C);
+                              const unitDisc = memberDiscountPerUnit(cp, sale);
+                              const showCompare = cp > 0 && cp > sale;
+                              const labelCol =
+                                'shrink-0 w-[5.25rem] pt-0.5 text-left sm:w-24';
+                              const amountNowrap =
+                                'min-w-0 flex-1 text-right tabular-nums whitespace-nowrap';
+                              return (
+                                <>
+                                  {showCompare && (
                                     <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
-                                      <span className={`${labelCol} text-xs font-semibold text-gray-800 sm:text-sm`}>
-                                        회원가
+                                      <span className={`${labelCol} text-xs font-medium text-gray-600 sm:text-sm`}>
+                                        정가
                                       </span>
-                                      <span className="min-w-0 flex-1 text-right text-base font-extrabold tabular-nums text-[#FF6F0F] sm:text-lg">
-                                        {formatNumber(sale)}원
+                                      <span
+                                        className={`${amountNowrap} text-xs text-red-600 line-through sm:text-sm`}
+                                      >
+                                        {formatNumber(cp)}원
                                       </span>
                                     </div>
-                                  </>
-                                );
-                              })()}
-                            </div>
-                            {/* 모바일에서 제거 버튼 */}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeItem(item.id)}
-                              disabled={updating === item.id}
-                              className="sm:hidden h-8 w-8 shrink-0 p-0"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                                  )}
+                                  {showCompare && unitDisc > 0 && (
+                                    <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                      <span className={`${labelCol} text-[11px] font-medium leading-none text-red-600 sm:text-xs`}>
+                                        회원 할인
+                                      </span>
+                                      <span
+                                        className={`${amountNowrap} text-[11px] font-semibold leading-none text-red-600 sm:text-xs`}
+                                      >
+                                        -{formatNumber(unitDisc)}원
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                    <span className={`${labelCol} text-xs font-semibold text-gray-800 sm:text-sm`}>
+                                      회원가
+                                    </span>
+                                    <span
+                                      className={`${amountNowrap} text-sm font-extrabold text-[#FF6F0F] sm:text-lg`}
+                                    >
+                                      {formatNumber(sale)}원
+                                    </span>
+                                  </div>
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>
                       
-                      {/* 수량 조절과 제거 버튼 */}
-                      <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-3">
-                        {/* 수량 조절 */}
+                      {/* 수량 조절 + 삭제 (모바일·데스크톱 동일 행) */}
+                      <div className="flex w-full shrink-0 items-center justify-end gap-2 sm:w-auto sm:gap-3">
                         <div className="flex items-center space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => {
                               const newQuantity = item.quantity - 1;
                               if (newQuantity > 0) {
@@ -273,43 +268,42 @@ export default function CartPage() {
                               }
                             }}
                             disabled={updating === item.id || item.quantity <= 1}
-                            className="h-8 w-8 sm:h-9 sm:w-9 p-0 min-h-[32px] sm:min-h-[36px]"
-                            >
-                              -
-                            </Button>
-                            <input
+                            className="h-8 w-8 p-0 min-h-[32px] sm:h-9 sm:w-9 sm:min-h-[36px]"
+                          >
+                            -
+                          </Button>
+                          <input
                             type="text"
-                              value={inputQuantities[item.id] || item.quantity}
-                              onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                            value={inputQuantities[item.id] || item.quantity}
+                            onChange={(e) => handleQuantityChange(item.id, e.target.value)}
                             onBlur={() => {
                               const quantity = parseInt(inputQuantities[item.id] || '0');
                               if (quantity && quantity !== item.quantity && quantity > 0) {
                                 updateQuantity(item.id, quantity);
                               }
                             }}
-                            className="w-12 sm:w-16 text-center border rounded px-2 py-1 h-8 sm:h-9 text-sm"
-                              disabled={updating === item.id}
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
+                            className="h-8 w-12 border px-2 py-1 text-center text-sm sm:h-9 sm:w-16"
+                            disabled={updating === item.id}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             disabled={updating === item.id}
-                            className="h-8 w-8 sm:h-9 sm:w-9 p-0 min-h-[32px] sm:min-h-[36px]"
-                            >
-                              +
-                            </Button>
+                            className="h-8 w-8 p-0 min-h-[32px] sm:h-9 sm:w-9 sm:min-h-[36px]"
+                          >
+                            +
+                          </Button>
                         </div>
-                        
-                        {/* 데스크톱에서 제거 버튼 */}
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => removeItem(item.id)}
                           disabled={updating === item.id}
-                          className="hidden sm:flex h-8 w-8 p-0"
+                          className="h-8 w-8 shrink-0 p-0 sm:h-9 sm:w-9"
+                          aria-label="상품 삭제"
                         >
-                            <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>

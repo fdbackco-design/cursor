@@ -13,6 +13,12 @@ import { couponsApi, UserCoupon } from '@/lib/api/coupons';
 import { getImageUrl } from '@/lib/utils/image';
 import { formatNumber } from '@/lib/utils/price';
 import { DEFAULT_SHIPPING_FEE } from '@/lib/constants/shipping';
+import {
+  memberDiscountPerUnit,
+  toPriceNumber,
+  totalMemberDiscountDirect,
+  totalMemberDiscountFromCartItems,
+} from '@/lib/utils/product-price';
 import { AddressFormModal, AddressCard } from '@/components/address';
 import { useToast, toast } from '@/components/ui/toast';
 
@@ -600,6 +606,13 @@ export default function CheckoutPage() {
   const shippingFee = DEFAULT_SHIPPING_FEE;
   const totalBeforeDiscount = subtotal + shippingFee;
   const finalTotal = totalBeforeDiscount - paymentInfo.couponDiscount;
+  const totalMemberDiscount = directProduct
+    ? totalMemberDiscountDirect(
+        directProduct.comparePrice,
+        directProduct.price,
+        directProduct.quantity,
+      )
+    : totalMemberDiscountFromCartItems(cartItems);
   const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
   const isNameMissing = !ordererInfo.name?.trim();
   const isEmailMissing = !ordererInfo.email?.trim();
@@ -894,46 +907,95 @@ export default function CheckoutPage() {
                           <p className="text-sm font-medium text-gray-900 truncate">
                             {directProduct.name}
                           </p>
-                          <p className="text-sm text-gray-600">
-                            {formatNumber(directProduct.price)}원 × {formatNumber(directProduct.quantity)}
-                          </p>
+                          {(() => {
+                            const cp = toPriceNumber(directProduct.comparePrice);
+                            const sp = toPriceNumber(directProduct.price);
+                            const show = cp > 0 && cp > sp;
+                            return (
+                              <div className="mt-0.5 space-y-0.5">
+                                {show && (
+                                  <p className="text-xs tabular-nums text-red-600 line-through">
+                                    {formatNumber(cp)}원
+                                  </p>
+                                )}
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-semibold text-[#FF6F0F]">
+                                    {formatNumber(sp)}원
+                                  </span>{' '}
+                                  × {formatNumber(directProduct.quantity)}
+                                </p>
+                              </div>
+                            );
+                          })()}
                         </div>
-                        <p className="text-sm font-medium">
+                        <p className="text-sm font-semibold text-gray-900">
                           {formatNumber(directProduct.price * directProduct.quantity)}원
                         </p>
                       </div>
                     )}
                     
                     {/* 장바구니 상품들 */}
-                    {!directProduct && cartItems.map((item) => (
-                      <div key={item.id} className="flex items-center space-x-3">
-                        <img
-                          src={getImageUrl(item.product.images?.[0])}
-                          alt={item.product.name}
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {item.product.name}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {formatNumber(item.product.priceB2C)}원 × {formatNumber(item.quantity)}
+                    {!directProduct && cartItems.map((item) => {
+                      const cp = toPriceNumber(item.product.comparePrice);
+                      const sp = toPriceNumber(item.product.priceB2C);
+                      const showCompare = cp > 0 && cp > sp;
+                      return (
+                        <div key={item.id} className="flex items-center space-x-3">
+                          <img
+                            src={getImageUrl(item.product.images?.[0])}
+                            alt={item.product.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {item.product.name}
+                            </p>
+                            <div className="mt-0.5 space-y-0.5">
+                              {showCompare && (
+                                <p className="text-xs tabular-nums text-red-600 line-through">
+                                  {formatNumber(cp)}원
+                                </p>
+                              )}
+                              <p className="text-sm text-gray-700">
+                                <span className="font-semibold text-[#FF6F0F]">
+                                  {formatNumber(sp)}원
+                                </span>{' '}
+                                × {formatNumber(item.quantity)}
+                              </p>
+                              {showCompare && memberDiscountPerUnit(cp, sp) > 0 && (
+                                <p className="text-xs text-red-600">
+                                  회원 할인{' '}
+                                  {formatNumber(memberDiscountPerUnit(cp, sp) * item.quantity)}원
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {formatNumber(item.product.priceB2C * item.quantity)}원
                           </p>
                         </div>
-                        <p className="text-sm font-medium">
-                          {formatNumber(item.product.priceB2C * item.quantity)}원
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* 금액 계산 */}
                 <div className="space-y-3 border-t pt-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">상품 금액</span>
+                    <span className="text-gray-600">상품 금액 (회원가)</span>
                     <span>{formatNumber(subtotal)}원</span>
                   </div>
+                  {totalMemberDiscount > 0 && (
+                    <div className="flex justify-between rounded-lg bg-red-50 px-3 py-2 text-red-700">
+                      <span className="font-medium">총 할인받은 금액</span>
+                      <span className="font-bold tabular-nums">{formatNumber(totalMemberDiscount)}원</span>
+                    </div>
+                  )}
+                  {totalMemberDiscount > 0 && (
+                    <p className="text-xs text-gray-500">
+                      정가(비교가) 대비 회원가로 구매 시 절약한 금액입니다.
+                    </p>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-gray-600">배송비</span>
                     <span>{shippingFee === 0 ? '무료' : `${formatNumber(shippingFee)}원`}</span>

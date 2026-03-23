@@ -13,7 +13,11 @@ export class CartService {
       product: {
         ...item.product,
         priceB2C: item.product.priceB2C.toNumber(),
-      }
+        comparePrice:
+          item.product.comparePrice != null
+            ? item.product.comparePrice.toNumber()
+            : null,
+      },
     };
   }
 
@@ -30,6 +34,7 @@ export class CartService {
                 id: true,
                 name: true,
                 priceB2C: true,
+                comparePrice: true,
                 images: true,
                 isActive: true,
                 stockQuantity: true,
@@ -62,6 +67,7 @@ export class CartService {
                   id: true,
                   name: true,
                   priceB2C: true,
+                  comparePrice: true,
                   images: true,
                   isActive: true,
                   vendor: {
@@ -90,8 +96,12 @@ export class CartService {
         product: {
           ...item.product,
           priceB2C: item.product.priceB2C.toNumber(),
-        }
-      }))
+          comparePrice:
+            item.product.comparePrice != null
+              ? item.product.comparePrice.toNumber()
+              : null,
+        },
+      })),
     };
 
     return cartWithNumbers;
@@ -125,6 +135,7 @@ export class CartService {
               id: true,
               name: true,
               priceB2C: true,
+              comparePrice: true,
               images: true,
               isActive: true,
               vendor: {
@@ -156,6 +167,7 @@ export class CartService {
               id: true,
               name: true,
               priceB2C: true,
+              comparePrice: true,
               images: true,
               isActive: true,
               vendor: {
@@ -216,6 +228,7 @@ export class CartService {
             id: true,
             name: true,
             priceB2C: true,
+            comparePrice: true,
             images: true,
             isActive: true,
             stockQuantity: true,

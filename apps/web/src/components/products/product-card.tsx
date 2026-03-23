@@ -134,12 +134,14 @@ export function ProductCard({ product }: ProductCardProps) {
       }
 
       // 상품 정보를 URL 파라미터로 전달하여 결제 페이지로 이동
+      const salePrice = user?.role === 'BIZ' ? product.priceB2B : product.priceB2C;
       const productData = {
         id: product.id,
         name: product.name,
-        price: user?.role === 'BIZ' ? product.priceB2B : product.priceB2C,
+        price: salePrice,
+        comparePrice: product.comparePrice ?? null,
         quantity: 1,
-        image: actualImageUrl
+        image: actualImageUrl,
       };
 
       // 디버깅을 위한 로그
@@ -297,24 +299,29 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardHeader>
         
         <CardContent className="flex-1 px-3 sm:px-4 pb-2 sm:pb-3 cursor-pointer">
-          <div className="space-y-1 sm:space-y-2">
-            <div className="flex justify-between items-start sm:items-center gap-2 min-w-0">
-              <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap flex-shrink-0">{priceDisplay.text}</span>
-              <div className="flex flex-col items-end sm:flex-row sm:items-center gap-0.5 sm:gap-1 flex-shrink-0 min-w-0">
+          <div className="space-y-1.5 sm:space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-orange-700 sm:text-[11px]">
+              폐쇄몰 회원 특가
+            </p>
+            {comparePriceNum &&
+              comparePriceNum > 0 &&
+              comparePriceNum > currentPriceNum && (
+                <div className="text-right text-xs tabular-nums text-red-600 line-through sm:text-sm">
+                  {formatPriceWithCurrency(comparePriceNum)}
+                </div>
+              )}
+            <div className="flex justify-between items-end gap-2 min-w-0">
+              <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap flex-shrink-0">
+                {priceDisplay.text}
+              </span>
+              <div className="flex flex-col items-end flex-shrink-0 min-w-0 text-right">
                 {priceDisplay.price ? (
-                  <span className="text-sm sm:text-base font-extrabold text-gray-900 whitespace-nowrap">
+                  <span className="text-lg sm:text-xl font-extrabold tabular-nums text-[#FF6F0F] whitespace-nowrap">
                     {priceDisplay.price}
                   </span>
                 ) : (
                   <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
                     {priceDisplay.text}
-                  </span>
-                )}
-                {comparePriceNum && 
-                 comparePriceNum > 0 && 
-                 comparePriceNum > currentPriceNum && (
-                  <span className="text-xs text-gray-500 line-through">
-                    {formatPriceWithCurrency(comparePriceNum)}
                   </span>
                 )}
               </div>

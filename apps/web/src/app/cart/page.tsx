@@ -9,6 +9,11 @@ import { cartApi, Cart, CartItem } from '@/lib/api/cart';
 import { getImageUrl } from '@/lib/utils/image';
 import { formatNumber } from '@/lib/utils/price';
 import { DEFAULT_SHIPPING_FEE } from '@/lib/constants/shipping';
+import {
+  memberDiscountPerUnit,
+  toPriceNumber,
+  totalMemberDiscountFromCartItems,
+} from '@/lib/utils/product-price';
 import { useRouter } from 'next/navigation';
 import { useToast, toast } from '@/components/ui/toast';
 
@@ -133,6 +138,7 @@ export default function CartPage() {
 
   const cartItems = cart?.items || [];
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product.priceB2C * item.quantity), 0);
+  const totalMemberDiscount = totalMemberDiscountFromCartItems(cartItems);
   const shippingFee = DEFAULT_SHIPPING_FEE;
   const total = subtotal + shippingFee;
 
@@ -194,19 +200,41 @@ export default function CartPage() {
                           <p className="text-xs sm:text-sm text-gray-500 mb-2">
                             {item.product.category?.name}
                           </p>
-                          <div className="flex items-center justify-between sm:block">
-                            <span className="text-base sm:text-lg font-bold text-gray-900">
-                              {formatNumber(item.product.priceB2C)}원
-                            </span>
-                            {/* 모바일에서 제거 버튼을 여기에 배치 */}
+                          <div className="flex items-start justify-between gap-2 sm:block">
+                            <div className="min-w-0 flex flex-col gap-0.5">
+                              {(() => {
+                                const cp = toPriceNumber(item.product.comparePrice);
+                                const sale = toPriceNumber(item.product.priceB2C);
+                                const showCompare = cp > 0 && cp > sale;
+                                return (
+                                  <>
+                                    {showCompare && (
+                                      <span className="text-sm tabular-nums text-red-600 line-through">
+                                        {formatNumber(cp)}원
+                                      </span>
+                                    )}
+                                    <span className="text-base sm:text-lg font-extrabold text-[#FF6F0F]">
+                                      {formatNumber(sale)}원
+                                    </span>
+                                    {showCompare && memberDiscountPerUnit(cp, sale) > 0 && (
+                                      <span className="text-xs font-medium text-red-600">
+                                        회원 할인{' '}
+                                        {formatNumber(memberDiscountPerUnit(cp, sale) * item.quantity)}원
+                                      </span>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                            {/* 모바일에서 제거 버튼 */}
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => removeItem(item.id)}
                               disabled={updating === item.id}
-                              className="sm:hidden h-8 w-8 p-0"
+                              className="sm:hidden h-8 w-8 shrink-0 p-0"
                             >
-                                <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
@@ -281,9 +309,22 @@ export default function CartPage() {
               <CardContent className="space-y-4 sm:space-y-6">
                 <div className="space-y-3 sm:space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm sm:text-base text-gray-600">상품 금액</span>
+                    <span className="text-sm sm:text-base text-gray-600">상품 금액 (회원가)</span>
                     <span className="font-medium text-sm sm:text-base">{formatNumber(subtotal)}원</span>
                   </div>
+                  {totalMemberDiscount > 0 && (
+                    <>
+                      <div className="flex justify-between items-center rounded-lg bg-red-50 px-3 py-2 text-red-700">
+                        <span className="text-sm sm:text-base font-medium">총 할인받은 금액</span>
+                        <span className="text-sm sm:text-base font-bold tabular-nums">
+                          {formatNumber(totalMemberDiscount)}원
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 leading-snug">
+                        정가(비교가) 대비 회원가로 구매 시 절약한 금액입니다.
+                      </p>
+                    </>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="text-sm sm:text-base text-gray-600">배송비</span>
                     <span className="font-medium text-sm sm:text-base">

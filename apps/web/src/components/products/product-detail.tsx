@@ -51,19 +51,23 @@ export function ProductDetail({ product }: ProductDetailProps) {
     ? Math.min(selectedImage, product.images.length - 1) 
     : 0;
   
-  // Mock user role - in real app, get from context/state
-  const userRole = 'CONSUMER';
-  
-  // Show consumer price by default for MVP
-  const displayPrice = typeof product.priceB2C === 'string' ? parseFloat(product.priceB2C) : product.priceB2C;
-  const priceLabel = '회원가격';
-  
-  // comparePrice를 숫자로 변환
-  const comparePriceNum = typeof product.comparePrice === 'string' ? parseFloat(product.comparePrice) : product.comparePrice;
-  
-  // 할인율 계산
-  const discount = comparePriceNum && comparePriceNum > displayPrice ? 
-    Math.round(((comparePriceNum - displayPrice) / comparePriceNum) * 100) : 0;
+  const priceB2CNum =
+    typeof product.priceB2C === 'string' ? parseFloat(product.priceB2C) : product.priceB2C;
+  const priceB2BNum =
+    typeof product.priceB2B === 'string' ? parseFloat(product.priceB2B) : product.priceB2B;
+  const comparePriceNum =
+    typeof product.comparePrice === 'string'
+      ? parseFloat(product.comparePrice)
+      : product.comparePrice;
+
+  const isBiz = user?.role === 'BIZ';
+  const displayPrice = isBiz ? priceB2BNum : priceB2CNum;
+  const priceLabel = isBiz ? '기업전용가' : '회원가격';
+
+  const discount =
+    comparePriceNum && comparePriceNum > displayPrice
+      ? Math.round(((comparePriceNum - displayPrice) / comparePriceNum) * 100)
+      : 0;
 
   // 디버깅 로그
   // console.log('상품 상세 페이지 가격 정보:', {
@@ -260,12 +264,14 @@ export function ProductDetail({ product }: ProductDetailProps) {
       }
 
       // 상품 정보를 URL 파라미터로 전달하여 결제 페이지로 이동
+      const salePrice = user?.role === 'BIZ' ? product.priceB2B : product.priceB2C;
       const productData = {
         id: product.id,
         name: product.name,
-        price: user?.role === 'BIZ' ? product.priceB2B : product.priceB2C,
+        price: salePrice,
+        comparePrice: product.comparePrice ?? null,
         quantity: quantity,
-        image: actualImageUrl
+        image: actualImageUrl,
       };
 
       // 디버깅을 위한 로그
@@ -370,21 +376,27 @@ export function ProductDetail({ product }: ProductDetailProps) {
           </p>
         </div>
 
-        {/* Price — 한 줄 유지(숫자/통화 줄바꿈 방지) */}
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3">
-            <div className="flex min-w-0 flex-nowrap items-baseline gap-2 sm:gap-2.5">
-              <span className="text-xl font-bold tabular-nums text-primary whitespace-nowrap sm:text-2xl">
+        {/* Price — 비교가(상단·빨강+취소선) → 회원가 강조 */}
+        <div className="space-y-2 rounded-xl border border-orange-100 bg-gradient-to-br from-orange-50/80 to-white p-4 sm:p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-orange-700 sm:text-xs">
+            폐쇄몰 회원 특가
+          </p>
+          {comparePriceNum && comparePriceNum > 0 && comparePriceNum > displayPrice ? (
+            <div className="text-sm tabular-nums text-red-600 line-through sm:text-base">
+              {formatPriceWithCurrency(comparePriceNum)}
+            </div>
+          ) : null}
+          <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
+            <div>
+              <span className="mb-0.5 block text-xs font-medium text-gray-600 sm:text-sm">
+                {priceLabel}
+              </span>
+              <span className="text-2xl font-extrabold tabular-nums text-[#FF6F0F] sm:text-3xl md:text-4xl">
                 {formatPriceWithCurrency(displayPrice)}
               </span>
-              {comparePriceNum && comparePriceNum > 0 && comparePriceNum > displayPrice && (
-                <span className="shrink-0 text-sm tabular-nums text-gray-500 line-through whitespace-nowrap sm:text-base">
-                  {formatPriceWithCurrency(comparePriceNum)}
-                </span>
-              )}
             </div>
             {discount > 0 && (
-              <span className="shrink-0 whitespace-nowrap rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-600 sm:px-2 sm:text-sm">
+              <span className="mb-1 inline-flex items-center rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm sm:text-sm">
                 {discount}% 할인
               </span>
             )}

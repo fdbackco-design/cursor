@@ -12,6 +12,8 @@ export interface CartItem {
     name: string;
     images?: any;
     priceB2C: number;
+    /** 시중가·정가 (회원가 대비 할인 표시용) */
+    comparePrice?: number | null;
     stockQuantity: number;
     lowStockThreshold?: number;
     category?: {

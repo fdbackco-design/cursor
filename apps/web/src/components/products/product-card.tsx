@@ -327,7 +327,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 {user?.role === 'BIZ' ? '기업전용가' : '회원가격'}
               </span>
               <span
-                className="min-w-0 max-w-[72%] break-words text-right text-[11px] font-extrabold tabular-nums leading-snug text-[#FF6F0F] [overflow-wrap:anywhere] sm:max-w-[75%] sm:text-sm"
+                className="min-w-0 max-w-[72%] break-words text-right text-[12px] font-extrabold tabular-nums leading-snug text-[#FF6F0F] [overflow-wrap:anywhere] sm:max-w-[75%] sm:text-[15px]"
               >
                 {priceDisplay.price ? (
                   priceDisplay.price

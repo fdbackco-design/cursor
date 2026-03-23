@@ -920,35 +920,60 @@ export default function CheckoutPage() {
                             const cp = toPriceNumber(directProduct.comparePrice);
                             const sp = toPriceNumber(directProduct.price);
                             const unitDisc = memberDiscountPerUnit(cp, sp);
-                            const show = cp > 0 && cp > sp;
+                            const showCompare = cp > 0 && cp > sp;
+                            const labelCol =
+                              'shrink-0 w-[5.25rem] pt-0.5 text-left sm:w-24';
+                            const amountNowrap =
+                              'min-w-0 flex-1 text-right tabular-nums whitespace-nowrap';
                             return (
-                              <div className="mt-0.5 space-y-0.5">
-                                {show && (
-                                  <p className="text-xs tabular-nums text-red-600 line-through">
-                                    {formatNumber(cp)}원
-                                  </p>
+                              <div className="mt-0.5 flex w-full max-w-md flex-col gap-1">
+                                {showCompare && (
+                                  <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                    <span className={`${labelCol} text-xs font-medium text-gray-600 sm:text-sm`}>
+                                      정가
+                                    </span>
+                                    <span
+                                      className={`${amountNowrap} text-xs text-red-600 sm:text-sm`}
+                                    >
+                                      {formatNumber(cp)}원
+                                    </span>
+                                  </div>
                                 )}
-                                {show && unitDisc > 0 && (
-                                  <div className="flex min-w-0 items-baseline justify-between gap-x-2">
-                                    <span className="shrink-0 text-[11px] font-medium leading-none text-red-600 sm:text-xs">
+                                {showCompare && unitDisc > 0 && (
+                                  <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                    <span className={`${labelCol} text-[11px] font-medium leading-none text-red-600 sm:text-xs`}>
                                       회원 할인
                                     </span>
-                                    <span className="text-right text-[11px] font-semibold tabular-nums leading-none text-red-600 whitespace-nowrap sm:text-xs">
+                                    <span
+                                      className={`${amountNowrap} text-[11px] font-semibold leading-none text-red-600 sm:text-xs`}
+                                    >
                                       -{formatNumber(unitDisc)}원
                                     </span>
                                   </div>
                                 )}
-                                <p className="text-sm text-gray-700">
-                                  <span className="font-semibold text-[#FF6F0F]">
+                                <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                  <span className={`${labelCol} text-xs font-semibold text-gray-800 sm:text-sm`}>
+                                    회원가
+                                  </span>
+                                  <span
+                                    className={`${amountNowrap} text-sm font-extrabold text-[#FF6F0F] sm:text-lg`}
+                                  >
                                     {formatNumber(sp)}원
-                                  </span>{' '}
-                                  × {formatNumber(directProduct.quantity)}
-                                </p>
+                                  </span>
+                                </div>
+                                <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                  <span className={`${labelCol} text-xs font-medium text-gray-600 sm:text-sm`}>
+                                    수량
+                                  </span>
+                                  <span className={`${amountNowrap} text-xs text-gray-700 sm:text-sm`}>
+                                    × {formatNumber(directProduct.quantity)}
+                                  </span>
+                                </div>
                               </div>
                             );
                           })()}
                         </div>
-                        <p className="text-sm font-semibold text-gray-900">
+                        <p className="text-sm font-semibold whitespace-nowrap text-gray-900">
                           {formatNumber(directProduct.price * directProduct.quantity)}원
                         </p>
                       </div>
@@ -958,7 +983,12 @@ export default function CheckoutPage() {
                     {!directProduct && cartItems.map((item) => {
                       const cp = toPriceNumber(item.product.comparePrice);
                       const sp = toPriceNumber(item.product.priceB2C);
+                      const unitDisc = memberDiscountPerUnit(cp, sp);
                       const showCompare = cp > 0 && cp > sp;
+                      const labelCol =
+                        'shrink-0 w-[5.25rem] pt-0.5 text-left sm:w-24';
+                      const amountNowrap =
+                        'min-w-0 flex-1 text-right tabular-nums whitespace-nowrap';
                       return (
                         <div key={item.id} className="flex items-center space-x-3">
                           <img
@@ -970,31 +1000,52 @@ export default function CheckoutPage() {
                             <p className="text-sm font-medium text-gray-900 truncate">
                               {item.product.name}
                             </p>
-                            <div className="mt-0.5 space-y-0.5">
+                            <div className="mt-0.5 flex w-full max-w-md flex-col gap-1">
                               {showCompare && (
-                                <p className="text-xs tabular-nums text-red-600 line-through">
-                                  {formatNumber(cp)}원
-                                </p>
-                              )}
-                              {showCompare && memberDiscountPerUnit(cp, sp) > 0 && (
-                                <div className="flex min-w-0 items-baseline justify-between gap-x-2">
-                                  <span className="shrink-0 text-[11px] font-medium leading-none text-red-600 sm:text-xs">
-                                    회원 할인
+                                <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                  <span className={`${labelCol} text-xs font-medium text-gray-600 sm:text-sm`}>
+                                    정가
                                   </span>
-                                  <span className="text-right text-[11px] font-semibold tabular-nums leading-none text-red-600 whitespace-nowrap sm:text-xs">
-                                    -{formatNumber(memberDiscountPerUnit(cp, sp))}원
+                                  <span
+                                    className={`${amountNowrap} text-xs text-red-600 sm:text-sm`}
+                                  >
+                                    {formatNumber(cp)}원
                                   </span>
                                 </div>
                               )}
-                              <p className="text-sm text-gray-700">
-                                <span className="font-semibold text-[#FF6F0F]">
+                              {showCompare && unitDisc > 0 && (
+                                <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                  <span className={`${labelCol} text-[11px] font-medium leading-none text-red-600 sm:text-xs`}>
+                                    회원 할인
+                                  </span>
+                                  <span
+                                    className={`${amountNowrap} text-[11px] font-semibold leading-none text-red-600 sm:text-xs`}
+                                  >
+                                    -{formatNumber(unitDisc)}원
+                                  </span>
+                                </div>
+                              )}
+                              <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                <span className={`${labelCol} text-xs font-semibold text-gray-800 sm:text-sm`}>
+                                  회원가
+                                </span>
+                                <span
+                                  className={`${amountNowrap} text-sm font-extrabold text-[#FF6F0F] sm:text-lg`}
+                                >
                                   {formatNumber(sp)}원
-                                </span>{' '}
-                                × {formatNumber(item.quantity)}
-                              </p>
+                                </span>
+                              </div>
+                              <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                <span className={`${labelCol} text-xs font-medium text-gray-600 sm:text-sm`}>
+                                  수량
+                                </span>
+                                <span className={`${amountNowrap} text-xs text-gray-700 sm:text-sm`}>
+                                  × {formatNumber(item.quantity)}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                          <p className="text-sm font-semibold text-gray-900">
+                          <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">
                             {formatNumber(item.product.priceB2C * item.quantity)}원
                           </p>
                         </div>

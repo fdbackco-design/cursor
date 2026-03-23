@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@repo/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { User, Settings, ShoppingBag, Heart, MapPin, LogOut, Trash2, Package, ChevronRight, Calendar, Ticket, Plus, AlertTriangle } from 'lucide-react';
+import { User, ShoppingBag, Heart, MapPin, LogOut, Trash2, Package, ChevronRight, Calendar, Ticket, Plus, AlertTriangle } from 'lucide-react';
 import { wishlistApi } from '@/lib/api/wishlist';
 import { WishlistItem } from '@/types/wishlist';
 import { ProductCard } from '@/components/products/product-card';
@@ -21,7 +21,7 @@ import { useConfirm } from '@/components/ui/confirm-modal';
 import { getImageUrl } from '@/lib/utils/image';
 import { formatNumber } from '@/lib/utils/price';
 
-const VALID_TABS = ['profile', 'orders', 'wishlist', 'address', 'coupons', 'settings', 'delete'];
+const VALID_TABS = ['profile', 'orders', 'wishlist', 'address', 'coupons', 'delete'];
 
 export default function AccountPage() {
   const searchParams = useSearchParams();
@@ -444,7 +444,6 @@ export default function AccountPage() {
     { id: 'wishlist', label: '찜목록', icon: Heart },
     { id: 'address', label: '배송지', icon: MapPin },
     { id: 'coupons', label: '쿠폰', icon: Ticket },
-    { id: 'settings', label: '설정', icon: Settings },
     { id: 'delete', label: '회원탈퇴', icon: AlertTriangle },
   ];
 
@@ -950,41 +949,6 @@ export default function AccountPage() {
           </div>
         );
 
-
-
-      case 'settings':
-        return (
-          <div className="space-y-4 sm:space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">계정 설정</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <h3 className="font-medium">이메일 알림</h3>
-                    <p className="text-sm text-gray-600">주문 상태 및 프로모션 알림</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" defaultChecked />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                </div> */}
-                
-                <div className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm sm:text-base">SMS 알림</h3>
-                    <p className="text-xs sm:text-sm text-gray-600">배송 및 주문 상태 알림</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                    <input type="checkbox" className="sr-only peer" />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
 
       case 'delete':
         return (

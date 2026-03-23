@@ -220,7 +220,7 @@ export default function CartPage() {
                                         정가
                                       </span>
                                       <span
-                                        className={`${amountNowrap} text-xs text-red-600 line-through sm:text-sm`}
+                                        className={`${amountNowrap} text-xs text-red-600 sm:text-sm`}
                                       >
                                         {formatNumber(cp)}원
                                       </span>

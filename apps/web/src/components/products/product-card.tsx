@@ -302,11 +302,11 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="space-y-2 min-w-0">
             {/* 한 행: 네이버 가격 + comparePrice (잘리지 않도록 줄바꿈 허용) */}
             <div className="flex w-full min-w-0 items-start justify-between gap-2 sm:gap-2.5">
-              <span className="shrink-0 pt-0.5 text-[10px] font-medium leading-tight text-gray-500 sm:text-[11px]">
+              <span className="shrink-0 pt-0.5 text-[10px] font-semibold leading-tight text-gray-500 sm:text-[11px]">
                 네이버 가격
               </span>
               <span
-                className={`min-w-0 max-w-[72%] break-words text-right text-[11px] tabular-nums leading-snug [overflow-wrap:anywhere] sm:max-w-[75%] sm:text-xs ${
+                className={`min-w-0 max-w-[72%] break-words text-right text-[11px] font-extrabold tabular-nums leading-snug [overflow-wrap:anywhere] sm:max-w-[75%] sm:text-xs ${
                   comparePriceNum &&
                   comparePriceNum > 0 &&
                   comparePriceNum > currentPriceNum

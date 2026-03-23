@@ -379,7 +379,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
         {/* Price — 비교가(상단·빨강+취소선) → 회원가 강조 */}
         <div className="space-y-2 rounded-xl border border-orange-100 bg-gradient-to-br from-orange-50/80 to-white p-4 sm:p-5">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-orange-700 sm:text-xs">
-            온라인 정가
+            네이버 가격
           </p>
           {comparePriceNum && comparePriceNum > 0 && comparePriceNum > displayPrice ? (
             <div className="text-sm tabular-nums text-red-600 line-through sm:text-base">

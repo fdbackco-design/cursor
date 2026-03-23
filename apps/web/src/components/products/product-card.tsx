@@ -299,32 +299,42 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardHeader>
         
         <CardContent className="flex-1 px-3 sm:px-4 pb-2 sm:pb-3 cursor-pointer">
-          <div className="space-y-1.5 sm:space-y-2">
-            <p className="text-[9px] font-semibold uppercase tracking-wide text-orange-700 sm:text-[10px]">
-              온라인 정가
-            </p>
-            {comparePriceNum &&
-              comparePriceNum > 0 &&
-              comparePriceNum > currentPriceNum && (
-                <div className="text-right text-[11px] tabular-nums leading-tight text-red-600 line-through sm:text-xs">
-                  {formatPriceWithCurrency(comparePriceNum)}
-                </div>
-              )}
-            <div className="flex justify-between items-end gap-1.5 min-w-0">
-              <span className="max-w-[42%] truncate text-[11px] font-medium text-gray-600 sm:max-w-[45%] sm:text-xs">
-                {priceDisplay.text}
+          <div className="space-y-2 min-w-0">
+            {/* 한 행: 네이버 가격 + comparePrice (잘리지 않도록 줄바꿈 허용) */}
+            <div className="flex w-full min-w-0 items-start justify-between gap-2 sm:gap-2.5">
+              <span className="shrink-0 pt-0.5 text-[10px] font-medium leading-tight text-gray-500 sm:text-[11px]">
+                네이버 가격
               </span>
-              <div className="min-w-0 flex-1 text-right">
+              <span
+                className={`min-w-0 max-w-[72%] break-words text-right text-[11px] tabular-nums leading-snug [overflow-wrap:anywhere] sm:max-w-[75%] sm:text-xs ${
+                  comparePriceNum &&
+                  comparePriceNum > 0 &&
+                  comparePriceNum > currentPriceNum
+                    ? 'text-red-600 line-through'
+                    : 'text-gray-400'
+                }`}
+              >
+                {comparePriceNum &&
+                comparePriceNum > 0 &&
+                comparePriceNum > currentPriceNum
+                  ? formatPriceWithCurrency(comparePriceNum)
+                  : '—'}
+              </span>
+            </div>
+            {/* 한 행: 회원가격 + priceB2C / 기업가 */}
+            <div className="flex w-full min-w-0 items-start justify-between gap-2 sm:gap-2.5">
+              <span className="shrink-0 pt-0.5 text-[10px] font-semibold leading-tight text-gray-800 sm:text-[11px]">
+                {user?.role === 'BIZ' ? '기업전용가' : '회원가격'}
+              </span>
+              <span
+                className="min-w-0 max-w-[72%] break-words text-right text-[11px] font-extrabold tabular-nums leading-snug text-[#FF6F0F] [overflow-wrap:anywhere] sm:max-w-[75%] sm:text-sm"
+              >
                 {priceDisplay.price ? (
-                  <span className="inline-block max-w-full truncate text-sm font-extrabold tabular-nums text-[#FF6F0F] sm:text-base">
-                    {priceDisplay.price}
-                  </span>
+                  priceDisplay.price
                 ) : (
-                  <span className="text-[11px] text-gray-400 sm:text-xs">
-                    {priceDisplay.text}
-                  </span>
+                  <span className="font-normal text-gray-400">{priceDisplay.text}</span>
                 )}
-              </div>
+              </span>
             </div>
           </div>
         </CardContent>

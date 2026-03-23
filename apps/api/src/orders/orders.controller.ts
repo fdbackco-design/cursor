@@ -53,6 +53,27 @@ export class OrdersController {
     });
   }
 
+  // 배송 추적 (정적 경로는 :orderNumber보다 먼저 등록)
+  @Get('delivery/tracking')
+  async getDeliveryTracking(
+    @Req() req: Request,
+    @Query() query: DeliveryTrackingQueryDto
+  ) {
+    const user = req.user as any;
+    this.logger.log(`배송 추적 조회: userId=${user.id}, query=${JSON.stringify(query)}`);
+
+    const trackingQuery = { ...query, userId: user.id };
+    return this.ordersService.getDeliveryTracking(trackingQuery);
+  }
+
+  /** 내 주문 배송 통계 (상단 카드용 — 본인 주문만) */
+  @Get('delivery/stats')
+  async getUserDeliveryStats(@Req() req: Request) {
+    const user = req.user as any;
+    this.logger.log(`사용자 배송 통계 조회: userId=${user.id}`);
+    return this.ordersService.getUserDeliveryStats(user.id);
+  }
+
   // 특정 주문 상세 조회
   @Get(':orderNumber')
   async getOrderDetail(
@@ -76,20 +97,6 @@ export class OrdersController {
     this.logger.log(`주문 취소 요청: orderNumber=${orderNumber}, userId=${user.id}, reason=${cancelData.reason}`);
     
     return this.ordersService.cancelOrder(orderNumber, user.id, cancelData.reason);
-  }
-
-  // 배송 추적 정보 조회 (사용자별)
-  @Get('delivery/tracking')
-  async getDeliveryTracking(
-    @Req() req: Request,
-    @Query() query: DeliveryTrackingQueryDto
-  ) {
-    const user = req.user as any;
-    this.logger.log(`배송 추적 조회: userId=${user.id}, query=${JSON.stringify(query)}`);
-    
-    // 사용자는 자신의 주문만 조회 가능
-    const trackingQuery = { ...query, userId: user.id };
-    return this.ordersService.getDeliveryTracking(trackingQuery);
   }
 
   // 관리자 전용: 모든 주문 조회

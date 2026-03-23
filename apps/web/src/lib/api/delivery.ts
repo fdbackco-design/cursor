@@ -54,9 +54,9 @@ export interface DeliveryStats {
 }
 
 export const deliveryApi = {
-  // 배송 통계 조회
+  /** 로그인 사용자 본인 주문 기준 통계 (JWT 필요) */
   async getStats(): Promise<{ success: boolean; data?: DeliveryStats; error?: string }> {
-    return apiRequest<DeliveryStats>('/delivery/stats', {
+    return apiRequest<DeliveryStats>('/orders/delivery/stats', {
       method: 'GET',
     });
   },

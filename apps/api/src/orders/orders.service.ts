@@ -733,6 +733,61 @@ export class OrdersService {
     }
   }
 
+  /** 로그인 사용자 본인 주문만 집계 (배송 조회 페이지용) */
+  async getUserDeliveryStats(userId: string) {
+    try {
+      const stats = await this.prisma.order.groupBy({
+        by: ['status'],
+        where: { userId },
+        _count: {
+          status: true,
+        },
+      });
+
+      const totalOrders = await this.prisma.order.count({ where: { userId } });
+
+      const recentOrders = await this.prisma.order.findMany({
+        where: { userId },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      this.logger.log(`사용자 배송 통계 조회 완료: userId=${userId}, 전체 ${totalOrders}건`);
+
+      return {
+        success: true,
+        data: {
+          totalOrders,
+          statusBreakdown: stats.reduce(
+            (acc, item) => {
+              acc[item.status] = item._count.status;
+              return acc;
+            },
+            {} as Record<string, number>,
+          ),
+          recentOrders: recentOrders.map((order) => ({
+            orderNumber: order.orderNumber,
+            status: order.status,
+            statusText: this.getStatusText(order.status),
+            customerName: order.user.name,
+            totalAmount: order.totalAmount,
+            createdAt: order.createdAt,
+          })),
+        },
+      };
+    } catch (error) {
+      this.logger.error('사용자 배송 통계 조회 실패:', error);
+      throw error;
+    }
+  }
+
   // 배송 단계 생성
   private generateDeliverySteps(status: OrderStatus, createdAt: Date, updatedAt: Date) {
     const steps = [

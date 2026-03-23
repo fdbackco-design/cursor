@@ -87,8 +87,10 @@ export default function DeliveryPage() {
   }, [isAuthenticated, user, router]);
 
   useEffect(() => {
-    loadDeliveryStats();
-  }, [loadDeliveryStats]);
+    if (isAuthenticated && user?.approve) {
+      loadDeliveryStats();
+    }
+  }, [isAuthenticated, user?.approve, loadDeliveryStats]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -231,7 +233,9 @@ export default function DeliveryPage() {
                   <div>
                     <p className="text-xs sm:text-sm font-medium text-gray-600">준비중</p>
                     <p className="text-lg sm:text-2xl font-bold text-blue-600">
-                      {(deliveryStats.statusBreakdown?.CONFIRMED || 0) + (deliveryStats.statusBreakdown?.PROCESSING || 0)}
+                      {(deliveryStats.statusBreakdown?.PENDING || 0) +
+                        (deliveryStats.statusBreakdown?.CONFIRMED || 0) +
+                        (deliveryStats.statusBreakdown?.PROCESSING || 0)}
                     </p>
                   </div>
                   <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />

@@ -217,9 +217,14 @@ export default function CartPage() {
                                       </span>
                                     )}
                                     {showCompare && unitDisc > 0 && (
-                                      <span className="text-xs font-medium tabular-nums text-red-600">
-                                        회원 할인 -{formatNumber(unitDisc)}원
-                                      </span>
+                                      <div className="flex w-full min-w-0 items-baseline justify-between gap-x-2 gap-y-0.5">
+                                        <span className="shrink-0 text-[11px] font-medium leading-none text-red-600 sm:text-xs">
+                                          회원 할인
+                                        </span>
+                                        <span className="text-right text-[11px] font-semibold tabular-nums leading-none text-red-600 whitespace-nowrap sm:text-xs">
+                                          -{formatNumber(unitDisc)}원
+                                        </span>
+                                      </div>
                                     )}
                                     <span className="text-base sm:text-lg font-extrabold text-[#FF6F0F]">
                                       {formatNumber(sale)}원
@@ -313,7 +318,7 @@ export default function CartPage() {
                   {totalCompareSum > 0 && (
                     <div className="flex justify-between items-center gap-2">
                       <span className="text-sm sm:text-base text-gray-600">정가 (비교가)</span>
-                      <span className="shrink-0 text-right text-sm font-medium tabular-nums text-red-600 line-through sm:text-base">
+                      <span className="shrink-0 text-right text-sm font-medium tabular-nums text-red-600 sm:text-base">
                         {formatNumber(totalCompareSum)}원
                       </span>
                     </div>

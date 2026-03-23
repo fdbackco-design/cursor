@@ -929,9 +929,14 @@ export default function CheckoutPage() {
                                   </p>
                                 )}
                                 {show && unitDisc > 0 && (
-                                  <p className="text-xs font-medium tabular-nums text-red-600">
-                                    회원 할인 -{formatNumber(unitDisc)}원
-                                  </p>
+                                  <div className="flex min-w-0 items-baseline justify-between gap-x-2">
+                                    <span className="shrink-0 text-[11px] font-medium leading-none text-red-600 sm:text-xs">
+                                      회원 할인
+                                    </span>
+                                    <span className="text-right text-[11px] font-semibold tabular-nums leading-none text-red-600 whitespace-nowrap sm:text-xs">
+                                      -{formatNumber(unitDisc)}원
+                                    </span>
+                                  </div>
                                 )}
                                 <p className="text-sm text-gray-700">
                                   <span className="font-semibold text-[#FF6F0F]">
@@ -972,9 +977,14 @@ export default function CheckoutPage() {
                                 </p>
                               )}
                               {showCompare && memberDiscountPerUnit(cp, sp) > 0 && (
-                                <p className="text-xs font-medium tabular-nums text-red-600">
-                                  회원 할인 -{formatNumber(memberDiscountPerUnit(cp, sp))}원
-                                </p>
+                                <div className="flex min-w-0 items-baseline justify-between gap-x-2">
+                                  <span className="shrink-0 text-[11px] font-medium leading-none text-red-600 sm:text-xs">
+                                    회원 할인
+                                  </span>
+                                  <span className="text-right text-[11px] font-semibold tabular-nums leading-none text-red-600 whitespace-nowrap sm:text-xs">
+                                    -{formatNumber(memberDiscountPerUnit(cp, sp))}원
+                                  </span>
+                                </div>
                               )}
                               <p className="text-sm text-gray-700">
                                 <span className="font-semibold text-[#FF6F0F]">
@@ -998,7 +1008,7 @@ export default function CheckoutPage() {
                   {totalCompareSum > 0 && (
                     <div className="flex justify-between gap-2">
                       <span className="text-gray-600">정가 (비교가)</span>
-                      <span className="shrink-0 text-right font-medium tabular-nums text-red-600 line-through">
+                      <span className="shrink-0 text-right font-medium tabular-nums text-red-600">
                         {formatNumber(totalCompareSum)}원
                       </span>
                     </div>

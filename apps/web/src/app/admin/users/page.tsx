@@ -3,8 +3,22 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
 import { Button } from '@repo/ui';
-import { Clock, Check, X, User, Mail, Calendar, Hash, ArrowLeft, Search } from 'lucide-react';
+import {
+  Clock,
+  Check,
+  X,
+  User,
+  Mail,
+  Calendar,
+  Hash,
+  ArrowLeft,
+  Search,
+  Phone,
+  MapPin,
+  Download,
+} from 'lucide-react';
 import Link from 'next/link';
+import { formatUserAddressForAdmin } from '@/lib/utils/user-address';
 
 interface User {
   id: string;
@@ -19,6 +33,12 @@ interface User {
   updatedAt: string;
   phoneNumber?: string;
   shippingAddress?: any;
+  /** 기본 배송지 우선 1건 (API getAllUsers) */
+  addresses?: Array<{
+    zoneNumber?: string | null;
+    baseAddress?: string | null;
+    detailAddress?: string | null;
+  }>;
   talkMessageAgreed?: boolean;
 }
 
@@ -126,6 +146,24 @@ const UsersPage = () => {
     return user.referrerCodeUsed === referralFilter;
   });
 
+  const handleDownloadExcel = async () => {
+    try {
+      const XLSX = await import('xlsx');
+      const rows = filteredUsers.map((u) => ({
+        사용자명: u.name ?? '',
+        전화번호: u.phoneNumber ?? '',
+        주소: formatUserAddressForAdmin(u),
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '사용자목록');
+      const dateStr = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `feedbackmall-users-${dateStr}.xlsx`);
+    } catch (e) {
+      console.error('엑셀 다운로드 실패:', e);
+    }
+  };
+
   const pendingCount = users.filter(u => !u.approve).length;
   const approvedCount = users.filter(u => u.approve).length;
   const referralUserCount = users.filter(u => u.referrerCodeUsed).length;
@@ -149,13 +187,24 @@ const UsersPage = () => {
         {/* 헤더 */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <Link href="/admin">
                 <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2">
                   <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
                   관리자 메인
                 </Button>
               </Link>
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 bg-emerald-600 hover:bg-emerald-700"
+                onClick={handleDownloadExcel}
+                disabled={filteredUsers.length === 0}
+              >
+                <Download className="h-4 w-4 mr-1 sm:mr-2" />
+                엑셀 다운로드 ({filteredUsers.length}명)
+              </Button>
               <div>
                 <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-2">사용자 승인 관리</h1>
                 <p className="text-sm sm:text-base text-gray-600">신규 가입 사용자의 승인 및 관리</p>
@@ -383,6 +432,20 @@ const UsersPage = () => {
                       ) : (
                         <span className="text-gray-400">없음</span>
                       )}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-start gap-2">
+                    <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 shrink-0 mt-0.5" />
+                    <span className="text-xs sm:text-sm text-gray-600">
+                      {user.phoneNumber?.trim() ? user.phoneNumber : '전화번호 없음'}
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 shrink-0 mt-0.5" />
+                    <span className="text-xs sm:text-sm text-gray-600 break-words">
+                      {formatUserAddressForAdmin(user) || '주소 없음'}
                     </span>
                   </div>
                 </div>

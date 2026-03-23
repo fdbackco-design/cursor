@@ -77,6 +77,16 @@ export class AuthService {
         phoneNumber: true,
         shippingAddress: true,
         talkMessageAgreed: true,
+        addresses: {
+          where: { isActive: true },
+          orderBy: [{ isDefault: 'desc' }, { updatedAt: 'desc' }],
+          take: 1,
+          select: {
+            zoneNumber: true,
+            baseAddress: true,
+            detailAddress: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

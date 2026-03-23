@@ -9,6 +9,7 @@ import MobileKakaoChannelButton from '@/components/ui/MobileKakaoChannelButton';
 import AndroidInAppChromeIntent from '@/components/ui/AndroidInAppChromeIntent';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { DialogProvider } from '@/components/ui/dialog-provider';
+import { KarrotPixelHead } from '@/components/tracking/KarrotPixelHead';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -63,6 +64,7 @@ export default function RootLayout({
       <head>
         {/* Daum 우편번호 서비스 */}
         <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+        <KarrotPixelHead />
       </head>
       <body className={inter.className}>
         <AndroidInAppChromeIntent />

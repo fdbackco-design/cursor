@@ -973,9 +973,6 @@ export default function CheckoutPage() {
                             );
                           })()}
                         </div>
-                        <p className="text-sm font-semibold whitespace-nowrap text-gray-900">
-                          {formatNumber(directProduct.price * directProduct.quantity)}원
-                        </p>
                       </div>
                     )}
                     
@@ -1045,9 +1042,6 @@ export default function CheckoutPage() {
                               </div>
                             </div>
                           </div>
-                          <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">
-                            {formatNumber(item.product.priceB2C * item.quantity)}원
-                          </p>
                         </div>
                       );
                     })}

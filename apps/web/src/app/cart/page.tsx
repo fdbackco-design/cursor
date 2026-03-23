@@ -12,6 +12,7 @@ import { DEFAULT_SHIPPING_FEE } from '@/lib/constants/shipping';
 import {
   memberDiscountPerUnit,
   toPriceNumber,
+  totalComparePriceSum,
   totalMemberDiscountFromCartItems,
 } from '@/lib/utils/product-price';
 import { useRouter } from 'next/navigation';
@@ -139,6 +140,7 @@ export default function CartPage() {
   const cartItems = cart?.items || [];
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product.priceB2C * item.quantity), 0);
   const totalMemberDiscount = totalMemberDiscountFromCartItems(cartItems);
+  const totalCompareSum = totalComparePriceSum(cartItems);
   const shippingFee = DEFAULT_SHIPPING_FEE;
   const total = subtotal + shippingFee;
 
@@ -205,6 +207,7 @@ export default function CartPage() {
                               {(() => {
                                 const cp = toPriceNumber(item.product.comparePrice);
                                 const sale = toPriceNumber(item.product.priceB2C);
+                                const unitDisc = memberDiscountPerUnit(cp, sale);
                                 const showCompare = cp > 0 && cp > sale;
                                 return (
                                   <>
@@ -213,15 +216,14 @@ export default function CartPage() {
                                         {formatNumber(cp)}원
                                       </span>
                                     )}
+                                    {showCompare && unitDisc > 0 && (
+                                      <span className="text-xs font-medium tabular-nums text-red-600">
+                                        회원 할인 -{formatNumber(unitDisc)}원
+                                      </span>
+                                    )}
                                     <span className="text-base sm:text-lg font-extrabold text-[#FF6F0F]">
                                       {formatNumber(sale)}원
                                     </span>
-                                    {showCompare && memberDiscountPerUnit(cp, sale) > 0 && (
-                                      <span className="text-xs font-medium text-red-600">
-                                        회원 할인{' '}
-                                        {formatNumber(memberDiscountPerUnit(cp, sale) * item.quantity)}원
-                                      </span>
-                                    )}
                                   </>
                                 );
                               })()}
@@ -308,23 +310,28 @@ export default function CartPage() {
               </CardHeader>
               <CardContent className="space-y-4 sm:space-y-6">
                 <div className="space-y-3 sm:space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm sm:text-base text-gray-600">상품 금액 (회원가)</span>
-                    <span className="font-medium text-sm sm:text-base">{formatNumber(subtotal)}원</span>
-                  </div>
-                  {totalMemberDiscount > 0 && (
-                    <>
-                      <div className="flex justify-between items-center rounded-lg bg-red-50 px-3 py-2 text-red-700">
-                        <span className="text-sm sm:text-base font-medium">총 할인받은 금액</span>
-                        <span className="text-sm sm:text-base font-bold tabular-nums">
-                          {formatNumber(totalMemberDiscount)}원
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500 leading-snug">
-                        정가(비교가) 대비 회원가로 구매 시 절약한 금액입니다.
-                      </p>
-                    </>
+                  {totalCompareSum > 0 && (
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-sm sm:text-base text-gray-600">정가 (비교가)</span>
+                      <span className="shrink-0 text-right text-sm font-medium tabular-nums text-red-600 line-through sm:text-base">
+                        {formatNumber(totalCompareSum)}원
+                      </span>
+                    </div>
                   )}
+                  {totalMemberDiscount > 0 && (
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-sm sm:text-base text-gray-600">회원 할인</span>
+                      <span className="shrink-0 text-right text-sm font-semibold tabular-nums text-red-600 sm:text-base">
+                        -{formatNumber(totalMemberDiscount)}원
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm sm:text-base text-gray-600">회원가</span>
+                    <span className="font-semibold text-sm tabular-nums text-[#FF6F0F] sm:text-base">
+                      {formatNumber(subtotal)}원
+                    </span>
+                  </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm sm:text-base text-gray-600">배송비</span>
                     <span className="font-medium text-sm sm:text-base">

@@ -40,3 +40,18 @@ export function totalMemberDiscountDirect(
   const unit = memberDiscountPerUnit(comparePrice, salePrice);
   return unit * Math.max(0, quantity);
 }
+
+/** 장바구니/주문 요약용: 비교가(정가) × 수량 합계 (비교가가 회원가보다 클 때만 합산) */
+export function totalComparePriceSum(
+  items: Array<{
+    quantity: number;
+    product: { priceB2C: number | string; comparePrice?: number | string | null };
+  }>,
+): number {
+  return items.reduce((sum, item) => {
+    const cp = toPriceNumber(item.product.comparePrice);
+    const sp = toPriceNumber(item.product.priceB2C);
+    if (cp > 0 && cp > sp) return sum + cp * item.quantity;
+    return sum;
+  }, 0);
+}

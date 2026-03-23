@@ -18,6 +18,7 @@ import {
   toPriceNumber,
   totalMemberDiscountDirect,
   totalMemberDiscountFromCartItems,
+  totalComparePriceSum,
 } from '@/lib/utils/product-price';
 import { AddressFormModal, AddressCard } from '@/components/address';
 import { useToast, toast } from '@/components/ui/toast';
@@ -613,6 +614,14 @@ export default function CheckoutPage() {
         directProduct.quantity,
       )
     : totalMemberDiscountFromCartItems(cartItems);
+  const totalCompareSum = directProduct
+    ? (() => {
+        const cp = toPriceNumber(directProduct.comparePrice);
+        const sp = toPriceNumber(directProduct.price);
+        if (cp > 0 && cp > sp) return cp * directProduct.quantity;
+        return 0;
+      })()
+    : totalComparePriceSum(cartItems);
   const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
   const isNameMissing = !ordererInfo.name?.trim();
   const isEmailMissing = !ordererInfo.email?.trim();
@@ -910,12 +919,18 @@ export default function CheckoutPage() {
                           {(() => {
                             const cp = toPriceNumber(directProduct.comparePrice);
                             const sp = toPriceNumber(directProduct.price);
+                            const unitDisc = memberDiscountPerUnit(cp, sp);
                             const show = cp > 0 && cp > sp;
                             return (
                               <div className="mt-0.5 space-y-0.5">
                                 {show && (
                                   <p className="text-xs tabular-nums text-red-600 line-through">
                                     {formatNumber(cp)}원
+                                  </p>
+                                )}
+                                {show && unitDisc > 0 && (
+                                  <p className="text-xs font-medium tabular-nums text-red-600">
+                                    회원 할인 -{formatNumber(unitDisc)}원
                                   </p>
                                 )}
                                 <p className="text-sm text-gray-700">
@@ -956,18 +971,17 @@ export default function CheckoutPage() {
                                   {formatNumber(cp)}원
                                 </p>
                               )}
+                              {showCompare && memberDiscountPerUnit(cp, sp) > 0 && (
+                                <p className="text-xs font-medium tabular-nums text-red-600">
+                                  회원 할인 -{formatNumber(memberDiscountPerUnit(cp, sp))}원
+                                </p>
+                              )}
                               <p className="text-sm text-gray-700">
                                 <span className="font-semibold text-[#FF6F0F]">
                                   {formatNumber(sp)}원
                                 </span>{' '}
                                 × {formatNumber(item.quantity)}
                               </p>
-                              {showCompare && memberDiscountPerUnit(cp, sp) > 0 && (
-                                <p className="text-xs text-red-600">
-                                  회원 할인{' '}
-                                  {formatNumber(memberDiscountPerUnit(cp, sp) * item.quantity)}원
-                                </p>
-                              )}
                             </div>
                           </div>
                           <p className="text-sm font-semibold text-gray-900">
@@ -981,21 +995,28 @@ export default function CheckoutPage() {
 
                 {/* 금액 계산 */}
                 <div className="space-y-3 border-t pt-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">상품 금액 (회원가)</span>
-                    <span>{formatNumber(subtotal)}원</span>
-                  </div>
-                  {totalMemberDiscount > 0 && (
-                    <div className="flex justify-between rounded-lg bg-red-50 px-3 py-2 text-red-700">
-                      <span className="font-medium">총 할인받은 금액</span>
-                      <span className="font-bold tabular-nums">{formatNumber(totalMemberDiscount)}원</span>
+                  {totalCompareSum > 0 && (
+                    <div className="flex justify-between gap-2">
+                      <span className="text-gray-600">정가 (비교가)</span>
+                      <span className="shrink-0 text-right font-medium tabular-nums text-red-600 line-through">
+                        {formatNumber(totalCompareSum)}원
+                      </span>
                     </div>
                   )}
                   {totalMemberDiscount > 0 && (
-                    <p className="text-xs text-gray-500">
-                      정가(비교가) 대비 회원가로 구매 시 절약한 금액입니다.
-                    </p>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-gray-600">회원 할인</span>
+                      <span className="shrink-0 text-right font-semibold tabular-nums text-red-600">
+                        -{formatNumber(totalMemberDiscount)}원
+                      </span>
+                    </div>
                   )}
+                  <div className="flex justify-between">
+                    <span className="font-medium text-gray-900">회원가</span>
+                    <span className="font-semibold tabular-nums text-[#FF6F0F]">
+                      {formatNumber(subtotal)}원
+                    </span>
+                  </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">배송비</span>
                     <span>{shippingFee === 0 ? '무료' : `${formatNumber(shippingFee)}원`}</span>

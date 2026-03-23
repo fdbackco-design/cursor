@@ -300,27 +300,27 @@ export function ProductCard({ product }: ProductCardProps) {
         
         <CardContent className="flex-1 px-3 sm:px-4 pb-2 sm:pb-3 cursor-pointer">
           <div className="space-y-1.5 sm:space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-orange-700 sm:text-[11px]">
-              폐쇄몰 회원 특가
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-orange-700 sm:text-[10px]">
+              온라인 정가
             </p>
             {comparePriceNum &&
               comparePriceNum > 0 &&
               comparePriceNum > currentPriceNum && (
-                <div className="text-right text-xs tabular-nums text-red-600 line-through sm:text-sm">
+                <div className="text-right text-[11px] tabular-nums leading-tight text-red-600 line-through sm:text-xs">
                   {formatPriceWithCurrency(comparePriceNum)}
                 </div>
               )}
-            <div className="flex justify-between items-end gap-2 min-w-0">
-              <span className="text-xs sm:text-sm font-medium text-gray-600 whitespace-nowrap flex-shrink-0">
+            <div className="flex justify-between items-end gap-1.5 min-w-0">
+              <span className="max-w-[42%] truncate text-[11px] font-medium text-gray-600 sm:max-w-[45%] sm:text-xs">
                 {priceDisplay.text}
               </span>
-              <div className="flex flex-col items-end flex-shrink-0 min-w-0 text-right">
+              <div className="min-w-0 flex-1 text-right">
                 {priceDisplay.price ? (
-                  <span className="text-lg sm:text-xl font-extrabold tabular-nums text-[#FF6F0F] whitespace-nowrap">
+                  <span className="inline-block max-w-full truncate text-sm font-extrabold tabular-nums text-[#FF6F0F] sm:text-base">
                     {priceDisplay.price}
                   </span>
                 ) : (
-                  <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+                  <span className="text-[11px] text-gray-400 sm:text-xs">
                     {priceDisplay.text}
                   </span>
                 )}

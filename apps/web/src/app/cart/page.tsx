@@ -203,32 +203,44 @@ export default function CartPage() {
                             {item.product.category?.name}
                           </p>
                           <div className="flex items-start justify-between gap-2 sm:block">
-                            <div className="min-w-0 flex flex-col gap-0.5">
+                            <div className="min-w-0 flex w-full max-w-md flex-col gap-1">
                               {(() => {
                                 const cp = toPriceNumber(item.product.comparePrice);
                                 const sale = toPriceNumber(item.product.priceB2C);
                                 const unitDisc = memberDiscountPerUnit(cp, sale);
                                 const showCompare = cp > 0 && cp > sale;
+                                const labelCol =
+                                  'shrink-0 w-[5.25rem] pt-0.5 text-left sm:w-24';
                                 return (
                                   <>
                                     {showCompare && (
-                                      <span className="text-sm tabular-nums text-red-600 line-through">
-                                        {formatNumber(cp)}원
-                                      </span>
+                                      <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                        <span className={`${labelCol} text-xs font-medium text-gray-600 sm:text-sm`}>
+                                          정가
+                                        </span>
+                                        <span className="min-w-0 flex-1 text-right text-sm tabular-nums text-red-600 line-through sm:text-base">
+                                          {formatNumber(cp)}원
+                                        </span>
+                                      </div>
                                     )}
                                     {showCompare && unitDisc > 0 && (
-                                      <div className="flex w-full min-w-0 items-baseline justify-between gap-x-2 gap-y-0.5">
-                                        <span className="shrink-0 text-[11px] font-medium leading-none text-red-600 sm:text-xs">
+                                      <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                        <span className={`${labelCol} text-[11px] font-medium leading-none text-red-600 sm:text-xs`}>
                                           회원 할인
                                         </span>
-                                        <span className="text-right text-[11px] font-semibold tabular-nums leading-none text-red-600 whitespace-nowrap sm:text-xs">
+                                        <span className="min-w-0 flex-1 text-right text-[11px] font-semibold tabular-nums leading-none text-red-600 whitespace-nowrap sm:text-xs">
                                           -{formatNumber(unitDisc)}원
                                         </span>
                                       </div>
                                     )}
-                                    <span className="text-base sm:text-lg font-extrabold text-[#FF6F0F]">
-                                      {formatNumber(sale)}원
-                                    </span>
+                                    <div className="flex w-full min-w-0 items-baseline justify-between gap-2 sm:gap-3">
+                                      <span className={`${labelCol} text-xs font-semibold text-gray-800 sm:text-sm`}>
+                                        회원가
+                                      </span>
+                                      <span className="min-w-0 flex-1 text-right text-base font-extrabold tabular-nums text-[#FF6F0F] sm:text-lg">
+                                        {formatNumber(sale)}원
+                                      </span>
+                                    </div>
                                   </>
                                 );
                               })()}

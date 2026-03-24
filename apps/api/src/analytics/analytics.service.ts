@@ -3,6 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AnalyticsService {
+  /** 결제·배송 진행 중인 주문만 매출에 포함 */
+  private readonly ORDER_STATUSES_FOR_REVENUE = [
+    'CONFIRMED',
+    'PROCESSING',
+    'SHIPPED',
+    'DELIVERED',
+  ] as const;
+
   constructor(private prisma: PrismaService) {}
 
   private getDateRange(period: string) {
@@ -29,189 +37,294 @@ export class AnalyticsService {
     return { startDate, endDate: now };
   }
 
+  /** 동일 길이의 직전 기간 (성장률 비교용) */
+  private getPreviousPeriodRange(period: string) {
+    const { startDate, endDate } = this.getDateRange(period);
+    const durationMs = endDate.getTime() - startDate.getTime();
+    const prevEnd = new Date(startDate.getTime());
+    const prevStart = new Date(prevEnd.getTime() - durationMs);
+    return { startDate: prevStart, endDate: prevEnd };
+  }
+
+  /** 최근 12개월(달력) 각 월의 시작·끝 — 차트용 */
+  private getLast12MonthBounds(endDate: Date) {
+    const y = endDate.getFullYear();
+    const m = endDate.getMonth();
+    const months: { start: Date; end: Date }[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(y, m - i, 1);
+      const start = new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0);
+      const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+      months.push({ start, end });
+    }
+    return { months, rangeStart: months[0].start, rangeEnd: months[11].end };
+  }
+
+  private pctGrowth(current: number, previous: number): number {
+    if (previous <= 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - previous) / previous) * 10000) / 100;
+  }
+
+  /**
+   * 셀러별 매출: 해당 셀러의 추천인 코드로 결제된 주문(referralCodeUsed 일치)만 집계
+   */
   async getSellerSales(period: string, sellerId?: string) {
     const { startDate, endDate } = this.getDateRange(period);
+    const { startDate: prevStart, endDate: prevEnd } =
+      this.getPreviousPeriodRange(period);
+    const { months: monthBounds, rangeStart, rangeEnd } =
+      this.getLast12MonthBounds(endDate);
 
-    // 실제 셀러 데이터 조회
     const sellers = await this.prisma.seller.findMany({
       where: {
         ...(sellerId ? { id: sellerId } : {}),
         isActive: true,
-        isVerified: true
+        isVerified: true,
       },
       include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      }
+        referralCodes: { select: { code: true } },
+        user: { select: { name: true, email: true } },
+      },
     });
 
-    // 각 셀러에 대한 실제 데이터 계산
-    const sellerSalesData = await Promise.all(sellers.map(async (seller) => {
-      // 해당 셀러와 연관된 카트 아이템 조회 (주문 추정)
-      const cartItems = await this.prisma.cartItem.findMany({
-        where: {
-          cart: {
-            userId: seller.userId // 셀러 본인의 카트는 제외하고 다른 사용자들의 구매
-          }
-        },
-        include: {
-          product: {
-            select: {
-              priceB2C: true,
-              vendor: {
-                select: {
-                  name: true
-                }
-              }
-            }
+    const sellerCodesMap = new Map<string, Set<string>>();
+    for (const s of sellers) {
+      sellerCodesMap.set(
+        s.id,
+        new Set(s.referralCodes.map((c) => c.code.trim().toUpperCase())),
+      );
+    }
+
+    const [ordersCurrent, ordersPrev, ordersChart, orderItemsForProducts] =
+      await Promise.all([
+        this.prisma.order.findMany({
+          where: {
+            status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
+            createdAt: { gte: startDate, lte: endDate },
+            referralCodeUsed: { not: null },
+          },
+          select: { totalAmount: true, referralCodeUsed: true },
+        }),
+        this.prisma.order.findMany({
+          where: {
+            status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
+            createdAt: { gte: prevStart, lte: prevEnd },
+            referralCodeUsed: { not: null },
+          },
+          select: { totalAmount: true, referralCodeUsed: true },
+        }),
+        this.prisma.order.findMany({
+          where: {
+            status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
+            createdAt: { gte: rangeStart, lte: rangeEnd },
+            referralCodeUsed: { not: null },
+          },
+          select: {
+            totalAmount: true,
+            createdAt: true,
+            referralCodeUsed: true,
+          },
+        }),
+        this.prisma.orderItem.findMany({
+          where: {
+            order: {
+              status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
+              createdAt: { gte: startDate, lte: endDate },
+              referralCodeUsed: { not: null },
+            },
+          },
+          select: {
+            productId: true,
+            order: { select: { referralCodeUsed: true } },
+          },
+        }),
+      ]);
+
+    const sellerSalesData = sellers.map((seller) => {
+      const codes = sellerCodesMap.get(seller.id)!;
+      const matchesSeller = (ref: string | null) =>
+        ref != null && codes.has(ref.trim().toUpperCase());
+
+      let currentSum = 0;
+      let currentCount = 0;
+      for (const o of ordersCurrent) {
+        if (matchesSeller(o.referralCodeUsed)) {
+          currentSum += Number(o.totalAmount);
+          currentCount += 1;
+        }
+      }
+
+      let previousSum = 0;
+      for (const o of ordersPrev) {
+        if (matchesSeller(o.referralCodeUsed)) {
+          previousSum += Number(o.totalAmount);
+        }
+      }
+
+      const productIds = new Set<string>();
+      for (const row of orderItemsForProducts) {
+        if (matchesSeller(row.order.referralCodeUsed)) {
+          productIds.add(row.productId);
+        }
+      }
+
+      const salesByMonth = monthBounds.map(({ start, end }) => {
+        let m = 0;
+        for (const o of ordersChart) {
+          if (!matchesSeller(o.referralCodeUsed)) continue;
+          if (o.createdAt >= start && o.createdAt <= end) {
+            m += Number(o.totalAmount);
           }
         }
+        return Math.round(m);
       });
 
-      // 실제 매출 계산 (카트 아이템 기반)
-      const totalRevenue = cartItems.reduce((sum, item) => {
-        return sum + (Number(item.product.priceB2C) * item.quantity);
-      }, 0);
-
-      // 실제 주문 수 추정
-      const totalOrders = cartItems.length > 0 ? Math.max(cartItems.length, 1) : 1;
-
-      // 평균 주문액
-      const averageOrderValue = totalRevenue / totalOrders;
-
-      // 월별 성장률 계산 (간단한 추정)
-      const monthlyGrowth = totalRevenue > 1000000 ? 
-        (Math.random() * 20) - 5 : // -5% ~ +15%
-        (Math.random() * 40) - 20; // -20% ~ +20%
-
-      // 월별 매출 데이터 (실제 데이터 기반 추정)
-      const baseMonthly = totalRevenue / 12;
-      const salesByMonth = Array.from({ length: 12 }, (_, index) => {
-        const variation = (Math.random() - 0.5) * 0.4; // ±20% 변동
-        return Math.floor(baseMonthly * (1 + variation));
-      });
+      const totalSales = Math.round(currentSum);
+      const totalOrders = currentCount;
+      const averageOrderValue =
+        totalOrders > 0 ? Math.round(totalSales / totalOrders) : 0;
 
       return {
         id: seller.id,
         name: seller.companyName,
-        category: '일반',
-        totalSales: totalRevenue,
+        category: '추천인 매출',
+        totalSales,
         totalOrders,
-        totalProducts: 0, // 셀러별 상품 연결이 없으므로 0
-        monthlyGrowth,
+        totalProducts: productIds.size,
+        monthlyGrowth: this.pctGrowth(currentSum, previousSum),
         averageOrderValue,
-        salesByMonth
+        salesByMonth,
       };
-    }));
+    });
 
     return sellerSalesData;
   }
 
+  /**
+   * 벤더별 매출: OrderItem.finalPrice 합계 (해당 상품의 vendorId 기준)
+   */
   async getVendorSales(period: string, vendorId?: string) {
     const { startDate, endDate } = this.getDateRange(period);
+    const { startDate: prevStart, endDate: prevEnd } =
+      this.getPreviousPeriodRange(period);
+    const { months: monthBounds, rangeStart, rangeEnd } =
+      this.getLast12MonthBounds(endDate);
 
     const vendors = await this.prisma.vendor.findMany({
       where: {
         ...(vendorId ? { id: vendorId } : {}),
-        isActive: true
+        isActive: true,
       },
       include: {
         products: {
-          where: {
-            isActive: true
-          },
-          select: {
-            id: true,
-            name: true,
-            priceB2C: true,
-            isActive: true
-          }
-        }
-      }
+          where: { isActive: true },
+          select: { id: true, name: true },
+        },
+      },
     });
 
-    const vendorSalesData = await Promise.all(vendors.map(async (vendor) => {
-      const activeProducts = vendor.products;
-      
-      // 해당 벤더 상품들의 카트 아이템 조회
-      const cartItems = await this.prisma.cartItem.findMany({
-        where: {
-          product: {
-            vendorId: vendor.id,
-            isActive: true
-          }
-        },
-        include: {
-          product: {
-            select: {
-              priceB2C: true,
-              name: true
-            }
-          }
-        }
-      });
+    const vendorIds = vendors.map((v) => v.id);
+    if (vendorIds.length === 0) return [];
 
-      // 실제 매출 계산
-      let totalRevenue = cartItems.reduce((sum, item) => {
-        return sum + (Number(item.product.priceB2C) * item.quantity);
-      }, 0);
+    const orderWhere = (from: Date, to: Date) => ({
+      status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
+      createdAt: { gte: from, lte: to },
+    });
 
-      // 카트 데이터가 없을 때 상품 기반 추정 매출
-      if (totalRevenue === 0 && activeProducts.length > 0) {
-        const avgPrice = activeProducts.reduce((sum, p) => sum + Number(p.priceB2C), 0) / activeProducts.length;
-        totalRevenue = Math.floor(avgPrice * activeProducts.length * (Math.random() * 5 + 1)); // 상품당 1-6개 판매 가정
+    const itemsCurrent = await this.prisma.orderItem.findMany({
+      where: {
+        product: { vendorId: { in: vendorIds } },
+        order: orderWhere(startDate, endDate),
+      },
+      include: {
+        product: { select: { name: true, vendorId: true } },
+        order: { select: { createdAt: true } },
+      },
+    });
+
+    const itemsPrev = await this.prisma.orderItem.findMany({
+      where: {
+        product: { vendorId: { in: vendorIds } },
+        order: orderWhere(prevStart, prevEnd),
+      },
+      include: {
+        product: { select: { name: true, vendorId: true } },
+        order: { select: { createdAt: true } },
+      },
+    });
+
+    const itemsChart = await this.prisma.orderItem.findMany({
+      where: {
+        product: { vendorId: { in: vendorIds } },
+        order: orderWhere(rangeStart, rangeEnd),
+      },
+      include: {
+        product: { select: { name: true, vendorId: true } },
+        order: { select: { createdAt: true } },
+      },
+    });
+
+    const vendorSalesData = vendors.map((vendor) => {
+      const vid = vendor.id;
+      const cur = itemsCurrent.filter((i) => i.product.vendorId === vid);
+      const prev = itemsPrev.filter((i) => i.product.vendorId === vid);
+      const chart = itemsChart.filter((i) => i.product.vendorId === vid);
+
+      const totalSales = Math.round(
+        cur.reduce((s, i) => s + Number(i.finalPrice), 0),
+      );
+      const prevSum = prev.reduce((s, i) => s + Number(i.finalPrice), 0);
+
+      const orderIds = new Set(cur.map((i) => i.orderId));
+      const totalOrders = orderIds.size;
+
+      const productAgg: Record<string, number> = {};
+      for (const i of cur) {
+        const n = i.product.name;
+        productAgg[n] = (productAgg[n] || 0) + i.quantity;
       }
-
-      // 실제 주문 수 추정
-      let totalOrders = cartItems.length > 0 ? cartItems.length : 0;
-      if (totalOrders === 0 && totalRevenue > 0) {
-        totalOrders = Math.max(1, Math.floor(totalRevenue / 300000)); // 평균 주문액 30만원 가정
-      }
-      
-      // 평균 주문액
-      const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-
-      // 월별 성장률 (실제 데이터 기반 추정)
-      const monthlyGrowth = totalRevenue > 5000000 ? 
-        (Math.random() * 25) - 5 : // -5% ~ +20%
-        (Math.random() * 50) - 25; // -25% ~ +25%
-
-      // 상위 판매 상품 (카트에 담긴 횟수 기준)
-      const productSales = cartItems.reduce((acc, item) => {
-        const productName = item.product.name;
-        acc[productName] = (acc[productName] || 0) + item.quantity;
-        return acc;
-      }, {} as Record<string, number>);
-
-      const topProducts = Object.entries(productSales)
-        .sort(([,a], [,b]) => b - a)
+      const topProducts = Object.entries(productAgg)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 3)
         .map(([name]) => name);
 
-      // 월별 매출 데이터 (실제 데이터 기반 추정)
-      const baseMonthly = totalRevenue / 12;
-      const salesByMonth = Array.from({ length: 12 }, (_, index) => {
-        const variation = (Math.random() - 0.5) * 0.3; // ±15% 변동
-        return Math.floor(baseMonthly * (1 + variation));
+      const activeNames = vendor.products.map((p) => p.name);
+      const topProductsFinal =
+        topProducts.length > 0
+          ? topProducts
+          : activeNames.slice(0, 3);
+
+      const salesByMonth = monthBounds.map(({ start, end }) => {
+        let m = 0;
+        for (const i of chart) {
+          if (i.product.vendorId !== vid) continue;
+          const t = i.order.createdAt;
+          if (t >= start && t <= end) {
+            m += Number(i.finalPrice);
+          }
+        }
+        return Math.round(m);
       });
+
+      const averageOrderValue =
+        totalOrders > 0 ? Math.round(totalSales / totalOrders) : 0;
 
       return {
         id: vendor.id,
         name: vendor.name,
         code: vendor.code,
-        totalSales: totalRevenue,
+        totalSales,
         totalOrders,
-        totalProducts: activeProducts.length,
-        monthlyGrowth,
+        totalProducts: vendor.products.length,
+        monthlyGrowth: this.pctGrowth(
+          cur.reduce((s, i) => s + Number(i.finalPrice), 0),
+          prevSum,
+        ),
         averageOrderValue,
-        topProducts: topProducts.length > 0 ? topProducts : activeProducts.slice(0, 3).map(p => p.name),
-        salesByMonth
+        topProducts: topProductsFinal,
+        salesByMonth,
       };
-    }));
+    });
 
     return vendorSalesData;
   }

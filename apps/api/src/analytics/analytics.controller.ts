@@ -1,4 +1,11 @@
-import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
@@ -19,6 +26,22 @@ export class AnalyticsController {
       throw new Error('관리자 권한이 필요합니다.');
     }
     return this.analyticsService.getSellerSales(period, sellerId);
+  }
+
+  @Get('seller-sales/orders')
+  async getSellerSalesOrders(
+    @Req() req: Request,
+    @Query('period') period: string = 'month',
+    @Query('sellerId') sellerId?: string
+  ) {
+    const user = req.user as any;
+    if (user.role !== 'ADMIN') {
+      throw new Error('관리자 권한이 필요합니다.');
+    }
+    if (!sellerId) {
+      throw new BadRequestException('sellerId가 필요합니다.');
+    }
+    return this.analyticsService.getSellerSalesOrderDetail(sellerId, period);
   }
 
   @Get('vendor-sales')

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -247,6 +247,92 @@ export class AnalyticsService {
     });
 
     return sellerSalesData;
+  }
+
+  /**
+   * 셀러별 매출 상세: 추천인으로 유입된 고객의 기간 내 완료 주문 목록
+   * (주문일시, 고객명, 연락처, 상품 요약)
+   */
+  async getSellerSalesOrderDetail(sellerId: string, period: string) {
+    const seller = await this.prisma.seller.findFirst({
+      where: { id: sellerId, isActive: true, isVerified: true },
+      include: { referralCodes: { select: { code: true } } },
+    });
+    if (!seller) {
+      throw new NotFoundException('셀러를 찾을 수 없습니다.');
+    }
+
+    const exactCodes = [
+      ...new Set(seller.referralCodes.map((c) => c.code)),
+    ];
+    const codeToSeller = new Map(
+      seller.referralCodes.map(
+        (rc) => [rc.code.trim().toUpperCase(), seller.id] as const,
+      ),
+    );
+
+    let userIds: string[] = [];
+    if (exactCodes.length > 0) {
+      const referredUsers = await this.prisma.user.findMany({
+        where: { referrerCodeUsed: { in: exactCodes } },
+        select: { id: true, referrerCodeUsed: true },
+      });
+      userIds = referredUsers
+        .filter(
+          (u) =>
+            u.referrerCodeUsed &&
+            codeToSeller.get(u.referrerCodeUsed.trim().toUpperCase()) ===
+              seller.id,
+        )
+        .map((u) => u.id);
+    }
+
+    const { startDate, endDate } = this.getDateRange(period);
+
+    if (userIds.length === 0) {
+      return {
+        sellerName: seller.companyName,
+        sellerId: seller.id,
+        period,
+        orders: [] as Array<{
+          orderId: string;
+          orderNumber: string;
+          orderDate: string;
+          customerName: string;
+          phone: string;
+          products: string;
+        }>,
+      };
+    }
+
+    const orders = await this.prisma.order.findMany({
+      where: {
+        status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
+        createdAt: { gte: startDate, lte: endDate },
+        userId: { in: userIds },
+      },
+      include: {
+        user: { select: { name: true, phoneNumber: true } },
+        items: { select: { productName: true, quantity: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      sellerName: seller.companyName,
+      sellerId: seller.id,
+      period,
+      orders: orders.map((o) => ({
+        orderId: o.id,
+        orderNumber: o.orderNumber,
+        orderDate: o.createdAt.toISOString(),
+        customerName: o.user.name,
+        phone: o.user.phoneNumber ?? '',
+        products: o.items
+          .map((i) => `${i.productName} ×${i.quantity}`)
+          .join(', '),
+      })),
+    };
   }
 
   /**

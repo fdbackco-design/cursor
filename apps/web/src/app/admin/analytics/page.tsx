@@ -15,12 +15,14 @@ import {
   RefreshCw,
   ShoppingCart,
   Award,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 import { 
   analyticsApi, 
   SellerSales, 
+  SellerSalesOrderDetail,
   VendorSales, 
   ProductSales, 
   PopularProduct, 
@@ -41,6 +43,10 @@ const AnalyticsPage = () => {
   const [productData, setProductData] = useState<ProductSales[]>([]);
   const [popularProducts, setPopularProducts] = useState<PopularProduct[]>([]);
   const [returnRateData, setReturnRateData] = useState<ReturnRateData[]>([]);
+
+  const [sellerDetailOpen, setSellerDetailOpen] = useState(false);
+  const [sellerDetailLoading, setSellerDetailLoading] = useState(false);
+  const [sellerDetail, setSellerDetail] = useState<SellerSalesOrderDetail | null>(null);
 
   const periods = [
     { value: 'week', label: '주간' },
@@ -96,7 +102,21 @@ const AnalyticsPage = () => {
     loadAnalyticsData();
   }, [selectedPeriod]);
 
-
+  const openSellerDetail = async (sellerId: string) => {
+    setSellerDetailOpen(true);
+    setSellerDetailLoading(true);
+    setSellerDetail(null);
+    try {
+      const res = await analyticsApi.getSellerSalesOrders(sellerId, selectedPeriod);
+      const data = res.success ? res.data : (res as unknown as SellerSalesOrderDetail);
+      setSellerDetail(data ?? null);
+    } catch (e) {
+      console.error('셀러 주문 상세 로딩 실패:', e);
+      setSellerDetail(null);
+    } finally {
+      setSellerDetailLoading(false);
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ko-KR', {
@@ -113,8 +133,114 @@ const AnalyticsPage = () => {
     return growth >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />;
   };
 
+  const formatOrderDate = (iso: string) => {
+    try {
+      return new Intl.DateTimeFormat('ko-KR', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }).format(new Date(iso));
+    } catch {
+      return iso;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {sellerDetailOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="presentation"
+          onClick={() => {
+            setSellerDetailOpen(false);
+            setSellerDetail(null);
+          }}
+        >
+          <div
+            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-lg bg-white shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 sm:px-6">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 sm:text-lg">
+                  셀러 주문 상세
+                </h3>
+                {sellerDetail && (
+                  <p className="text-xs text-gray-500 sm:text-sm">{sellerDetail.sellerName}</p>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => {
+                  setSellerDetailOpen(false);
+                  setSellerDetail(null);
+                }}
+                aria-label="닫기"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="max-h-[calc(90vh-4rem)] overflow-auto p-4 sm:p-6">
+              {sellerDetailLoading ? (
+                <div className="space-y-3 py-8 text-center text-sm text-gray-500">
+                  불러오는 중…
+                </div>
+              ) : !sellerDetail || sellerDetail.orders.length === 0 ? (
+                <p className="py-8 text-center text-sm text-gray-500">
+                  해당 기간에 표시할 완료 주문이 없습니다.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[640px] border-collapse text-left text-xs sm:text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200 bg-gray-50">
+                        <th className="whitespace-nowrap px-2 py-2 font-medium text-gray-700 sm:px-3">
+                          주문일시
+                        </th>
+                        <th className="whitespace-nowrap px-2 py-2 font-medium text-gray-700 sm:px-3">
+                          이름
+                        </th>
+                        <th className="whitespace-nowrap px-2 py-2 font-medium text-gray-700 sm:px-3">
+                          연락처
+                        </th>
+                        <th className="min-w-[200px] px-2 py-2 font-medium text-gray-700 sm:px-3">
+                          상품
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sellerDetail.orders.map((row) => (
+                        <tr
+                          key={row.orderId}
+                          className="border-b border-gray-100 align-top hover:bg-gray-50/80"
+                        >
+                          <td className="whitespace-nowrap px-2 py-2 text-gray-900 sm:px-3">
+                            {formatOrderDate(row.orderDate)}
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-gray-900 sm:px-3">
+                            {row.customerName}
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-gray-900 sm:px-3">
+                            {row.phone || '—'}
+                          </td>
+                          <td className="px-2 py-2 text-gray-800 sm:px-3">
+                            {row.products || '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -318,7 +444,13 @@ const AnalyticsPage = () => {
                       {getGrowthIcon(seller.monthlyGrowth || 0)}
                       {(seller.monthlyGrowth || 0) >= 0 ? '+' : ''}{seller.monthlyGrowth || 0}%
                     </span>
-                    <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                      onClick={() => openSellerDetail(seller.id)}
+                    >
                       상세보기
                     </Button>
                   </div>

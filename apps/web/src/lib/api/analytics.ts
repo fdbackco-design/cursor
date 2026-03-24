@@ -12,6 +12,22 @@ export interface SellerSales {
   salesByMonth: number[];
 }
 
+export interface SellerSalesOrderRow {
+  orderId: string;
+  orderNumber: string;
+  orderDate: string;
+  customerName: string;
+  phone: string;
+  products: string;
+}
+
+export interface SellerSalesOrderDetail {
+  sellerName: string;
+  sellerId: string;
+  period: string;
+  orders: SellerSalesOrderRow[];
+}
+
 export interface VendorSales {
   id: string;
   name: string;
@@ -81,6 +97,20 @@ export const analyticsApi = {
     const endpoint = `/analytics/seller-sales${queryString ? `?${queryString}` : ''}`;
     
     return apiRequest<SellerSales[]>(endpoint, {
+      method: 'GET',
+    });
+  },
+
+  /** 셀러별 매출 상세: 추천인 유입 고객의 기간 내 완료 주문 목록 */
+  async getSellerSalesOrders(
+    sellerId: string,
+    period: string = 'month',
+  ) {
+    const params = new URLSearchParams();
+    params.append('period', period);
+    params.append('sellerId', sellerId);
+    const endpoint = `/analytics/seller-sales/orders?${params.toString()}`;
+    return apiRequest<SellerSalesOrderDetail>(endpoint, {
       method: 'GET',
     });
   },

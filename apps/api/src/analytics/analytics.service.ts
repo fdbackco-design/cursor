@@ -66,7 +66,8 @@ export class AnalyticsService {
   }
 
   /**
-   * 셀러별 매출: 해당 셀러의 추천인 코드로 결제된 주문(referralCodeUsed 일치)만 집계
+   * 셀러별 매출: 해당 셀러의 추천인 코드로 **가입한** 사용자(User.referrerCodeUsed)의
+   * 완료 주문 매출을 귀속 (결제 시 주문의 referralCodeUsed와 무관)
    */
   async getSellerSales(period: string, sellerId?: string) {
     const { startDate, endDate } = this.getDateRange(period);
@@ -87,68 +88,116 @@ export class AnalyticsService {
       },
     });
 
-    const sellerCodesMap = new Map<string, Set<string>>();
+    const codeToSellerId = new Map<string, string>();
     for (const s of sellers) {
-      sellerCodesMap.set(
-        s.id,
-        new Set(s.referralCodes.map((c) => c.code.trim().toUpperCase())),
-      );
+      for (const rc of s.referralCodes) {
+        codeToSellerId.set(rc.code.trim().toUpperCase(), s.id);
+      }
     }
+
+    const exactCodes = [
+      ...new Set(sellers.flatMap((s) => s.referralCodes.map((c) => c.code))),
+    ];
+
+    const referredUsers =
+      exactCodes.length === 0
+        ? []
+        : await this.prisma.user.findMany({
+            where: { referrerCodeUsed: { in: exactCodes } },
+            select: { id: true, referrerCodeUsed: true },
+          });
+
+    const userIdToSellerId = new Map<string, string>();
+    for (const u of referredUsers) {
+      const ref = u.referrerCodeUsed?.trim();
+      if (!ref) continue;
+      const sid = codeToSellerId.get(ref.toUpperCase());
+      if (sid) userIdToSellerId.set(u.id, sid);
+    }
+
+    const attributedUserIds = [...userIdToSellerId.keys()];
+
+    const emptyOrders = () =>
+      Promise.resolve(
+        [] as Array<{
+          userId: string;
+          totalAmount: unknown;
+          createdAt: Date;
+        }>,
+      );
 
     const [ordersCurrent, ordersPrev, ordersChart, orderItemsForProducts] =
       await Promise.all([
-        this.prisma.order.findMany({
-          where: {
-            status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
-            createdAt: { gte: startDate, lte: endDate },
-            referralCodeUsed: { not: null },
-          },
-          select: { totalAmount: true, referralCodeUsed: true },
-        }),
-        this.prisma.order.findMany({
-          where: {
-            status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
-            createdAt: { gte: prevStart, lte: prevEnd },
-            referralCodeUsed: { not: null },
-          },
-          select: { totalAmount: true, referralCodeUsed: true },
-        }),
-        this.prisma.order.findMany({
-          where: {
-            status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
-            createdAt: { gte: rangeStart, lte: rangeEnd },
-            referralCodeUsed: { not: null },
-          },
-          select: {
-            totalAmount: true,
-            createdAt: true,
-            referralCodeUsed: true,
-          },
-        }),
-        this.prisma.orderItem.findMany({
-          where: {
-            order: {
-              status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
-              createdAt: { gte: startDate, lte: endDate },
-              referralCodeUsed: { not: null },
-            },
-          },
-          select: {
-            productId: true,
-            order: { select: { referralCodeUsed: true } },
-          },
-        }),
+        attributedUserIds.length === 0
+          ? emptyOrders()
+          : this.prisma.order.findMany({
+              where: {
+                status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
+                createdAt: { gte: startDate, lte: endDate },
+                userId: { in: attributedUserIds },
+              },
+              select: {
+                userId: true,
+                totalAmount: true,
+              },
+            }),
+        attributedUserIds.length === 0
+          ? emptyOrders()
+          : this.prisma.order.findMany({
+              where: {
+                status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
+                createdAt: { gte: prevStart, lte: prevEnd },
+                userId: { in: attributedUserIds },
+              },
+              select: {
+                userId: true,
+                totalAmount: true,
+              },
+            }),
+        attributedUserIds.length === 0
+          ? emptyOrders()
+          : this.prisma.order.findMany({
+              where: {
+                status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
+                createdAt: { gte: rangeStart, lte: rangeEnd },
+                userId: { in: attributedUserIds },
+              },
+              select: {
+                userId: true,
+                totalAmount: true,
+                createdAt: true,
+              },
+            }),
+        attributedUserIds.length === 0
+          ? Promise.resolve(
+              [] as Array<{
+                productId: string;
+                order: { userId: string };
+              }>,
+            )
+          : this.prisma.orderItem.findMany({
+              where: {
+                order: {
+                  status: { in: [...this.ORDER_STATUSES_FOR_REVENUE] },
+                  createdAt: { gte: startDate, lte: endDate },
+                  userId: { in: attributedUserIds },
+                },
+              },
+              select: {
+                productId: true,
+                order: { select: { userId: true } },
+              },
+            }),
       ]);
 
     const sellerSalesData = sellers.map((seller) => {
-      const codes = sellerCodesMap.get(seller.id)!;
-      const matchesSeller = (ref: string | null) =>
-        ref != null && codes.has(ref.trim().toUpperCase());
+      const matchesSeller = (userId: string) =>
+        userIdToSellerId.get(userId) === seller.id;
 
       let currentSum = 0;
       let currentCount = 0;
       for (const o of ordersCurrent) {
-        if (matchesSeller(o.referralCodeUsed)) {
+        if (matchesSeller(o.userId)) {
           currentSum += Number(o.totalAmount);
           currentCount += 1;
         }
@@ -156,14 +205,14 @@ export class AnalyticsService {
 
       let previousSum = 0;
       for (const o of ordersPrev) {
-        if (matchesSeller(o.referralCodeUsed)) {
+        if (matchesSeller(o.userId)) {
           previousSum += Number(o.totalAmount);
         }
       }
 
       const productIds = new Set<string>();
       for (const row of orderItemsForProducts) {
-        if (matchesSeller(row.order.referralCodeUsed)) {
+        if (matchesSeller(row.order.userId)) {
           productIds.add(row.productId);
         }
       }
@@ -171,7 +220,7 @@ export class AnalyticsService {
       const salesByMonth = monthBounds.map(({ start, end }) => {
         let m = 0;
         for (const o of ordersChart) {
-          if (!matchesSeller(o.referralCodeUsed)) continue;
+          if (!matchesSeller(o.userId)) continue;
           if (o.createdAt >= start && o.createdAt <= end) {
             m += Number(o.totalAmount);
           }

@@ -136,7 +136,7 @@ export class AuthService {
       }
 
       // 1. 하드코딩된 코드 목록 확인 (기존 로직 유지)
-      const validCodes = ['WELCOME10', 'NEWUSER20', 'SPECIAL30', 'FEEDBACK2024', 'LIVE', 'TEST'];
+      const validCodes = ['WELCOME10'];
       const isInHardcodedList = validCodes.includes(normalizedCode);
       this.logger.log(`[추천인 코드 검증] 하드코딩 목록 확인: ${isInHardcodedList ? '유효' : '무효'} (목록: ${validCodes.join(', ')})`);
 
@@ -312,7 +312,7 @@ export class AuthService {
             this.logger.log(`[가입] 추천인 코드 "${cleanRef}" -> roleType: ${userRole}`);
           } else {
             // 하드코딩 목록 확인 (기본적으로 CONSUMER)
-            const validCodes = ['WELCOME10', 'NEWUSER20', 'SPECIAL30', 'FEEDBACK2024', 'LIVE', 'TEST'];
+            const validCodes = ['WELCOME10'];
             if (validCodes.includes(normalizedRef)) {
               userRole = UserRole.CONSUMER;
               this.logger.log(`[가입] 하드코딩 추천인 코드 "${cleanRef}" -> roleType: ${userRole}`);
